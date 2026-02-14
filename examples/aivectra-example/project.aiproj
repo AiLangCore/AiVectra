@@ -4,6 +4,6 @@ Program#aive_proj_p1 {
     entryFile="src/app.aos"
     entryExport="start"
   ) {
-    Include#aive_inc1(name="AiVectra" path="../../src/AiVectra" version="0.2.0")
+    Include#aive_inc1(name="AiVectra" path="../../src/AiVectra" version="0.0.1")
   }
 }

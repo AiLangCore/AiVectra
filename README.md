@@ -193,6 +193,7 @@ Run the library project directly (sanity check):
 Windowed hello world baseline:
 
 - `helloWindowScene` exports a canonical window scene string with a title and `Label("Hello, World!")` body.
+- `helloWindowNode` exports a structured map node for renderer integration.
 - `helloWindow()` returns that same scene through the function API shape.
 - `window(specAndContent)` gives a low-level constructor for custom window strings.
 

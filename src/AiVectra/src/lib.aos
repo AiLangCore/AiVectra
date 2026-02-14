@@ -1,7 +1,7 @@
 Program#aivl_p1 {
   Let#aivl_l1(name=version) {
     Fn#aivl_f1(params=_) {
-      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.2.0") } }
+      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.0.1") } }
     }
   }
 
@@ -95,6 +95,23 @@ Program#aivl_p1 {
     Lit#aivl_i15(value="Window(title=Hello World,x=120,y=80,w=640,h=360,body=Label(Hello, World!))")
   }
 
+  Let#aivl_l10(name=helloWindowNode) {
+    Map#aivl_m1 {
+      Field#aivl_fd1(key="type") { Lit#aivl_i16(value="window") }
+      Field#aivl_fd2(key="title") { Lit#aivl_i17(value="Hello World") }
+      Field#aivl_fd3(key="x") { Lit#aivl_i18(value=120) }
+      Field#aivl_fd4(key="y") { Lit#aivl_i19(value=80) }
+      Field#aivl_fd5(key="w") { Lit#aivl_i20(value=640) }
+      Field#aivl_fd6(key="h") { Lit#aivl_i21(value=360) }
+      Field#aivl_fd7(key="body") {
+        Map#aivl_m2 {
+          Field#aivl_fd8(key="type") { Lit#aivl_i22(value="label") }
+          Field#aivl_fd9(key="text") { Lit#aivl_i23(value="Hello, World!") }
+        }
+      }
+    }
+  }
+
   Export#aivl_e1(name=library)
   Export#aivl_e2(name=version)
   Export#aivl_e3(name=rect)
@@ -104,4 +121,5 @@ Program#aivl_p1 {
   Export#aivl_e7(name=window)
   Export#aivl_e8(name=helloWindow)
   Export#aivl_e9(name=helloWindowScene)
+  Export#aivl_e10(name=helloWindowNode)
 }
