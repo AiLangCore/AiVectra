@@ -1,0 +1,59 @@
+Program#aivl_p1 {
+  Export#aivl_e1(name=library)
+  Export#aivl_e2(name=version)
+  Export#aivl_e3(name=rect)
+  Export#aivl_e4(name=circle)
+  Export#aivl_e5(name=text)
+
+  Let#aivl_l1(name=version) {
+    Fn#aivl_f1(params=_) {
+      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.1.0") } }
+    }
+  }
+
+  Let#aivl_l2(name=library) {
+    Fn#aivl_f2(params=_) {
+      Block#aivl_b2 { Return#aivl_r2 { Lit#aivl_i2(value="AiVectra") } }
+    }
+  }
+
+  Let#aivl_l3(name=rect) {
+    Fn#aivl_f3(params=spec) {
+      Block#aivl_b3 {
+        Return#aivl_r3 {
+          StrConcat#aivl_s1 {
+            Lit#aivl_i3(value="Rect(")
+            StrConcat#aivl_s2 { Var#aivl_v1(name=spec) Lit#aivl_i4(value=")") }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivl_l4(name=circle) {
+    Fn#aivl_f4(params=spec) {
+      Block#aivl_b4 {
+        Return#aivl_r4 {
+          StrConcat#aivl_s3 {
+            Lit#aivl_i5(value="Circle(")
+            StrConcat#aivl_s4 { Var#aivl_v2(name=spec) Lit#aivl_i6(value=")") }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivl_l5(name=text) {
+    Fn#aivl_f5(params=value) {
+      Block#aivl_b5 {
+        Return#aivl_r5 {
+          StrConcat#aivl_s5 {
+            Lit#aivl_i7(value="Text(")
+            StrConcat#aivl_s6 { Var#aivl_v3(name=value) Lit#aivl_i8(value=")") }
+          }
+        }
+      }
+    }
+  }
+}
+

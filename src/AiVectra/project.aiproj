@@ -1,0 +1,9 @@
+Program#aivl_proj_p1 {
+  Project#aivl_proj1(
+    name="AiVectra"
+    entryFile="src/lib.aos"
+    entryExport="library"
+    version="0.1.0"
+  )
+}
+

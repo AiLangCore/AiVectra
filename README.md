@@ -166,6 +166,29 @@ Current focus:
 
 ---
 
+## Project Layout
+
+This repository is initialized as an **AiLang workspace** with two projects:
+
+- `src/AiVectra/project.aiproj` - AiVectra library manifest
+- `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`)
+- `examples/aivectra-example/project.aiproj` - example app manifest (includes AiVectra metadata)
+- `examples/aivectra-example/src/app.aos` - runnable app importing the library module
+
+---
+
+## Local Run
+
+Run the example app from repo root:
+
+`aic run ./examples/aivectra-example`
+
+Run the library project directly (sanity check):
+
+`aic run ./src/AiVectra`
+
+---
+
 ## Philosophy
 
 Resolution-independent.
