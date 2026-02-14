@@ -8,7 +8,7 @@ Program#aive_p1 {
       Block#aive_b1 {
         Call#aive_c1(target=io.print) {
           StrConcat#aive_s1 {
-            Lit#aive_i1(value="Library: ")
+            Lit#aive_i12(value="Library: ")
             Call#aive_c2(target=library) { Lit#aive_i2(value=0) }
           }
         }
@@ -26,6 +26,15 @@ Program#aive_p1 {
         }
         Call#aive_c9(target=io.print) {
           Call#aive_c10(target=text) { Lit#aive_i7(value="AiVectra demo") }
+        }
+        Call#aive_c11(target=io.print) {
+          Call#aive_c12(target=label) { Lit#aive_i9(value="Primary label") }
+        }
+        Call#aive_c13(target=io.print) {
+          Call#aive_c14(target=window) { Lit#aive_i10(value="title=Scratch,x=40,y=40,w=320,h=220,body=Label(Scratch window)") }
+        }
+        Call#aive_c15(target=io.print) {
+          Call#aive_c16(target=helloWindow) { Lit#aive_i11(value=0) }
         }
         Return#aive_r1 { Lit#aive_i8(value=0) }
       }

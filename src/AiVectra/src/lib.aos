@@ -4,10 +4,13 @@ Program#aivl_p1 {
   Export#aivl_e3(name=rect)
   Export#aivl_e4(name=circle)
   Export#aivl_e5(name=text)
+  Export#aivl_e6(name=label)
+  Export#aivl_e7(name=window)
+  Export#aivl_e8(name=helloWindow)
 
   Let#aivl_l1(name=version) {
     Fn#aivl_f1(params=_) {
-      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.1.0") } }
+      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.2.0") } }
     }
   }
 
@@ -55,5 +58,45 @@ Program#aivl_p1 {
       }
     }
   }
-}
 
+  Let#aivl_l6(name=label) {
+    Fn#aivl_f6(params=value) {
+      Block#aivl_b6 {
+        Return#aivl_r6 {
+          StrConcat#aivl_s7 {
+            Lit#aivl_i9(value="Label(")
+            StrConcat#aivl_s8 { Var#aivl_v4(name=value) Lit#aivl_i10(value=")") }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivl_l7(name=window) {
+    Fn#aivl_f7(params=specAndContent) {
+      Block#aivl_b7 {
+        Return#aivl_r7 {
+          StrConcat#aivl_s9 {
+            Lit#aivl_i11(value="Window(")
+            StrConcat#aivl_s10 { Var#aivl_v5(name=specAndContent) Lit#aivl_i12(value=")") }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivl_l8(name=helloWindow) {
+    Fn#aivl_f8(params=_) {
+      Block#aivl_b8 {
+        Return#aivl_r8 {
+          Call#aivl_c1(target=window) {
+            StrConcat#aivl_s11 {
+              Lit#aivl_i13(value="title=Hello World,x=120,y=80,w=640,h=360,body=")
+              Call#aivl_c2(target=label) { Lit#aivl_i14(value="Hello, World!") }
+            }
+          }
+        }
+      }
+    }
+  }
+}
