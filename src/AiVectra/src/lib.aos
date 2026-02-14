@@ -1,13 +1,4 @@
 Program#aivl_p1 {
-  Export#aivl_e1(name=library)
-  Export#aivl_e2(name=version)
-  Export#aivl_e3(name=rect)
-  Export#aivl_e4(name=circle)
-  Export#aivl_e5(name=text)
-  Export#aivl_e6(name=label)
-  Export#aivl_e7(name=window)
-  Export#aivl_e8(name=helloWindow)
-
   Let#aivl_l1(name=version) {
     Fn#aivl_f1(params=_) {
       Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.2.0") } }
@@ -99,4 +90,18 @@ Program#aivl_p1 {
       }
     }
   }
+
+  Let#aivl_l9(name=helloWindowScene) {
+    Lit#aivl_i15(value="Window(title=Hello World,x=120,y=80,w=640,h=360,body=Label(Hello, World!))")
+  }
+
+  Export#aivl_e1(name=library)
+  Export#aivl_e2(name=version)
+  Export#aivl_e3(name=rect)
+  Export#aivl_e4(name=circle)
+  Export#aivl_e5(name=text)
+  Export#aivl_e6(name=label)
+  Export#aivl_e7(name=window)
+  Export#aivl_e8(name=helloWindow)
+  Export#aivl_e9(name=helloWindowScene)
 }

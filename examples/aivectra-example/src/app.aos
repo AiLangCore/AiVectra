@@ -1,43 +1,4 @@
 Program#aive_p1 {
   Import#aive_i1(path="../../../src/AiVectra/src/lib.aos")
-
-  Export#aive_e1(name=start)
-
-  Let#aive_l1(name=start) {
-    Fn#aive_f1(params=args) {
-      Block#aive_b1 {
-        Call#aive_c1(target=io.print) {
-          StrConcat#aive_s1 {
-            Lit#aive_i12(value="Library: ")
-            Call#aive_c2(target=library) { Lit#aive_i2(value=0) }
-          }
-        }
-        Call#aive_c3(target=io.print) {
-          StrConcat#aive_s2 {
-            Lit#aive_i3(value="Version: ")
-            Call#aive_c4(target=version) { Lit#aive_i4(value=0) }
-          }
-        }
-        Call#aive_c5(target=io.print) {
-          Call#aive_c6(target=rect) { Lit#aive_i5(value="x=10,y=10,w=120,h=40") }
-        }
-        Call#aive_c7(target=io.print) {
-          Call#aive_c8(target=circle) { Lit#aive_i6(value="cx=64,cy=64,r=24") }
-        }
-        Call#aive_c9(target=io.print) {
-          Call#aive_c10(target=text) { Lit#aive_i7(value="AiVectra demo") }
-        }
-        Call#aive_c11(target=io.print) {
-          Call#aive_c12(target=label) { Lit#aive_i9(value="Primary label") }
-        }
-        Call#aive_c13(target=io.print) {
-          Call#aive_c14(target=window) { Lit#aive_i10(value="title=Scratch,x=40,y=40,w=320,h=220,body=Label(Scratch window)") }
-        }
-        Call#aive_c15(target=io.print) {
-          Call#aive_c16(target=helloWindow) { Lit#aive_i11(value=0) }
-        }
-        Return#aive_r1 { Lit#aive_i8(value=0) }
-      }
-    }
-  }
+  Call#aive_c1(target=sys.stdout_writeLine) { Var#aive_v1(name=helloWindowScene) }
 }

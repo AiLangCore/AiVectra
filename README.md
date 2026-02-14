@@ -171,7 +171,7 @@ Current focus:
 This repository is initialized as an **AiLang workspace** with two projects:
 
 - `src/AiVectra/project.aiproj` - AiVectra library manifest
-- `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`, `label`, `window`, `helloWindow`)
+- `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`, `label`, `window`, `helloWindow`, `helloWindowScene`)
 - `examples/aivectra-example/project.aiproj` - example app manifest (includes AiVectra metadata)
 - `examples/aivectra-example/src/app.aos` - runnable app importing the library module
 
@@ -179,17 +179,21 @@ This repository is initialized as an **AiLang workspace** with two projects:
 
 ## Local Run
 
+Use `airun` from your normal toolchain (`PATH`).  
+If you have a temporary local binary in this repo, replace `airun` with `./.tools/airun`.
+
 Run the example app from repo root:
 
-`./.tools/airun run ./examples/aivectra-example/src/app.aos`
+`airun run ./examples/aivectra-example/src/app.aos`
 
 Run the library project directly (sanity check):
 
-`./.tools/airun run ./src/AiVectra/src/lib.aos`
+`airun run ./src/AiVectra/src/lib.aos`
 
 Windowed hello world baseline:
 
-- `helloWindow()` returns a canonical window scene string with a title and `Label("Hello, World!")` body.
+- `helloWindowScene` exports a canonical window scene string with a title and `Label("Hello, World!")` body.
+- `helloWindow()` returns that same scene through the function API shape.
 - `window(specAndContent)` gives a low-level constructor for custom window strings.
 
 ---
