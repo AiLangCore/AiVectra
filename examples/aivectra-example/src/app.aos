@@ -1,4 +1,0 @@
-Program#aive_p1 {
-  Import#aive_i1(path="../../../src/AiVectra/src/lib.aos")
-  Call#aive_c1(target=sys.stdout_writeLine) { Var#aive_v1(name=helloWindowScene) }
-}

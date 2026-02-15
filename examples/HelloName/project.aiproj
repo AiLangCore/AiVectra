@@ -1,0 +1,9 @@
+Program#aivhn_proj_p1 {
+  Project#aivhn_proj1(
+    name="HelloName"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include#aivhn_inc1(name="AiVectra" path="../../src/AiVectra" version="0.0.1")
+  }
+}

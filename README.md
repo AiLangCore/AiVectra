@@ -168,12 +168,12 @@ Current focus:
 
 ## Project Layout
 
-This repository is initialized as an **AiLang workspace** with two projects:
+This repository is initialized as an **AiLang workspace** with three projects:
 
 - `src/AiVectra/project.aiproj` - AiVectra library manifest
-- `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`, `label`, `window`, `helloWindow`, `helloWindowScene`)
-- `examples/aivectra-example/project.aiproj` - example app manifest (includes AiVectra metadata)
-- `examples/aivectra-example/src/app.aos` - runnable app importing the library module
+- `examples/HelloWorld/project.aiproj` - hello-world window example app
+- `examples/HelloName/project.aiproj` - hello-name window example app
+- `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`, `label`, `window`, `helloWindow`, `helloNamedWindow`, `waitForClose`)
 
 ---
 
@@ -184,7 +184,13 @@ If you have a temporary local binary in this repo, replace `airun` with `./.tool
 
 Run the example app from repo root:
 
-`airun run ./examples/aivectra-example/src/app.aos`
+`airun run ./examples/HelloWorld/src/app.aos`
+
+Run the named greeting example:
+
+`airun run ./examples/HelloName/src/app.aos Todd`
+
+`HelloName` uses GUI input: click inside the selection window to cycle names, then close the window to confirm.
 
 Run the library project directly (sanity check):
 
@@ -192,10 +198,11 @@ Run the library project directly (sanity check):
 
 Windowed hello world baseline:
 
-- `helloWindowScene` exports a canonical window scene string with a title and `Label("Hello, World!")` body.
-- `helloWindowNode` exports a structured map node for renderer integration.
-- `helloWindow()` returns that same scene through the function API shape.
-- `window(specAndContent)` gives a low-level constructor for custom window strings.
+- `helloWindow()` creates a host window, draws the hello frame via `sys.ui_*`, presents it, then closes it.
+- `helloNamedWindow(name)` creates a host window and renders `Hello {name}!`.
+- `waitForClose(windowHandle)` blocks until `sys.ui_pollEvent` reports `type="closed"`.
+- `window(title)` creates a window handle via `sys.ui_createWindow`.
+- `rect(windowHandle)` and `text(windowHandle)` emit real draw calls.
 
 ---
 

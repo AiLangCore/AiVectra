@@ -1,9 +1,0 @@
-Program#aive_proj_p1 {
-  Project#aive_proj1(
-    name="aivectra-example"
-    entryFile="src/app.aos"
-    entryExport="start"
-  ) {
-    Include#aive_inc1(name="AiVectra" path="../../src/AiVectra" version="0.0.1")
-  }
-}

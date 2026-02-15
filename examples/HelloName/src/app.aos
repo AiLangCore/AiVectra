@@ -1,0 +1,214 @@
+Program#aivhn_p1 {
+  Export#aivhn_e1(name=start)
+
+  Let#aivhn_l1(name=window) {
+    Fn#aivhn_f1(params=title) {
+      Block#aivhn_b1 {
+        Return#aivhn_r1 {
+          Call#aivhn_c1(target=sys.ui_createWindow) { Var#aivhn_v1(name=title) Lit#aivhn_i1(value=640) Lit#aivhn_i2(value=360) }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l2(name=rect) {
+    Fn#aivhn_f2(params=handle) {
+      Block#aivhn_b2 {
+        Call#aivhn_c2(target=sys.ui_drawRect) {
+          Var#aivhn_v2(name=handle)
+          Lit#aivhn_i3(value=20)
+          Lit#aivhn_i4(value=20)
+          Lit#aivhn_i5(value=600)
+          Lit#aivhn_i6(value=320)
+          Lit#aivhn_i7(value="#1e293b")
+        }
+        Return#aivhn_r2 { Lit#aivhn_i8(value=0) }
+      }
+    }
+  }
+
+  Let#aivhn_l3(name=label) {
+    Fn#aivhn_f3(params=handle,text) {
+      Block#aivhn_b3 {
+        Call#aivhn_c3(target=sys.ui_drawText) {
+          Var#aivhn_v3(name=handle)
+          Lit#aivhn_i9(value=208)
+          Lit#aivhn_i10(value=180)
+          Var#aivhn_v4(name=text)
+          Lit#aivhn_i11(value="#ffffff")
+          Lit#aivhn_i12(value=28)
+        }
+        Return#aivhn_r3 { Lit#aivhn_i13(value=0) }
+      }
+    }
+  }
+
+  Let#aivhn_l4(name=attrString) {
+    Fn#aivhn_f4(params=node,key,index) {
+      Block#aivhn_b4 {
+        If#aivhn_if1 {
+          Eq#aivhn_eq1 { Var#aivhn_v5(name=index) AttrCount#aivhn_ac1 { Var#aivhn_v6(name=node) } }
+          Block#aivhn_b5 { Return#aivhn_r4 { Lit#aivhn_i14(value="") } }
+          Block#aivhn_b6 {
+            If#aivhn_if2 {
+              Eq#aivhn_eq2 { AttrKey#aivhn_ak1 { Var#aivhn_v7(name=node) Var#aivhn_v8(name=index) } Var#aivhn_v9(name=key) }
+              Block#aivhn_b7 { Return#aivhn_r5 { AttrValueString#aivhn_avs1 { Var#aivhn_v10(name=node) Var#aivhn_v11(name=index) } } }
+              Block#aivhn_b8 {
+                Return#aivhn_r6 {
+                  Call#aivhn_c4(target=attrString) {
+                    Var#aivhn_v12(name=node)
+                    Var#aivhn_v13(name=key)
+                    Add#aivhn_a1 { Var#aivhn_v14(name=index) Lit#aivhn_i15(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l5(name=waitForClose) {
+    Fn#aivhn_f5(params=handle) {
+      Block#aivhn_b9 {
+        Let#aivhn_l6(name=evt) { Call#aivhn_c5(target=sys.ui_pollEvent) { Var#aivhn_v15(name=handle) } }
+        If#aivhn_if3 {
+          Eq#aivhn_eq3 {
+            Call#aivhn_c6(target=attrString) { Var#aivhn_v16(name=evt) Lit#aivhn_i16(value="type") Lit#aivhn_i17(value=0) }
+            Lit#aivhn_i18(value="closed")
+          }
+          Block#aivhn_b10 { Return#aivhn_r7 { Lit#aivhn_i19(value=0) } }
+          Block#aivhn_b11 {
+            Call#aivhn_c7(target=sys.time_sleepMs) { Lit#aivhn_i20(value=16) }
+            Return#aivhn_r8 { Call#aivhn_c8(target=waitForClose) { Var#aivhn_v17(name=handle) } }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l7(name=nameAt) {
+    Fn#aivhn_f6(params=index) {
+      Block#aivhn_b12 {
+        If#aivhn_if4 {
+          Eq#aivhn_eq4 { Var#aivhn_v18(name=index) Lit#aivhn_i21(value=0) }
+          Block#aivhn_b13 { Return#aivhn_r9 { Lit#aivhn_i22(value="Todd") } }
+          Block#aivhn_b14 {
+            If#aivhn_if5 {
+              Eq#aivhn_eq5 { Var#aivhn_v19(name=index) Lit#aivhn_i23(value=1) }
+              Block#aivhn_b15 { Return#aivhn_r10 { Lit#aivhn_i24(value="Alice") } }
+              Block#aivhn_b16 { Return#aivhn_r11 { Lit#aivhn_i25(value="Sam") } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l8(name=nextIndex) {
+    Fn#aivhn_f7(params=index) {
+      Block#aivhn_b17 {
+        If#aivhn_if6 {
+          Eq#aivhn_eq6 { Var#aivhn_v20(name=index) Lit#aivhn_i26(value=0) }
+          Block#aivhn_b18 { Return#aivhn_r12 { Lit#aivhn_i27(value=1) } }
+          Block#aivhn_b19 {
+            If#aivhn_if7 {
+              Eq#aivhn_eq7 { Var#aivhn_v21(name=index) Lit#aivhn_i28(value=1) }
+              Block#aivhn_b20 { Return#aivhn_r13 { Lit#aivhn_i29(value=2) } }
+              Block#aivhn_b21 { Return#aivhn_r14 { Lit#aivhn_i30(value=0) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l9(name=renderSelection) {
+    Fn#aivhn_f8(params=handle,index) {
+      Block#aivhn_b22 {
+        Call#aivhn_c9(target=sys.ui_beginFrame) { Var#aivhn_v22(name=handle) }
+        Call#aivhn_c10(target=rect) { Var#aivhn_v23(name=handle) }
+        Call#aivhn_c11(target=sys.ui_drawText) {
+          Var#aivhn_v24(name=handle)
+          Lit#aivhn_i31(value=120)
+          Lit#aivhn_i32(value=80)
+          Lit#aivhn_i33(value="Click to change name")
+          Lit#aivhn_i34(value="#ffffff")
+          Lit#aivhn_i35(value=18)
+        }
+        Call#aivhn_c12(target=sys.ui_drawText) {
+          Var#aivhn_v25(name=handle)
+          Lit#aivhn_i36(value=120)
+          Lit#aivhn_i37(value=110)
+          Lit#aivhn_i38(value="Close window to continue")
+          Lit#aivhn_i39(value="#ffffff")
+          Lit#aivhn_i40(value=16)
+        }
+        Call#aivhn_c13(target=label) { Var#aivhn_v26(name=handle) Call#aivhn_c14(target=nameAt) { Var#aivhn_v27(name=index) } }
+        Call#aivhn_c15(target=sys.ui_endFrame) { Var#aivhn_v28(name=handle) }
+        Call#aivhn_c16(target=sys.ui_present) { Var#aivhn_v29(name=handle) }
+        Return#aivhn_r15 { Lit#aivhn_i41(value=0) }
+      }
+    }
+  }
+
+  Let#aivhn_l10(name=selectNameLoop) {
+    Fn#aivhn_f9(params=handle,index) {
+      Block#aivhn_b23 {
+        Let#aivhn_l11(name=evt) { Call#aivhn_c17(target=sys.ui_pollEvent) { Var#aivhn_v30(name=handle) } }
+        Let#aivhn_l12(name=eventType) { Call#aivhn_c18(target=attrString) { Var#aivhn_v31(name=evt) Lit#aivhn_i42(value="type") Lit#aivhn_i43(value=0) } }
+        If#aivhn_if8 {
+          Eq#aivhn_eq8 { Var#aivhn_v32(name=eventType) Lit#aivhn_i44(value="closed") }
+          Block#aivhn_b24 { Return#aivhn_r16 { Var#aivhn_v33(name=index) } }
+          Block#aivhn_b25 {
+            If#aivhn_if9 {
+              Eq#aivhn_eq9 { Var#aivhn_v34(name=eventType) Lit#aivhn_i45(value="click") }
+              Block#aivhn_b26 {
+                Let#aivhn_l13(name=next) { Call#aivhn_c19(target=nextIndex) { Var#aivhn_v35(name=index) } }
+                Call#aivhn_c20(target=renderSelection) { Var#aivhn_v36(name=handle) Var#aivhn_v37(name=next) }
+                Return#aivhn_r17 { Call#aivhn_c21(target=selectNameLoop) { Var#aivhn_v38(name=handle) Var#aivhn_v39(name=next) } }
+              }
+              Block#aivhn_b27 {
+                Call#aivhn_c22(target=sys.time_sleepMs) { Lit#aivhn_i46(value=16) }
+                Return#aivhn_r18 { Call#aivhn_c23(target=selectNameLoop) { Var#aivhn_v40(name=handle) Var#aivhn_v41(name=index) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let#aivhn_l14(name=showGreeting) {
+    Fn#aivhn_f10(params=name) {
+      Block#aivhn_b28 {
+        Let#aivhn_l15(name=handle) { Call#aivhn_c24(target=window) { Lit#aivhn_i47(value="AiVectra Hello") } }
+        Call#aivhn_c25(target=sys.ui_beginFrame) { Var#aivhn_v42(name=handle) }
+        Call#aivhn_c26(target=rect) { Var#aivhn_v43(name=handle) }
+        Call#aivhn_c27(target=label) {
+          Var#aivhn_v44(name=handle)
+          StrConcat#aivhn_s1 { Lit#aivhn_i48(value="Hello ") StrConcat#aivhn_s2 { Var#aivhn_v45(name=name) Lit#aivhn_i49(value="!") } }
+        }
+        Call#aivhn_c28(target=sys.ui_endFrame) { Var#aivhn_v46(name=handle) }
+        Call#aivhn_c29(target=sys.ui_present) { Var#aivhn_v47(name=handle) }
+        Call#aivhn_c30(target=waitForClose) { Var#aivhn_v48(name=handle) }
+        Call#aivhn_c31(target=sys.ui_closeWindow) { Var#aivhn_v49(name=handle) }
+        Return#aivhn_r19 { Lit#aivhn_i50(value=0) }
+      }
+    }
+  }
+
+  Let#aivhn_l16(name=start) {
+    Fn#aivhn_f11(params=args) {
+      Block#aivhn_b29 {
+        Let#aivhn_l17(name=handle) { Call#aivhn_c32(target=window) { Lit#aivhn_i51(value="AiVectra Select Name") } }
+        Call#aivhn_c33(target=renderSelection) { Var#aivhn_v50(name=handle) Lit#aivhn_i52(value=0) }
+        Let#aivhn_l18(name=picked) { Call#aivhn_c34(target=selectNameLoop) { Var#aivhn_v51(name=handle) Lit#aivhn_i53(value=0) } }
+        Call#aivhn_c35(target=sys.ui_closeWindow) { Var#aivhn_v52(name=handle) }
+        Call#aivhn_c36(target=showGreeting) { Call#aivhn_c37(target=nameAt) { Var#aivhn_v53(name=picked) } }
+        Return#aivhn_r20 { Lit#aivhn_i54(value=0) }
+      }
+    }
+  }
+}

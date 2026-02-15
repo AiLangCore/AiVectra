@@ -12,14 +12,17 @@ Program#aivl_p1 {
   }
 
   Let#aivl_l3(name=rect) {
-    Fn#aivl_f3(params=spec) {
+    Fn#aivl_f3(params=windowHandle) {
       Block#aivl_b3 {
-        Return#aivl_r3 {
-          StrConcat#aivl_s1 {
-            Lit#aivl_i3(value="Rect(")
-            StrConcat#aivl_s2 { Var#aivl_v1(name=spec) Lit#aivl_i4(value=")") }
-          }
+        Call#aivl_c3(target=sys.ui_drawRect) {
+          Var#aivl_v1(name=windowHandle)
+          Lit#aivl_i3(value=20)
+          Lit#aivl_i4(value=20)
+          Lit#aivl_i24(value=600)
+          Lit#aivl_i25(value=320)
+          Lit#aivl_i26(value="#1e293b")
         }
+        Return#aivl_r3 { Lit#aivl_i27(value=0) }
       }
     }
   }
@@ -38,39 +41,34 @@ Program#aivl_p1 {
   }
 
   Let#aivl_l5(name=text) {
-    Fn#aivl_f5(params=value) {
+    Fn#aivl_f5(params=windowHandle,value) {
       Block#aivl_b5 {
-        Return#aivl_r5 {
-          StrConcat#aivl_s5 {
-            Lit#aivl_i7(value="Text(")
-            StrConcat#aivl_s6 { Var#aivl_v3(name=value) Lit#aivl_i8(value=")") }
-          }
+        Call#aivl_c4(target=sys.ui_drawText) {
+          Var#aivl_v3(name=windowHandle)
+          Lit#aivl_i7(value=208)
+          Lit#aivl_i8(value=180)
+          Var#aivl_v27(name=value)
+          Lit#aivl_i29(value="#ffffff")
+          Lit#aivl_i30(value=28)
         }
+        Return#aivl_r5 { Lit#aivl_i31(value=0) }
       }
     }
   }
 
   Let#aivl_l6(name=label) {
-    Fn#aivl_f6(params=value) {
+    Fn#aivl_f6(params=windowHandle,value) {
       Block#aivl_b6 {
-        Return#aivl_r6 {
-          StrConcat#aivl_s7 {
-            Lit#aivl_i9(value="Label(")
-            StrConcat#aivl_s8 { Var#aivl_v4(name=value) Lit#aivl_i10(value=")") }
-          }
-        }
+        Return#aivl_r6 { Call#aivl_c5(target=text) { Var#aivl_v4(name=windowHandle) Var#aivl_v28(name=value) } }
       }
     }
   }
 
   Let#aivl_l7(name=window) {
-    Fn#aivl_f7(params=specAndContent) {
+    Fn#aivl_f7(params=title) {
       Block#aivl_b7 {
         Return#aivl_r7 {
-          StrConcat#aivl_s9 {
-            Lit#aivl_i11(value="Window(")
-            StrConcat#aivl_s10 { Var#aivl_v5(name=specAndContent) Lit#aivl_i12(value=")") }
-          }
+          Call#aivl_c6(target=sys.ui_createWindow) { Var#aivl_v5(name=title) Lit#aivl_i11(value=640) Lit#aivl_i12(value=360) }
         }
       }
     }
@@ -79,34 +77,73 @@ Program#aivl_p1 {
   Let#aivl_l8(name=helloWindow) {
     Fn#aivl_f8(params=_) {
       Block#aivl_b8 {
-        Return#aivl_r8 {
-          Call#aivl_c1(target=window) {
-            StrConcat#aivl_s11 {
-              Lit#aivl_i13(value="title=Hello World,x=120,y=80,w=640,h=360,body=")
-              Call#aivl_c2(target=label) { Lit#aivl_i14(value="Hello, World!") }
-            }
+        Return#aivl_r8 { Call#aivl_c18(target=helloNamedWindow) { Lit#aivl_i40(value="World") } }
+      }
+    }
+  }
+
+  Let#aivl_l15(name=helloNamedWindow) {
+    Fn#aivl_f11(params=name) {
+      Block#aivl_b17 {
+        Let#aivl_l16(name=handle) { Call#aivl_c1(target=window) { Lit#aivl_i13(value="AiVectra Hello") } }
+        Let#aivl_l17(name=greeting) {
+          StrConcat#aivl_s12 {
+            Lit#aivl_i41(value="Hello ")
+            StrConcat#aivl_s13 { Var#aivl_v29(name=name) Lit#aivl_i42(value="!") }
+          }
+        }
+        Call#aivl_c2(target=sys.ui_beginFrame) { Var#aivl_v6(name=handle) }
+        Call#aivl_c7(target=rect) { Var#aivl_v7(name=handle) }
+        Call#aivl_c8(target=label) { Var#aivl_v8(name=handle) Var#aivl_v30(name=greeting) }
+        Call#aivl_c9(target=sys.ui_endFrame) { Var#aivl_v9(name=handle) }
+        Call#aivl_c10(target=sys.ui_present) { Var#aivl_v10(name=handle) }
+        Call#aivl_c11(target=waitForClose) { Var#aivl_v13(name=handle) }
+        Call#aivl_c12(target=sys.ui_closeWindow) { Var#aivl_v11(name=handle) }
+        Return#aivl_r15 { Var#aivl_v12(name=handle) }
+      }
+    }
+  }
+
+  Let#aivl_l12(name=waitForClose) {
+    Fn#aivl_f9(params=windowHandle) {
+      Block#aivl_b9 {
+        Let#aivl_l13(name=evt) { Call#aivl_c13(target=sys.ui_pollEvent) { Var#aivl_v14(name=windowHandle) } }
+        If#aivl_if2 {
+          Eq#aivl_e11 {
+            Call#aivl_c16(target=attrString) { Var#aivl_v15(name=evt) Lit#aivl_i33(value="type") Lit#aivl_i37(value=0) }
+            Lit#aivl_i34(value="closed")
+          }
+          Block#aivl_b10 { Return#aivl_r9 { Lit#aivl_i35(value=0) } }
+          Block#aivl_b11 {
+            Call#aivl_c14(target=sys.time_sleepMs) { Lit#aivl_i36(value=16) }
+            Return#aivl_r10 { Call#aivl_c15(target=waitForClose) { Var#aivl_v16(name=windowHandle) } }
           }
         }
       }
     }
   }
 
-  Let#aivl_l9(name=helloWindowScene) {
-    Lit#aivl_i15(value="Window(title=Hello World,x=120,y=80,w=640,h=360,body=Label(Hello, World!))")
-  }
-
-  Let#aivl_l10(name=helloWindowNode) {
-    Map#aivl_m1 {
-      Field#aivl_fd1(key="type") { Lit#aivl_i16(value="window") }
-      Field#aivl_fd2(key="title") { Lit#aivl_i17(value="Hello World") }
-      Field#aivl_fd3(key="x") { Lit#aivl_i18(value=120) }
-      Field#aivl_fd4(key="y") { Lit#aivl_i19(value=80) }
-      Field#aivl_fd5(key="w") { Lit#aivl_i20(value=640) }
-      Field#aivl_fd6(key="h") { Lit#aivl_i21(value=360) }
-      Field#aivl_fd7(key="body") {
-        Map#aivl_m2 {
-          Field#aivl_fd8(key="type") { Lit#aivl_i22(value="label") }
-          Field#aivl_fd9(key="text") { Lit#aivl_i23(value="Hello, World!") }
+  Let#aivl_l14(name=attrString) {
+    Fn#aivl_f10(params=node,key,index) {
+      Block#aivl_b12 {
+        If#aivl_if3 {
+          Eq#aivl_e12 { Var#aivl_v17(name=index) AttrCount#aivl_ac1 { Var#aivl_v18(name=node) } }
+          Block#aivl_b13 { Return#aivl_r11 { Lit#aivl_i38(value="") } }
+          Block#aivl_b14 {
+            If#aivl_if4 {
+              Eq#aivl_e13 { AttrKey#aivl_ak1 { Var#aivl_v19(name=node) Var#aivl_v20(name=index) } Var#aivl_v21(name=key) }
+              Block#aivl_b15 { Return#aivl_r12 { AttrValueString#aivl_avs2 { Var#aivl_v22(name=node) Var#aivl_v23(name=index) } } }
+              Block#aivl_b16 {
+                Return#aivl_r13 {
+                  Call#aivl_c17(target=attrString) {
+                    Var#aivl_v24(name=node)
+                    Var#aivl_v25(name=key)
+                    Add#aivl_a1 { Var#aivl_v26(name=index) Lit#aivl_i39(value=1) }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -120,6 +157,7 @@ Program#aivl_p1 {
   Export#aivl_e6(name=label)
   Export#aivl_e7(name=window)
   Export#aivl_e8(name=helloWindow)
-  Export#aivl_e9(name=helloWindowScene)
-  Export#aivl_e10(name=helloWindowNode)
+  Export#aivl_e9(name=waitForClose)
+  Export#aivl_e10(name=attrString)
+  Export#aivl_e14(name=helloNamedWindow)
 }

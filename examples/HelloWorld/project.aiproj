@@ -1,0 +1,9 @@
+Program#aivhw_proj_p1 {
+  Project#aivhw_proj1(
+    name="HelloWorld"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include#aivhw_inc1(name="AiVectra" path="../../src/AiVectra" version="0.0.1")
+  }
+}
