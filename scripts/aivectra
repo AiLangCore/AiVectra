@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/airun"
+AIRUN_BIN="${AIRUN_BIN:-$AIRUN_BIN_DEFAULT}"
+if [[ ! -x "$AIRUN_BIN" ]]; then
+  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-airun}"
+fi
+
+# Optional override: ./scripts/aivectra --airun /path/to/airun ...
+if [[ "${1:-}" == "--airun" ]]; then
+  if [[ -z "${2:-}" ]]; then
+    echo "missing value for --airun" >&2
+    exit 2
+  fi
+  AIRUN_BIN="$2"
+  shift 2
+fi
+
+normalize_path_arg() {
+  local p="$1"
+  if [[ "$p" == /samples/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* ]]; then
+    printf "%s%s" "$ROOT_DIR" "$p"
+    return 0
+  fi
+  printf "%s" "$p"
+}
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" || $# -eq 0 ]]; then
+  cat <<'EOF'
+AiVectra airun wrapper
+usage:
+  ./scripts/aivectra [--airun /path/to/airun] <airun-args>
+  ./scripts/aivectra debug <snapshot|replay|scene|live> [project]
+  ./scripts/aivectra icon <project-path> [label]
+
+example:
+  ./scripts/aivectra run ./samples/HelloWorld/
+  ./scripts/aivectra debug replay ./samples/HelloName/
+  ./scripts/aivectra debug scene ./samples/HelloName/
+  ./scripts/aivectra icon ./samples/HelloWorld/ HW
+EOF
+  exit 0
+fi
+
+if [[ "${1:-}" == "icon" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    echo "usage: ./scripts/aivectra icon <project-path> [label]" >&2
+    exit 2
+  fi
+  PROJECT="$(normalize_path_arg "$1")"
+  shift || true
+  exec "$AIRUN_BIN" run "$ROOT_DIR/src/AiVectra.Cli/" icon "$PROJECT" "$@"
+fi
+
+if [[ "${1:-}" == "debug" ]]; then
+  MODE="${2:-}"
+  TARGET_RAW="${3:-}"
+  TARGET="$ROOT_DIR/samples/HelloName/"
+  if [[ -n "$TARGET_RAW" ]]; then
+    TARGET="$(normalize_path_arg "$TARGET_RAW")"
+  fi
+
+  case "$MODE" in
+    snapshot|replay|scene)
+      exec "$AIRUN_BIN" run "$TARGET" "$MODE"
+      ;;
+    live)
+      exec "$AIRUN_BIN" run "$TARGET"
+      ;;
+    *)
+      echo "usage: ./scripts/aivectra debug <snapshot|replay|scene|live> [project]" >&2
+      exit 2
+      ;;
+  esac
+fi
+
+# Compatibility shim for wrapper-style debug commands:
+#   ./scripts/aivectra run debug snapshot /samples/HelloWorld/
+if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
+  MODE="${3:-}"
+  TARGET_RAW="${4:-}"
+  TARGET="$ROOT_DIR/samples/HelloName/"
+  if [[ -n "$TARGET_RAW" ]]; then
+    TARGET="$(normalize_path_arg "$TARGET_RAW")"
+  fi
+
+  case "$MODE" in
+    snapshot|replay|scene)
+      exec "$AIRUN_BIN" run "$TARGET" "$MODE"
+      ;;
+    live)
+      exec "$AIRUN_BIN" run "$TARGET"
+      ;;
+    *)
+      echo "usage: ./scripts/aivectra run debug <snapshot|replay|scene|live> [target]" >&2
+      exit 2
+      ;;
+  esac
+fi
+
+if [[ "${1:-}" == "run" && "${2:-}" == ".debug" ]]; then
+  echo "'.debug' is no longer supported. Use: ./scripts/aivectra debug <snapshot|replay|scene|live> [project]" >&2
+  exit 2
+fi
+
+exec "$AIRUN_BIN" "$@"

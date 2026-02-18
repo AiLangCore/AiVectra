@@ -1,0 +1,7 @@
+[aivectra] snapshot size=640x360
+[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,170,496,52 button=240,238,160,56
+[aivectra] snapshot size=976x614
+[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,424,832,52 button=408,492,160,56
+[aivectra] snapshot size=1280x800
+[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,610,1136,52 button=560,678,160,56
+Ok#ok1(type=void)

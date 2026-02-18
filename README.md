@@ -168,12 +168,15 @@ Current focus:
 
 ## Project Layout
 
-This repository is initialized as an **AiLang workspace** with three projects:
+This repository is initialized as an **AiLang workspace** with five projects:
 
 - `src/AiVectra/project.aiproj` - AiVectra library manifest
-- `examples/HelloWorld/project.aiproj` - hello-world window example app
-- `examples/HelloName/project.aiproj` - hello-name window example app
+- `src/AiVectra.Cli/project.aiproj` - AiVectra CLI manifest
+- `samples/HelloWorld/project.aiproj` - hello-world window sample app
+- `samples/HelloName/project.aiproj` - hello-name window sample app
+- `samples/InteractiveSvgMvp/project.aiproj` - interactive SVG MVP sample app
 - `src/AiVectra/src/lib.aos` - library exports (`library`, `version`, `rect`, `circle`, `text`, `label`, `window`, `helloWindow`, `helloNamedWindow`, `waitForClose`)
+- `examples/golden/ui-components/*` - golden output fixtures for UI component behavior
 
 ---
 
@@ -182,15 +185,46 @@ This repository is initialized as an **AiLang workspace** with three projects:
 Use `airun` from your normal toolchain (`PATH`).  
 If you have a temporary local binary in this repo, replace `airun` with `./.tools/airun`.
 
-Run the example app from repo root:
+Run the sample app from repo root:
 
-`airun run ./examples/HelloWorld/src/app.aos`
+`airun run ./samples/HelloWorld/src/app.aos`
 
 Run the named greeting example:
 
-`airun run ./examples/HelloName/src/app.aos Todd`
+`airun run ./samples/HelloName/`
 
-`HelloName` uses GUI input: click inside the selection window to cycle names, then close the window to confirm.
+`HelloName` uses GUI text entry from key events and a clickable `Submit` button to switch to the greeting view.
+
+Wrapper/CLI:
+
+- `./scripts/aivectra` is a thin wrapper over `airun` (no project-specific default).
+- Override runtime location with env or flag:
+  - `AIRUN_BIN=/path/to/airun ./scripts/aivectra`
+  - `./scripts/aivectra --airun /path/to/airun`
+- Example:
+  - `./scripts/aivectra run ./samples/HelloWorld/`
+  - `./scripts/aivectra run ./samples/InteractiveSvgMvp/`
+  - `./scripts/aivectra icon ./samples/HelloWorld/`
+- Debug tooling via AiLang CLI project (`src/AiVectra.Cli`):
+  - `./scripts/aivectra run ./src/AiVectra.Cli/ debug snapshot`
+  - `./scripts/aivectra run ./src/AiVectra.Cli/ debug replay`
+  - `./scripts/aivectra run ./samples/HelloName/`
+- Golden checks:
+  - `./scripts/test-golden-ui.sh`
+  - `./scripts/test-interactive-svg-mvp.sh`
+  - `./scripts/test-screenshot-debug-reality.sh` (requires macOS Screen Recording permission)
+- Compatibility wrapper:
+  - `./scripts/ui-debug.sh snapshot`
+  - `./scripts/ui-debug.sh replay`
+  - `./scripts/ui-debug.sh live`
+
+App icon generation:
+
+- Standard command: `./scripts/aivectra icon <project-path>`
+- Optional label override: `./scripts/aivectra icon <project-path> <label>`
+- Output:
+  - `<project-path>/Assets/AppIcon/appicon.svg`
+  - `<project-path>/Assets/AppIcon/manifest.txt`
 
 Run the library project directly (sanity check):
 

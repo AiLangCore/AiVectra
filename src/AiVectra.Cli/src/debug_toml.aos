@@ -1,0 +1,114 @@
+Program {
+  Import(path="../../AiVectra/src/lib.aos")
+  Export(name=debugEventToml)
+  Export(name=debugUiToml)
+  Export(name=boolToml)
+
+  Let(name=boolToml) {
+    Fn(params=value) {
+      Block {
+        If {
+          Var(name=value)
+          Block { Return { Lit(value="true") } }
+          Block { Return { Lit(value="false") } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugEventToml) {
+    Fn(params=eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
+        Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
+        Call(target=sys.stdout_writeLine) {
+          StrConcat {
+            Lit(value="aivectra.event = { type=\"")
+            StrConcat {
+              Var(name=eventType)
+              StrConcat {
+                Lit(value="\", key=\"")
+                StrConcat {
+                  Var(name=keyToken)
+                  StrConcat {
+                    Lit(value="\", text=\"")
+                    StrConcat {
+                      Var(name=textToken)
+                      StrConcat {
+                        Lit(value="\", x=")
+                        StrConcat {
+                          ToString { Var(name=clickX) }
+                          StrConcat {
+                            Lit(value=", y=")
+                            StrConcat {
+                              ToString { Var(name=clickY) }
+                              Lit(value=" }")
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugUiToml) {
+    Fn(params=action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
+      Block {
+        Call(target=sys.stdout_writeLine) {
+          StrConcat {
+            Lit(value="aivectra.ui = { action=\"")
+            StrConcat {
+              Var(name=action)
+              StrConcat {
+                Lit(value="\", target=\"")
+                StrConcat {
+                  Var(name=target)
+                  StrConcat {
+                    Lit(value="\", focus=")
+                    StrConcat {
+                      Call(target=boolToml) { Var(name=inputFocused) }
+                      StrConcat {
+                        Lit(value=", name_len=")
+                        StrConcat {
+                          ToString { Var(name=nameLen) }
+                          StrConcat {
+                            Lit(value=", submitted_len=")
+                            StrConcat {
+                              ToString { Var(name=submittedLen) }
+                              StrConcat {
+                                Lit(value=", input_rect=\"")
+                                StrConcat {
+                                  Var(name=inputRect)
+                                  StrConcat {
+                                    Lit(value="\", button_rect=\"")
+                                    StrConcat {
+                                      Var(name=buttonRect)
+                                      Lit(value="\" }")
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+}
