@@ -35,13 +35,38 @@ Program {
   }
 
   Let(name=renderForm) {
-    Fn(params=handle,name,submittedName,windowWidth,windowHeight,inputFocused,buttonActive) {
+    Fn(params=handle,name,submittedName,windowWidth,windowHeight,inputFocused,buttonActive,caret,caretVisible) {
       Block {
         Let(name=entryWidth) { Call(target=inputWidth) { Var(name=windowWidth) } }
         Let(name=submitX) { Call(target=buttonX) { Var(name=windowWidth) } }
         Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
+        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") } Lit(value=0) } }
+        Let(name=submitLabelPad) { Call(target=halfFloor) { Call(target=sub) { Lit(value=140) Var(name=submitLabelWidth) } Lit(value=0) } }
+        Let(name=submitLabelX) { Add { Var(name=submitX) Var(name=submitLabelPad) } }
+        Let(name=submitLabelY) { Add { Var(name=submitY) Add { Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=22) } Lit(value=0) } Lit(value=-1) } } }
         Let(name=hintTextY) { Call(target=hintY) { Var(name=windowHeight) } }
         Let(name=statusTextY) { Call(target=statusY) { Var(name=windowHeight) } }
+        Let(name=visibleName) { Call(target=visibleTextTail) { Var(name=name) Var(name=entryWidth) } }
+        Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
+        Let(name=visibleLen) { Call(target=textLen) { Var(name=visibleName) } }
+        Let(name=visibleStart) { Call(target=sub) { Var(name=nameLen) Var(name=visibleLen) } }
+        Let(name=clampedCaret) { Call(target=caretClamp) { Var(name=caret) Var(name=nameLen) } }
+        Let(name=caretInVisibleRaw) {
+          If {
+            Call(target=intLt) { Var(name=clampedCaret) Var(name=visibleStart) }
+            Block { Lit(value=0) }
+            Block { Call(target=sub) { Var(name=clampedCaret) Var(name=visibleStart) } }
+          }
+        }
+        Let(name=caretInVisible) {
+          If {
+            Call(target=intLt) { Var(name=visibleLen) Var(name=caretInVisibleRaw) }
+            Block { Var(name=visibleLen) }
+            Block { Var(name=caretInVisibleRaw) }
+          }
+        }
+        Let(name=caretX) { Add { Lit(value=88) Call(target=mul) { Lit(value=12) Var(name=caretInVisible) Lit(value=0) } } }
+        Let(name=caretY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
 
         Call(target=sys.ui_beginFrame) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=windowWidth) Var(name=windowHeight) }
@@ -55,24 +80,111 @@ Program {
           Lit(value=28)
         }
 
-        Call(target=textFieldState) {
+        Let(name=inputTextY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
+        Let(name=showPlaceholder) {
+          If {
+            Eq { Var(name=visibleName) Lit(value="") }
+            Block {
+              If {
+                Var(name=inputFocused)
+                Block { Lit(value=false) }
+                Block { Lit(value=true) }
+              }
+            }
+            Block { Lit(value=false) }
+          }
+        }
+        Let(name=inputText) {
+          If {
+            Var(name=showPlaceholder)
+            Block { Lit(value="Your name") }
+            Block { Var(name=visibleName) }
+          }
+        }
+        Let(name=inputTextColor) {
+          If {
+            Var(name=showPlaceholder)
+            Block { Lit(value="#94a3b8") }
+            Block { Lit(value="#ffffff") }
+          }
+        }
+        Call(target=interactiveVectorState) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=112)
           Var(name=entryWidth)
           Lit(value=52)
-          Var(name=name)
-          Var(name=inputFocused)
+          If {
+            Var(name=inputFocused)
+            Block { Lit(value="focused") }
+            Block { Lit(value="normal") }
+          }
+          Lit(value="rect")
+          Lit(value="")
+          Lit(value="#0f172a")
+          Lit(value="#0f172a")
+          Lit(value="#0f172a")
+          Lit(value="#172554")
+          Lit(value="#0f172a")
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Lit(value=88)
+          Var(name=inputTextY)
+          Var(name=inputText)
+          Var(name=inputTextColor)
+          Lit(value=24)
         }
 
-        Call(target=buttonState) {
+        If {
+          Var(name=inputFocused)
+          Block {
+            If {
+              Var(name=caretVisible)
+              Block {
+                Call(target=sys.ui_drawRect) {
+                  Var(name=handle)
+                  Var(name=caretX)
+                  Var(name=caretY)
+                  Lit(value=2)
+                  Lit(value=24)
+                  Lit(value="#e2e8f0")
+                }
+                Lit(value=0)
+              }
+              Block { Lit(value=0) }
+            }
+            Lit(value=0)
+          }
+          Block { Lit(value=0) }
+        }
+
+        Call(target=interactiveVectorState) {
           Var(name=handle)
           Var(name=submitX)
           Var(name=submitY)
           Lit(value=140)
           Lit(value=52)
+          If {
+            Var(name=buttonActive)
+            Block { Lit(value="pressed") }
+            Block { Lit(value="normal") }
+          }
+          Lit(value="rect")
+          Lit(value="")
+          Lit(value="#2563eb")
+          Lit(value="#93c5fd")
+          Lit(value="#3b82f6")
+          Lit(value="#1d4ed8")
+          Lit(value="#64748b")
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Var(name=submitLabelX)
+          Var(name=submitLabelY)
           Lit(value="Submit")
-          Var(name=buttonActive)
+          Lit(value="#ffffff")
+          Lit(value=22)
         }
 
         Call(target=sys.ui_drawText) {
@@ -401,8 +513,13 @@ Program {
         Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
         Let(name=hintTextY) { Call(target=hintY) { Var(name=windowHeight) } }
         Let(name=statusTextY) { Call(target=statusY) { Var(name=windowHeight) } }
-        Let(name=visibleName) { Call(target=textFieldVisibleValue) { Var(name=name) Var(name=entryWidth) } }
+        Let(name=visibleName) { Call(target=visibleTextTail) { Var(name=name) Var(name=entryWidth) } }
         Let(name=panelHeight) { Add { Var(name=windowHeight) Lit(value=-40) } }
+        Let(name=inputTextY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
+        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") } Lit(value=0) } }
+        Let(name=submitLabelPad) { Call(target=halfFloor) { Call(target=sub) { Lit(value=140) Var(name=submitLabelWidth) } Lit(value=0) } }
+        Let(name=submitLabelX) { Add { Var(name=submitX) Var(name=submitLabelPad) } }
+        Let(name=submitLabelY) { Add { Var(name=submitY) Add { Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=22) } Lit(value=0) } Lit(value=-1) } } }
 
         Call(target=sys.stdout_writeLine) {
           StrConcat {
@@ -460,21 +577,11 @@ Program {
         Let(name=oInputBg) { Add { Var(name=oTitle) Lit(value=1) } }
         Call(target=emitSceneNode) { Var(name=frameId) Var(name=oInputBg) Lit(value="name_input_bg") Lit(value="root") Lit(value="Rect") Lit(value="#172554") Lit(value="") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0) Lit(value=72) Lit(value=112) Var(name=entryWidth) Lit(value=52) Lit(value="matrix(1,0,0,1,0,0)") }
         Let(name=oInputText) { Add { Var(name=oInputBg) Lit(value=1) } }
-        Call(target=emitSceneNode) { Var(name=frameId) Var(name=oInputText) Lit(value="name_input_text") Lit(value="root") Lit(value="Text") Lit(value="#ffffff") Lit(value="") Lit(value=0) Var(name=visibleName) Lit(value="") Lit(value=24) Lit(value=88) Lit(value=145) Lit(value=0) Lit(value=0) Lit(value="matrix(1,0,0,1,0,0)") }
-        Let(name=oAfterButtonShadow) {
-          Call(target=emitButtonShadowNodes) {
-            Var(name=frameId)
-            Add { Var(name=oInputText) Lit(value=1) }
-            Var(name=submitX)
-            Var(name=submitY)
-            Lit(value=7)
-            Lit(value=7)
-          }
-        }
-        Let(name=oButton) { Var(name=oAfterButtonShadow) }
+        Call(target=emitSceneNode) { Var(name=frameId) Var(name=oInputText) Lit(value="name_input_text") Lit(value="root") Lit(value="Text") Lit(value="#ffffff") Lit(value="") Lit(value=0) Var(name=visibleName) Lit(value="") Lit(value=24) Lit(value=88) Var(name=inputTextY) Lit(value=0) Lit(value=0) Lit(value="matrix(1,0,0,1,0,0)") }
+        Let(name=oButton) { Add { Var(name=oInputText) Lit(value=1) } }
         Call(target=emitSceneNode) { Var(name=frameId) Var(name=oButton) Lit(value="submit_button") Lit(value="root") Lit(value="Rect") Lit(value="#2563eb") Lit(value="") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0) Var(name=submitX) Var(name=submitY) Lit(value=140) Lit(value=52) Lit(value="matrix(1,0,0,1,0,0)") }
         Let(name=oButtonText) { Add { Var(name=oButton) Lit(value=1) } }
-        Call(target=emitSceneNode) { Var(name=frameId) Var(name=oButtonText) Lit(value="submit_button_text") Lit(value="root") Lit(value="Text") Lit(value="#ffffff") Lit(value="") Lit(value=0) Lit(value="Submit") Lit(value="") Lit(value=22) Add { Var(name=submitX) Lit(value=37) } Add { Var(name=submitY) Lit(value=38) } Lit(value=0) Lit(value=0) Lit(value="matrix(1,0,0,1,0,0)") }
+        Call(target=emitSceneNode) { Var(name=frameId) Var(name=oButtonText) Lit(value="submit_button_text") Lit(value="root") Lit(value="Text") Lit(value="#ffffff") Lit(value="") Lit(value=0) Lit(value="Submit") Lit(value="") Lit(value=22) Var(name=submitLabelX) Var(name=submitLabelY) Lit(value=0) Lit(value=0) Lit(value="matrix(1,0,0,1,0,0)") }
         Let(name=oHint1) { Add { Var(name=oButtonText) Lit(value=1) } }
         Call(target=emitSceneNode) { Var(name=frameId) Var(name=oHint1) Lit(value="hint1") Lit(value="root") Lit(value="Text") Lit(value="#cbd5e1") Lit(value="") Lit(value=0) Lit(value="Type to edit. Enter submits.") Lit(value="") Lit(value=15) Lit(value=72) Var(name=hintTextY) Lit(value=0) Lit(value=0) Lit(value="matrix(1,0,0,1,0,0)") }
         Let(name=oHint2) { Add { Var(name=oHint1) Lit(value=1) } }
@@ -544,13 +651,43 @@ Program {
                                       Block { Return { Lit(value=true) } }
                                       Block {
                                         If {
-                                          Eq { Var(name=keyName) Lit(value="deleteBackward") }
-                                          Block { Return { Lit(value=true) } }
+                                              Eq { Var(name=keyName) Lit(value="deleteBackward") }
+                                              Block { Return { Lit(value=true) } }
                                           Block {
                                             If {
                                               Eq { Var(name=keyName) Lit(value="deletebackward") }
                                               Block { Return { Lit(value=true) } }
-                                              Block { Return { Lit(value=false) } }
+                                              Block {
+                                                If {
+                                                  Eq { Var(name=keyName) Lit(value="delete") }
+                                                  Block { Return { Lit(value=true) } }
+                                                  Block {
+                                                    If {
+                                                      Eq { Var(name=keyName) Lit(value="Delete") }
+                                                      Block { Return { Lit(value=true) } }
+                                                      Block {
+                                                        If {
+                                                          Eq { Var(name=keyName) Lit(value="del") }
+                                                          Block { Return { Lit(value=true) } }
+                                                          Block {
+                                                            If {
+                                                              Eq { Var(name=keyName) Lit(value="x11:51") }
+                                                              Block { Return { Lit(value=true) } }
+                                                              Block {
+                                                                If {
+                                                                  Eq { Var(name=keyName) Lit(value="DeleteBackspace") }
+                                                                  Block { Return { Lit(value=true) } }
+                                                                  Block { Return { Lit(value=false) } }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
                                             }
                                           }
                                         }
@@ -580,21 +717,27 @@ Program {
     Fn(params=keyName) {
       Block {
         If {
-          Eq { Var(name=keyName) Lit(value="delete") }
+          Eq { Var(name=keyName) Lit(value="DeleteForward") }
           Block { Return { Lit(value=true) } }
           Block {
             If {
-              Eq { Var(name=keyName) Lit(value="Delete") }
+              Eq { Var(name=keyName) Lit(value="delete_forward") }
               Block { Return { Lit(value=true) } }
               Block {
                 If {
-                  Eq { Var(name=keyName) Lit(value="del") }
+                  Eq { Var(name=keyName) Lit(value="forwardDelete") }
                   Block { Return { Lit(value=true) } }
                   Block {
                     If {
-                      Eq { Var(name=keyName) Lit(value="DeleteForward") }
+                      Eq { Var(name=keyName) Lit(value="ForwardDelete") }
                       Block { Return { Lit(value=true) } }
-                      Block { Return { Lit(value=false) } }
+                      Block {
+                        If {
+                          Eq { Var(name=keyName) Lit(value="x11:119") }
+                          Block { Return { Lit(value=true) } }
+                          Block { Return { Lit(value=false) } }
+                        }
+                      }
                     }
                   }
                 }
@@ -643,6 +786,66 @@ Program {
                           }
                         }
                       }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=isLeftKey) {
+    Fn(params=keyName) {
+      Block {
+        If {
+          Eq { Var(name=keyName) Lit(value="left") }
+          Block { Return { Lit(value=true) } }
+          Block {
+            If {
+              Eq { Var(name=keyName) Lit(value="ArrowLeft") }
+              Block { Return { Lit(value=true) } }
+              Block {
+                If {
+                  Eq { Var(name=keyName) Lit(value="Left") }
+                  Block { Return { Lit(value=true) } }
+                  Block {
+                    If {
+                      Eq { Var(name=keyName) Lit(value="x11:113") }
+                      Block { Return { Lit(value=true) } }
+                      Block { Return { Lit(value=false) } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=isRightKey) {
+    Fn(params=keyName) {
+      Block {
+        If {
+          Eq { Var(name=keyName) Lit(value="right") }
+          Block { Return { Lit(value=true) } }
+          Block {
+            If {
+              Eq { Var(name=keyName) Lit(value="ArrowRight") }
+              Block { Return { Lit(value=true) } }
+              Block {
+                If {
+                  Eq { Var(name=keyName) Lit(value="Right") }
+                  Block { Return { Lit(value=true) } }
+                  Block {
+                    If {
+                      Eq { Var(name=keyName) Lit(value="x11:114") }
+                      Block { Return { Lit(value=true) } }
+                      Block { Return { Lit(value=false) } }
                     }
                   }
                 }
@@ -773,8 +976,53 @@ Program {
     }
   }
 
+  Let(name=inputCaretFromClick) {
+    Fn(params=clickX,textValue,fieldWidth) {
+      Block {
+        Let(name=visibleText) { Call(target=visibleTextTail) { Var(name=textValue) Var(name=fieldWidth) } }
+        Let(name=nameLen) { Call(target=textLen) { Var(name=textValue) } }
+        Let(name=visibleLen) { Call(target=textLen) { Var(name=visibleText) } }
+        Let(name=visibleStart) { Call(target=sub) { Var(name=nameLen) Var(name=visibleLen) } }
+        Let(name=relativeX) {
+          If {
+            Call(target=intLt) { Var(name=clickX) Lit(value=88) }
+            Block { Lit(value=0) }
+            Block { Call(target=sub) { Var(name=clickX) Lit(value=88) } }
+          }
+        }
+        Let(name=charPos) { Call(target=divFloor) { Var(name=relativeX) Lit(value=12) Lit(value=0) } }
+        Let(name=rawCaret) { Add { Var(name=visibleStart) Var(name=charPos) } }
+        Return { Call(target=caretClamp) { Var(name=rawCaret) Var(name=nameLen) } }
+      }
+    }
+  }
+
+  Let(name=isForbiddenInputChar) {
+    Fn(params=ch) {
+      Block {
+        If {
+          Eq { Var(name=ch) Lit(value="\n") }
+          Block { Return { Lit(value=true) } }
+          Block {
+            If {
+              Eq { Var(name=ch) Lit(value="\r") }
+              Block { Return { Lit(value=true) } }
+              Block {
+                If {
+                  Eq { Var(name=ch) Lit(value="\t") }
+                  Block { Return { Lit(value=true) } }
+                  Block { Return { Lit(value=false) } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=loop) {
-    Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,buttonFlash) {
+    Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,buttonFlash,caret,blinkTick) {
       Block {
         Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
         Let(name=windowWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
@@ -783,6 +1031,16 @@ Program {
         Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastHeight) Lit(value=360) } }
         Let(name=nextFlash) { Call(target=decIfPositive) { Var(name=buttonFlash) } }
         Let(name=buttonActive) { Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) } }
+        Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
+        Let(name=safeCaret) { Call(target=caretClamp) { Var(name=caret) Var(name=nameLen) } }
+        Let(name=nextBlinkTick) {
+          If {
+            Call(target=intGte) { Var(name=blinkTick) Lit(value=59) }
+            Block { Lit(value=0) }
+            Block { Add { Var(name=blinkTick) Lit(value=1) } }
+          }
+        }
+        Let(name=caretVisible) { Call(target=intLt) { Var(name=blinkTick) Lit(value=30) } }
 
         Call(target=renderForm) {
           Var(name=handle)
@@ -792,6 +1050,8 @@ Program {
           Var(name=windowHeight)
           Var(name=inputFocused)
           Var(name=buttonActive)
+          Var(name=safeCaret)
+          Var(name=caretVisible)
         }
 
         Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
@@ -845,6 +1105,7 @@ Program {
                     Lit(value=52)
                   }
                 }
+                Let(name=nextCaretFromClick) { Call(target=inputCaretFromClick) { Var(name=eventX) Var(name=name) Var(name=entryWidth) } }
                 Let(name=clickTarget) {
                   If {
                     Var(name=buttonHit)
@@ -883,6 +1144,8 @@ Program {
                         Var(name=windowHeight)
                         Lit(value=true)
                         Lit(value=6)
+                        Var(name=safeCaret)
+                        Lit(value=0)
                       }
                     }
                   }
@@ -911,6 +1174,8 @@ Program {
                             Var(name=windowHeight)
                             Lit(value=true)
                             Var(name=nextFlash)
+                            Var(name=nextCaretFromClick)
+                            Lit(value=0)
                           }
                         }
                       }
@@ -936,6 +1201,8 @@ Program {
                             Var(name=windowHeight)
                             Lit(value=false)
                             Var(name=nextFlash)
+                            Var(name=safeCaret)
+                            Lit(value=0)
                           }
                         }
                       }
@@ -950,10 +1217,24 @@ Program {
                     If {
                       Var(name=inputFocused)
                       Block {
+                        Let(name=backPressed) {
+                          If {
+                            Call(target=isBackKey) { Var(name=eventKey) }
+                            Block { Lit(value=true) }
+                            Block {
+                              If {
+                                Call(target=isBackKey) { Var(name=eventText) }
+                                Block { Lit(value=true) }
+                                Block { Lit(value=false) }
+                              }
+                            }
+                          }
+                        }
                         If {
-                          Call(target=isBackKey) { Var(name=eventKey) }
+                          Var(name=backPressed)
                           Block {
-                            Let(name=nextName) { Call(target=removeLastChar) { Var(name=name) } }
+                            Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=safeCaret) } }
+                            Let(name=nextCaret) { Call(target=caretLeft) { Var(name=safeCaret) } }
                             Call(target=debugUiChangeIfChanged) {
                               Lit(value="text_edit")
                               Lit(value="nameInput")
@@ -975,14 +1256,17 @@ Program {
                                 Var(name=windowHeight)
                                 Var(name=inputFocused)
                                 Var(name=nextFlash)
+                                Var(name=nextCaret)
+                                Lit(value=0)
                               }
                             }
                           }
                           Block {
                             If {
-                              Call(target=isBackKey) { Var(name=eventText) }
+                              Call(target=isDeleteKey) { Var(name=eventKey) }
                               Block {
-                                Let(name=nextName) { Call(target=removeLastChar) { Var(name=name) } }
+                                Let(name=deleteIndex) { Call(target=caretRight) { Var(name=safeCaret) Var(name=nameLen) } }
+                                Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=deleteIndex) } }
                                 Call(target=debugUiChangeIfChanged) {
                                   Lit(value="text_edit")
                                   Lit(value="nameInput")
@@ -1004,70 +1288,50 @@ Program {
                                     Var(name=windowHeight)
                                     Var(name=inputFocused)
                                     Var(name=nextFlash)
+                                    Var(name=safeCaret)
+                                    Lit(value=0)
                                   }
                                 }
                               }
                               Block {
                                 If {
-                                  Call(target=isDeleteKey) { Var(name=eventKey) }
+                                  Call(target=isLeftKey) { Var(name=eventKey) }
                                   Block {
-                                    Let(name=nextName) { Call(target=removeLastChar) { Var(name=name) } }
-                                    Call(target=debugUiChangeIfChanged) {
-                                      Lit(value="text_edit")
-                                      Lit(value="nameInput")
-                                      Var(name=inputFocused)
-                                      Var(name=inputFocused)
-                                      Var(name=name)
-                                      Var(name=nextName)
-                                      Var(name=submittedName)
-                                      Var(name=submittedName)
-                                      Var(name=windowWidth)
-                                      Var(name=windowHeight)
-                                    }
                                     Return {
                                       Call(target=loop) {
                                         Var(name=handle)
-                                        Var(name=nextName)
+                                        Var(name=name)
                                         Var(name=submittedName)
                                         Var(name=windowWidth)
                                         Var(name=windowHeight)
                                         Var(name=inputFocused)
                                         Var(name=nextFlash)
+                                        Call(target=caretLeft) { Var(name=safeCaret) }
+                                        Lit(value=0)
                                       }
                                     }
                                   }
                                   Block {
                                     If {
-                                      Call(target=isEnterKey) { Var(name=eventKey) }
+                                      Call(target=isRightKey) { Var(name=eventKey) }
                                       Block {
-                                        Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
-                                        Call(target=debugUiChangeIfChanged) {
-                                          Lit(value="submit")
-                                          Lit(value="nameInput")
-                                          Var(name=inputFocused)
-                                          Var(name=inputFocused)
-                                          Var(name=name)
-                                          Var(name=name)
-                                          Var(name=submittedName)
-                                          Var(name=nextSubmitted)
-                                          Var(name=windowWidth)
-                                          Var(name=windowHeight)
-                                        }
                                         Return {
                                           Call(target=loop) {
                                             Var(name=handle)
                                             Var(name=name)
-                                            Var(name=nextSubmitted)
+                                            Var(name=submittedName)
                                             Var(name=windowWidth)
                                             Var(name=windowHeight)
                                             Var(name=inputFocused)
-                                            Lit(value=6)
+                                            Var(name=nextFlash)
+                                            Call(target=caretRight) { Var(name=safeCaret) Var(name=nameLen) }
+                                            Lit(value=0)
                                           }
                                         }
                                       }
                                       Block {
                                         If {
-                                          Call(target=isEnterKey) { Var(name=eventText) }
+                                          Call(target=isEnterKey) { Var(name=eventKey) }
                                           Block {
                                             Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
                                             Call(target=debugUiChangeIfChanged) {
@@ -1091,49 +1355,110 @@ Program {
                                                 Var(name=windowHeight)
                                                 Var(name=inputFocused)
                                                 Lit(value=6)
+                                                Var(name=safeCaret)
+                                                Lit(value=0)
                                               }
                                             }
                                           }
                                           Block {
-                                            Let(name=fallbackText) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
                                             If {
-                                              Eq { Var(name=fallbackText) Lit(value="") }
+                                              Call(target=isEnterKey) { Var(name=eventText) }
                                               Block {
-                                                Return {
-                                                  Call(target=loop) {
-                                                    Var(name=handle)
-                                                    Var(name=name)
-                                                    Var(name=submittedName)
-                                                    Var(name=windowWidth)
-                                                    Var(name=windowHeight)
-                                                    Var(name=inputFocused)
-                                                    Var(name=nextFlash)
-                                                  }
-                                                }
-                                              }
-                                              Block {
-                                                Let(name=nextName) { StrConcat { Var(name=name) Var(name=fallbackText) } }
+                                                Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
                                                 Call(target=debugUiChangeIfChanged) {
-                                                  Lit(value="text_edit")
+                                                  Lit(value="submit")
                                                   Lit(value="nameInput")
                                                   Var(name=inputFocused)
                                                   Var(name=inputFocused)
                                                   Var(name=name)
-                                                  Var(name=nextName)
+                                                  Var(name=name)
                                                   Var(name=submittedName)
-                                                  Var(name=submittedName)
+                                                  Var(name=nextSubmitted)
                                                   Var(name=windowWidth)
                                                   Var(name=windowHeight)
                                                 }
                                                 Return {
                                                   Call(target=loop) {
                                                     Var(name=handle)
-                                                    Var(name=nextName)
-                                                    Var(name=submittedName)
+                                                    Var(name=name)
+                                                    Var(name=nextSubmitted)
                                                     Var(name=windowWidth)
                                                     Var(name=windowHeight)
                                                     Var(name=inputFocused)
-                                                    Var(name=nextFlash)
+                                                    Lit(value=6)
+                                                    Var(name=safeCaret)
+                                                    Lit(value=0)
+                                                  }
+                                                }
+                                              }
+                                              Block {
+                                                Let(name=fallbackText) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
+                                                If {
+                                                  Eq { Var(name=fallbackText) Lit(value="") }
+                                                  Block {
+                                                    Return {
+                                                      Call(target=loop) {
+                                                        Var(name=handle)
+                                                        Var(name=name)
+                                                        Var(name=submittedName)
+                                                        Var(name=windowWidth)
+                                                        Var(name=windowHeight)
+                                                        Var(name=inputFocused)
+                                                        Var(name=nextFlash)
+                                                        Var(name=safeCaret)
+                                                        Lit(value=0)
+                                                      }
+                                                    }
+                                                  }
+                                                  Block {
+                                                    If {
+                                                      Call(target=isForbiddenInputChar) { Var(name=fallbackText) }
+                                                      Block {
+                                                        Return {
+                                                          Call(target=loop) {
+                                                            Var(name=handle)
+                                                            Var(name=name)
+                                                            Var(name=submittedName)
+                                                            Var(name=windowWidth)
+                                                            Var(name=windowHeight)
+                                                            Var(name=inputFocused)
+                                                            Var(name=nextFlash)
+                                                            Var(name=safeCaret)
+                                                            Lit(value=0)
+                                                          }
+                                                        }
+                                                      }
+                                                      Block {
+                                                        Let(name=nextName) { Call(target=textInsertAt) { Var(name=name) Var(name=safeCaret) Var(name=fallbackText) } }
+                                                        Let(name=nextCaretRaw) { Add { Var(name=safeCaret) Call(target=textLen) { Var(name=fallbackText) } } }
+                                                        Let(name=nextCaret) { Call(target=caretClamp) { Var(name=nextCaretRaw) Call(target=textLen) { Var(name=nextName) } } }
+                                                        Call(target=debugUiChangeIfChanged) {
+                                                          Lit(value="text_edit")
+                                                          Lit(value="nameInput")
+                                                          Var(name=inputFocused)
+                                                          Var(name=inputFocused)
+                                                          Var(name=name)
+                                                          Var(name=nextName)
+                                                          Var(name=submittedName)
+                                                          Var(name=submittedName)
+                                                          Var(name=windowWidth)
+                                                          Var(name=windowHeight)
+                                                        }
+                                                        Return {
+                                                          Call(target=loop) {
+                                                            Var(name=handle)
+                                                            Var(name=nextName)
+                                                            Var(name=submittedName)
+                                                            Var(name=windowWidth)
+                                                            Var(name=windowHeight)
+                                                            Var(name=inputFocused)
+                                                            Var(name=nextFlash)
+                                                            Var(name=nextCaret)
+                                                            Lit(value=0)
+                                                          }
+                                                        }
+                                                      }
+                                                    }
                                                   }
                                                 }
                                               }
@@ -1159,6 +1484,8 @@ Program {
                             Var(name=windowHeight)
                             Var(name=inputFocused)
                             Var(name=nextFlash)
+                            Var(name=safeCaret)
+                            Var(name=blinkTick)
                           }
                         }
                       }
@@ -1175,6 +1502,8 @@ Program {
                         Var(name=windowHeight)
                         Var(name=inputFocused)
                         Var(name=nextFlash)
+                        Var(name=safeCaret)
+                        Var(name=nextBlinkTick)
                       }
                     }
                   }
@@ -1313,6 +1642,8 @@ Program {
                   Var(name=initialWidth)
                   Var(name=initialHeight)
                   Lit(value=true)
+                  Lit(value=0)
+                  Lit(value=0)
                   Lit(value=0)
                 }
                 Call(target=sys.ui_closeWindow) { Var(name=handle) }

@@ -31,6 +31,7 @@ Implement a deterministic, declarative, SVG-inspired interactive foundation for 
 ## Notes
 - Gaussian blur is implemented in AiLang as a deterministic multi-band software approximation (`drawGaussianBlurRect`), without host-side filter syscall dependency.
 - Path hit testing is currently MVP bounding-box semantics (`pointInPathBounds`), not full even-odd point-in-path parsing.
+- Backlog (release/tooling): add project-wide dead-code trimming driven by entrypoint reachability (not exports), with `debug` vs `release` build profiles, linker keep/prune reports, and CI checks for both modes.
 
 ## Acceptance
 - Topmost overlapping shape receives click

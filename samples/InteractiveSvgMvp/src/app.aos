@@ -407,14 +407,34 @@ Program {
           Lit(value=16)
         }
 
-        Call(target=textFieldState) {
+        Let(name=visibleName) { Call(target=visibleTextTail) { Var(name=name) Var(name=iW) } }
+        Let(name=inputTextY) { Add { Var(name=iY) Call(target=halfFloor) { Call(target=sub) { Var(name=iH) Lit(value=24) } Lit(value=0) } } }
+        Call(target=interactiveVectorState) {
           Var(name=handle)
           Lit(value=72)
           Var(name=iY)
           Var(name=iW)
           Var(name=iH)
-          Var(name=name)
-          Var(name=inputFocused)
+          If {
+            Var(name=inputFocused)
+            Block { Lit(value="focused") }
+            Block { Lit(value="normal") }
+          }
+          Lit(value="rect")
+          Lit(value="")
+          Lit(value="#0f172a")
+          Lit(value="#0f172a")
+          Lit(value="#0f172a")
+          Lit(value="#172554")
+          Lit(value="#0f172a")
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Lit(value=88)
+          Var(name=inputTextY)
+          Var(name=visibleName)
+          Lit(value="#ffffff")
+          Lit(value=24)
         }
 
         If {
@@ -434,16 +454,28 @@ Program {
           Block { Lit(value=0) }
         }
 
-        Call(target=buttonVectorState) {
+        Call(target=interactiveVectorState) {
           Var(name=handle)
           Var(name=bX)
           Var(name=bY)
           Call(target=buttonW) { Lit(value=0) }
           Call(target=buttonH) { Lit(value=0) }
-          Lit(value="Submit")
           Var(name=buttonStateName)
           Lit(value="rect")
           Lit(value="")
+          Lit(value="#2563eb")
+          Lit(value="#93c5fd")
+          Lit(value="#3b82f6")
+          Lit(value="#1d4ed8")
+          Lit(value="#64748b")
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Add { Var(name=bX) Lit(value=44) }
+          Add { Var(name=bY) Lit(value=16) }
+          Lit(value="Submit")
+          Lit(value="#ffffff")
+          Lit(value=22)
         }
 
         Call(target=sys.ui_drawText) {

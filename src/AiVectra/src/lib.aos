@@ -475,86 +475,28 @@ Program {
     }
   }
 
-  Let(name=textField) {
-    Fn(params=handle,x,y,w,h,value) {
-      Block {
-        Return { Call(target=textFieldState) { Var(name=handle) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=value) Lit(value=false) } }
-      }
-    }
-  }
-
-  Let(name=textFieldState) {
-    Fn(params=handle,x,y,w,h,value,isFocused) {
-      Block {
-        Let(name=displayValue) { Call(target=textFieldVisibleValue) { Var(name=value) Var(name=w) } }
-        Let(name=fieldColor) {
-          If {
-            Var(name=isFocused)
-            Block { Lit(value="#172554") }
-            Block { Lit(value="#0f172a") }
-          }
-        }
-        Call(target=sys.ui_drawRect) {
-          Var(name=handle)
-          Var(name=x)
-          Var(name=y)
-          Var(name=w)
-          Var(name=h)
-          Var(name=fieldColor)
-        }
-        Call(target=sys.ui_drawText) {
-          Var(name=handle)
-          Add { Var(name=x) Lit(value=16) }
-          Add { Var(name=y) Lit(value=33) }
-          Var(name=displayValue)
-          Lit(value="#ffffff")
-          Lit(value=24)
-        }
-        Return { Lit(value=0) }
-      }
-    }
-  }
-
-  Let(name=button) {
-    Fn(params=handle,x,y,w,h,labelText) {
-      Block {
-        Return { Call(target=buttonState) { Var(name=handle) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=labelText) Lit(value=false) } }
-      }
-    }
-  }
-
-  Let(name=buttonState) {
-    Fn(params=handle,x,y,w,h,labelText,isActive) {
+  Let(name=interactiveFillForState) {
+    Fn(params=state,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
       Block {
         If {
-          Var(name=isActive)
+          Eq { Var(name=state) Lit(value="pressed") }
+          Block { Return { Var(name=pressedFill) } }
           Block {
-            Return {
-              Call(target=buttonVectorState) {
-                Var(name=handle)
-                Var(name=x)
-                Var(name=y)
-                Var(name=w)
-                Var(name=h)
-                Var(name=labelText)
-                Lit(value="pressed")
-                Lit(value="rect")
-                Lit(value="")
-              }
-            }
-          }
-          Block {
-            Return {
-              Call(target=buttonVectorState) {
-                Var(name=handle)
-                Var(name=x)
-                Var(name=y)
-                Var(name=w)
-                Var(name=h)
-                Var(name=labelText)
-                Lit(value="normal")
-                Lit(value="rect")
-                Lit(value="")
+            If {
+              Eq { Var(name=state) Lit(value="hover") }
+              Block { Return { Var(name=hoverFill) } }
+              Block {
+                If {
+                  Eq { Var(name=state) Lit(value="focused") }
+                  Block { Return { Var(name=focusedFill) } }
+                  Block {
+                    If {
+                      Eq { Var(name=state) Lit(value="disabled") }
+                      Block { Return { Var(name=disabledFill) } }
+                      Block { Return { Var(name=normalFill) } }
+                    }
+                  }
+                }
               }
             }
           }
@@ -563,132 +505,18 @@ Program {
     }
   }
 
-  Let(name=buttonVectorState) {
-    Fn(params=handle,x,y,w,h,labelText,state,shapeKind,pathData) {
+  Let(name=interactiveVectorState) {
+    Fn(params=handle,x,y,w,h,state,shapeKind,pathData,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
       Block {
-        Let(name=labelSize) { Lit(value=22) }
-        Let(name=labelWidth) { Call(target=mul) { Lit(value=11) Call(target=textLen) { Var(name=labelText) } Lit(value=0) } }
-        Let(name=textPad) {
-          If {
-            Call(target=intLt) { Var(name=w) Var(name=labelWidth) }
-            Block { Lit(value=0) }
-            Block { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Var(name=labelWidth) } Lit(value=0) } }
+        Let(name=fillColor) {
+          Call(target=interactiveFillForState) {
+            Var(name=state)
+            Var(name=normalFill)
+            Var(name=pressedFill)
+            Var(name=hoverFill)
+            Var(name=focusedFill)
+            Var(name=disabledFill)
           }
-        }
-        Let(name=textX) { Add { Var(name=x) Var(name=textPad) } }
-        Let(name=textY) {
-          Add {
-            Add { Var(name=y) Call(target=halfFloor) { Add { Var(name=h) Var(name=labelSize) } Lit(value=0) } }
-            Lit(value=1)
-          }
-        }
-        Let(name=buttonColor) {
-          If {
-            Eq { Var(name=state) Lit(value="pressed") }
-            Block { Lit(value="#93c5fd") }
-            Block {
-              If {
-                Eq { Var(name=state) Lit(value="hover") }
-                Block { Lit(value="#3b82f6") }
-                Block {
-                  If {
-                    Eq { Var(name=state) Lit(value="disabled") }
-                    Block { Lit(value="#64748b") }
-                    Block {
-                      If {
-                        Eq { Var(name=state) Lit(value="focused") }
-                        Block { Lit(value="#1d4ed8") }
-                        Block { Lit(value="#2563eb") }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        Let(name=shadowDx) {
-          If {
-            Eq { Var(name=state) Lit(value="pressed") }
-            Block { Lit(value=2) }
-            Block {
-              If {
-                Eq { Var(name=state) Lit(value="hover") }
-                Block { Lit(value=5) }
-                Block {
-                  If {
-                    Eq { Var(name=state) Lit(value="focused") }
-                    Block { Lit(value=6) }
-                    Block {
-                      If {
-                        Eq { Var(name=state) Lit(value="disabled") }
-                        Block { Lit(value=1) }
-                        Block { Lit(value=4) }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        Let(name=shadowDy) {
-          If {
-            Eq { Var(name=state) Lit(value="pressed") }
-            Block { Lit(value=3) }
-            Block {
-              If {
-                Eq { Var(name=state) Lit(value="hover") }
-                Block { Lit(value=8) }
-                Block {
-                  If {
-                    Eq { Var(name=state) Lit(value="focused") }
-                    Block { Lit(value=9) }
-                    Block {
-                      If {
-                        Eq { Var(name=state) Lit(value="disabled") }
-                        Block { Lit(value=2) }
-                        Block { Lit(value=6) }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        Let(name=shadowRadius) {
-          If {
-            Eq { Var(name=state) Lit(value="pressed") }
-            Block { Lit(value=4) }
-            Block {
-              If {
-                Eq { Var(name=state) Lit(value="hover") }
-                Block { Lit(value=9) }
-                Block {
-                  If {
-                    Eq { Var(name=state) Lit(value="focused") }
-                    Block { Lit(value=10) }
-                    Block {
-                      If {
-                        Eq { Var(name=state) Lit(value="disabled") }
-                        Block { Lit(value=3) }
-                        Block { Lit(value=7) }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        Call(target=drawGaussianBlurRect) {
-          Var(name=handle)
-          Add { Var(name=x) Var(name=shadowDx) }
-          Add { Var(name=y) Var(name=shadowDy) }
-          Var(name=w)
-          Var(name=h)
-          Var(name=shadowRadius)
         }
         If {
           Eq { Var(name=shapeKind) Lit(value="ellipse") }
@@ -699,7 +527,7 @@ Program {
               Var(name=y)
               Var(name=w)
               Var(name=h)
-              Var(name=buttonColor)
+              Var(name=fillColor)
             }
           }
           Block {
@@ -709,8 +537,8 @@ Program {
                 Call(target=sys.ui_drawPath) {
                   Var(name=handle)
                   Var(name=pathData)
-                  Var(name=buttonColor)
-                  Lit(value=3)
+                  Var(name=fillColor)
+                  Lit(value=0)
                 }
               }
               Block {
@@ -720,19 +548,11 @@ Program {
                   Var(name=y)
                   Var(name=w)
                   Var(name=h)
-                  Var(name=buttonColor)
+                  Var(name=fillColor)
                 }
               }
             }
           }
-        }
-        Call(target=sys.ui_drawText) {
-          Var(name=handle)
-          Var(name=textX)
-          Var(name=textY)
-          Var(name=labelText)
-          Lit(value="#ffffff")
-          Var(name=labelSize)
         }
         Return { Lit(value=0) }
       }
@@ -1057,7 +877,20 @@ Program {
 
   Let(name=textLen) {
     Fn(params=textValue) {
-      Block { Return { Call(target=sys.str_utf8ByteCount) { Var(name=textValue) } } }
+      Block {
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Return {
+              Add {
+                Lit(value=1)
+                Call(target=textLen) { Call(target=sys.str_remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+              }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1100,7 +933,7 @@ Program {
     }
   }
 
-  Let(name=textFieldVisibleValue) {
+  Let(name=visibleTextTail) {
     Fn(params=textValue,fieldWidth) {
       Block {
         Let(name=contentWidth) {
@@ -1331,10 +1164,15 @@ Program {
             Field(key="9") { Lit(value="9") }
             Field(key="space") { Lit(value=" ") }
             Field(key=" ") { Lit(value=" ") }
+            Field(key="tab") { Lit(value="\t") }
+            Field(key="Tab") { Lit(value="\t") }
+            Field(key="\t") { Lit(value="\t") }
             Field(key=".") { Lit(value=".") }
             Field(key=",") { Lit(value=",") }
             Field(key="-") { Lit(value="-") }
             Field(key="_") { Lit(value="_") }
+            Field(key="`") { Lit(value="`") }
+            Field(key="~") { Lit(value="~") }
             Field(key="'") { Lit(value="'") }
             Field(key="\"") { Lit(value="\"") }
             Field(key=":") { Lit(value=":") }
@@ -1621,52 +1459,41 @@ Program {
   Export(name=library)
   Export(name=version)
   Export(name=rect)
-  Export(name=circle)
   Export(name=text)
   Export(name=label)
   Export(name=window)
   Export(name=helloWindow)
+  Export(name=helloNamedWindow)
   Export(name=waitForClose)
   Export(name=attrString)
-  Export(name=helloNamedWindow)
   Export(name=attrInt)
   Export(name=uiWidth)
   Export(name=uiHeight)
   Export(name=drawPanel)
   Export(name=blurBandColor)
-  Export(name=drawGaussianBlurRectLoop)
   Export(name=drawGaussianBlurRect)
   Export(name=gradientColor3)
-  Export(name=drawLinearGradientRectLoop)
-  Export(name=drawLinearGradientRect)
-  Export(name=translateCoord)
   Export(name=drawRectTransform)
   Export(name=drawEllipseTransform)
   Export(name=drawPathTransform)
   Export(name=drawTextTransform)
-  Export(name=textField)
-  Export(name=textFieldState)
-  Export(name=button)
-  Export(name=buttonState)
-  Export(name=buttonVectorState)
+  Export(name=interactiveFillForState)
+  Export(name=interactiveVectorState)
   Export(name=pointInRect)
   Export(name=pointInEllipse)
   Export(name=pointInPathBounds)
-  Export(name=resolveSize)
   Export(name=stabilizeSize)
   Export(name=buttonX)
   Export(name=buttonY)
   Export(name=inputWidth)
   Export(name=hintY)
   Export(name=statusY)
-  Export(name=subAbs)
   Export(name=removeLastChar)
   Export(name=textInsertAt)
   Export(name=textDeleteAt)
   Export(name=caretClamp)
   Export(name=caretLeft)
   Export(name=caretRight)
-  Export(name=textPrefix)
   Export(name=caretPixelOffset)
   Export(name=keyToText)
   Export(name=intLt)
@@ -1678,7 +1505,7 @@ Program {
   Export(name=textLen)
   Export(name=divFloor)
   Export(name=fitTextTail)
-  Export(name=textFieldVisibleValue)
+  Export(name=visibleTextTail)
   Export(name=mapGetString)
   Export(name=keyTextMap)
   Export(name=debugSizeLine)

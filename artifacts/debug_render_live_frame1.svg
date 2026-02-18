@@ -56,7 +56,7 @@
     <rect id="panel_grad_312" x="20" y="332" width="600" height="8" fill="#1e293b"/>
     <text id="title" x="72" y="72" font-size="28" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff">Enter your name</text>
     <rect id="name_input_bg" x="72" y="112" width="496" height="52" fill="#172554"/>
-    <text id="name_input_text" x="88" y="145" font-size="24" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff"></text>
+    <text id="name_input_text" x="88" y="126" font-size="24" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff"></text>
     <rect id="button_shadow_7" x="247" y="199" width="154" height="66" fill="#020617"/>
     <rect id="button_shadow_6" x="248" y="200" width="152" height="64" fill="#0f172a"/>
     <rect id="button_shadow_5" x="249" y="201" width="150" height="62" fill="#0f172a"/>
@@ -65,7 +65,7 @@
     <rect id="button_shadow_2" x="252" y="204" width="144" height="56" fill="#172554"/>
     <rect id="button_shadow_1" x="253" y="205" width="142" height="54" fill="#1e293b"/>
     <rect id="submit_button" x="250" y="200" width="140" height="52" fill="#2563eb"/>
-    <text id="submit_button_text" x="287" y="238" font-size="22" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff">Submit</text>
+    <text id="submit_button_text" x="290" y="215" font-size="22" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff">Submit</text>
     <text id="hint1" x="72" y="268" font-size="15" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#cbd5e1">Type to edit. Enter submits.</text>
     <text id="hint2" x="72" y="290" font-size="15" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#cbd5e1">Backspace/Delete edits text.</text>
     <text id="status" x="72" y="314" font-size="18" font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" fill="#ffffff">Greeting: (press Submit)</text>
