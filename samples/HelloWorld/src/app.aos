@@ -1,104 +1,11 @@
 Program {
+  Import(path="../../src/AiVectra/src/lib.aos")
   Export(name=start)
-
-  Let(name=window) {
-    Fn(params=title) {
-      Block {
-        Return {
-          Call(target=sys.ui_createWindow) { Var(name=title) Lit(value=640) Lit(value=360) }
-        }
-      }
-    }
-  }
-
-  Let(name=rect) {
-    Fn(params=handle) {
-      Block {
-        Call(target=sys.ui_drawRect) {
-          Var(name=handle)
-          Lit(value=20)
-          Lit(value=20)
-          Lit(value=600)
-          Lit(value=320)
-          Lit(value="#1e293b")
-        }
-        Return { Lit(value=0) }
-      }
-    }
-  }
-
-  Let(name=label) {
-    Fn(params=handle,text) {
-      Block {
-        Call(target=sys.ui_drawText) {
-          Var(name=handle)
-          Lit(value=208)
-          Lit(value=180)
-          Var(name=text)
-          Lit(value="#ffffff")
-          Lit(value=28)
-        }
-        Return { Lit(value=0) }
-      }
-    }
-  }
-
-  Let(name=attrString) {
-    Fn(params=node,key,index) {
-      Block {
-        If {
-          Eq { Var(name=index) AttrCount { Var(name=node) } }
-          Block { Return { Lit(value="") } }
-          Block {
-            If {
-              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
-              Block { Return { AttrValueString { Var(name=node) Var(name=index) } } }
-              Block {
-                Return {
-                  Call(target=attrString) {
-                    Var(name=node)
-                    Var(name=key)
-                    Add { Var(name=index) Lit(value=1) }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  Let(name=waitForClose) {
-    Fn(params=handle) {
-      Block {
-        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
-        If {
-          Eq {
-            Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
-            Lit(value="closed")
-          }
-          Block { Return { Lit(value=0) } }
-          Block {
-            Call(target=sys.time_sleepMs) { Lit(value=16) }
-            Return { Call(target=waitForClose) { Var(name=handle) } }
-          }
-        }
-      }
-    }
-  }
 
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello World") } }
-        Call(target=sys.ui_beginFrame) { Var(name=handle) }
-        Call(target=rect) { Var(name=handle) }
-        Call(target=label) { Var(name=handle) Lit(value="Hello, World!") }
-        Call(target=sys.ui_endFrame) { Var(name=handle) }
-        Call(target=sys.ui_present) { Var(name=handle) }
-        Call(target=waitForClose) { Var(name=handle) }
-        Call(target=sys.ui_closeWindow) { Var(name=handle) }
+        Call(target=helloWindow) { Lit(value=0) }
         Return { Lit(value=0) }
       }
     }
