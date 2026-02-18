@@ -140,7 +140,9 @@ def render_node(n, children_by_parent, by_id, indent=2):
         font = ""
         if n["font_size"] > 0:
             font = f' font-size="{n["font_size"]}"'
-        return [f'{pad}<text id="{html.escape(n["id"], quote=True)}" x="{n["x"]}" y="{n["y"]}"{font} font-family="monospace" {attr}>{t}</text>'.rstrip()]
+        return [
+            f'{pad}<text id="{html.escape(n["id"], quote=True)}" x="{n["x"]}" y="{n["y"]}"{font} font-family="monospace" dominant-baseline="text-before-edge" alignment-baseline="text-before-edge" {attr}>{t}</text>'.rstrip()
+        ]
     return [f'{pad}<!-- unsupported kind {html.escape(n["kind"])} -->']
 
 
