@@ -1,0 +1,9 @@
+Program {
+  Project(
+    name="WeatherProbe"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include(name="AiVectra" path="../src/AiVectra" version="0.0.1")
+  }
+}

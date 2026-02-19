@@ -1,5 +1,5 @@
 Program {
-  Import(path="../../src/AiVectra/src/lib.aos")
+  Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
   Let(name=normalizeName) {
@@ -795,7 +795,7 @@ Program {
                     }
                   }
                   Block {
-                    Call(target=sys.time_sleepMs) { Lit(value=16) }
+                    Call(target=sys.ui_waitFrame) { Var(name=handle) }
                     Return {
                       Call(target=loop) {
                         Var(name=handle)

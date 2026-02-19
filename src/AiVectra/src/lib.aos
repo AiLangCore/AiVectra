@@ -115,7 +115,7 @@ Program {
           }
           Block { Return { Lit(value=0) } }
           Block {
-            Call(target=sys.time_sleepMs) { Lit(value=16) }
+            Call(target=sys.ui_waitFrame) { Var(name=windowHandle) }
             Return { Call(target=waitForClose) { Var(name=windowHandle) } }
           }
         }
@@ -256,39 +256,6 @@ Program {
     }
   }
 
-  Let(name=drawGaussianBlurRectLoop) {
-    Fn(params=handle,x,y,w,h,current,maxRadius) {
-      Block {
-        If {
-          Call(target=intLt) { Var(name=current) Lit(value=1) }
-          Block { Return { Lit(value=0) } }
-          Block {
-            Let(name=blurColor) { Call(target=blurBandColor) { Var(name=current) Var(name=maxRadius) } }
-            Call(target=sys.ui_drawRect) {
-              Var(name=handle)
-              Call(target=sub) { Var(name=x) Var(name=current) }
-              Call(target=sub) { Var(name=y) Var(name=current) }
-              Add { Var(name=w) Add { Var(name=current) Var(name=current) } }
-              Add { Var(name=h) Add { Var(name=current) Var(name=current) } }
-              Var(name=blurColor)
-            }
-            Return {
-              Call(target=drawGaussianBlurRectLoop) {
-                Var(name=handle)
-                Var(name=x)
-                Var(name=y)
-                Var(name=w)
-                Var(name=h)
-                Add { Var(name=current) Lit(value=-1) }
-                Var(name=maxRadius)
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
   Let(name=drawGaussianBlurRect) {
     Fn(params=handle,x,y,w,h,radius) {
       Block {
@@ -296,20 +263,76 @@ Program {
           If {
             Call(target=intLt) { Var(name=radius) Lit(value=1) }
             Block { Lit(value=1) }
-            Block { Var(name=radius) }
+            Block {
+              If {
+                Call(target=intLt) { Lit(value=12) Var(name=radius) }
+                Block { Lit(value=12) }
+                Block { Var(name=radius) }
+              }
+            }
           }
         }
-        Return {
-          Call(target=drawGaussianBlurRectLoop) {
-            Var(name=handle)
-            Var(name=x)
-            Var(name=y)
-            Var(name=w)
-            Var(name=h)
-            Var(name=effectiveRadius)
-            Var(name=effectiveRadius)
-          }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=1) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=1) } Call(target=sub) { Var(name=y) Lit(value=1) } Add { Var(name=w) Lit(value=2) } Add { Var(name=h) Lit(value=2) } Call(target=blurBandColor) { Lit(value=1) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
         }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=2) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=2) } Call(target=sub) { Var(name=y) Lit(value=2) } Add { Var(name=w) Lit(value=4) } Add { Var(name=h) Lit(value=4) } Call(target=blurBandColor) { Lit(value=2) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=3) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=3) } Call(target=sub) { Var(name=y) Lit(value=3) } Add { Var(name=w) Lit(value=6) } Add { Var(name=h) Lit(value=6) } Call(target=blurBandColor) { Lit(value=3) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=4) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=4) } Call(target=sub) { Var(name=y) Lit(value=4) } Add { Var(name=w) Lit(value=8) } Add { Var(name=h) Lit(value=8) } Call(target=blurBandColor) { Lit(value=4) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=5) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=5) } Call(target=sub) { Var(name=y) Lit(value=5) } Add { Var(name=w) Lit(value=10) } Add { Var(name=h) Lit(value=10) } Call(target=blurBandColor) { Lit(value=5) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=6) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=6) } Call(target=sub) { Var(name=y) Lit(value=6) } Add { Var(name=w) Lit(value=12) } Add { Var(name=h) Lit(value=12) } Call(target=blurBandColor) { Lit(value=6) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=7) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=7) } Call(target=sub) { Var(name=y) Lit(value=7) } Add { Var(name=w) Lit(value=14) } Add { Var(name=h) Lit(value=14) } Call(target=blurBandColor) { Lit(value=7) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=8) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=8) } Call(target=sub) { Var(name=y) Lit(value=8) } Add { Var(name=w) Lit(value=16) } Add { Var(name=h) Lit(value=16) } Call(target=blurBandColor) { Lit(value=8) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=9) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=9) } Call(target=sub) { Var(name=y) Lit(value=9) } Add { Var(name=w) Lit(value=18) } Add { Var(name=h) Lit(value=18) } Call(target=blurBandColor) { Lit(value=9) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=10) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=10) } Call(target=sub) { Var(name=y) Lit(value=10) } Add { Var(name=w) Lit(value=20) } Add { Var(name=h) Lit(value=20) } Call(target=blurBandColor) { Lit(value=10) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=11) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=11) } Call(target=sub) { Var(name=y) Lit(value=11) } Add { Var(name=w) Lit(value=22) } Add { Var(name=h) Lit(value=22) } Call(target=blurBandColor) { Lit(value=11) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=12) }
+          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=12) } Call(target=sub) { Var(name=y) Lit(value=12) } Add { Var(name=w) Lit(value=24) } Add { Var(name=h) Lit(value=24) } Call(target=blurBandColor) { Lit(value=12) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -1162,6 +1185,36 @@ Program {
             Field(key="7") { Lit(value="7") }
             Field(key="8") { Lit(value="8") }
             Field(key="9") { Lit(value="9") }
+            Field(key="digit0") { Lit(value="0") }
+            Field(key="digit1") { Lit(value="1") }
+            Field(key="digit2") { Lit(value="2") }
+            Field(key="digit3") { Lit(value="3") }
+            Field(key="digit4") { Lit(value="4") }
+            Field(key="digit5") { Lit(value="5") }
+            Field(key="digit6") { Lit(value="6") }
+            Field(key="digit7") { Lit(value="7") }
+            Field(key="digit8") { Lit(value="8") }
+            Field(key="digit9") { Lit(value="9") }
+            Field(key="numpad0") { Lit(value="0") }
+            Field(key="numpad1") { Lit(value="1") }
+            Field(key="numpad2") { Lit(value="2") }
+            Field(key="numpad3") { Lit(value="3") }
+            Field(key="numpad4") { Lit(value="4") }
+            Field(key="numpad5") { Lit(value="5") }
+            Field(key="numpad6") { Lit(value="6") }
+            Field(key="numpad7") { Lit(value="7") }
+            Field(key="numpad8") { Lit(value="8") }
+            Field(key="numpad9") { Lit(value="9") }
+            Field(key="kp_0") { Lit(value="0") }
+            Field(key="kp_1") { Lit(value="1") }
+            Field(key="kp_2") { Lit(value="2") }
+            Field(key="kp_3") { Lit(value="3") }
+            Field(key="kp_4") { Lit(value="4") }
+            Field(key="kp_5") { Lit(value="5") }
+            Field(key="kp_6") { Lit(value="6") }
+            Field(key="kp_7") { Lit(value="7") }
+            Field(key="kp_8") { Lit(value="8") }
+            Field(key="kp_9") { Lit(value="9") }
             Field(key="space") { Lit(value=" ") }
             Field(key=" ") { Lit(value=" ") }
             Field(key="tab") { Lit(value="\t") }
