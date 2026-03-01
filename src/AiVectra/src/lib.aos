@@ -115,7 +115,6 @@ Program {
           }
           Block { Return { Lit(value=0) } }
           Block {
-            Call(target=sys.ui_waitFrame) { Var(name=windowHandle) }
             Return { Call(target=waitForClose) { Var(name=windowHandle) } }
           }
         }
@@ -405,27 +404,39 @@ Program {
   Let(name=drawLinearGradientRect) {
     Fn(params=handle,x,y,w,h,startColor,midColor,endColor,step) {
       Block {
-        Let(name=effectiveStep) {
-          If {
-            Call(target=intLt) { Var(name=step) Lit(value=1) }
-            Block { Lit(value=1) }
-            Block { Var(name=step) }
-          }
-        }
-        Return {
-          Call(target=drawLinearGradientRectLoop) {
-            Var(name=handle)
-            Var(name=x)
-            Var(name=y)
-            Var(name=w)
+        Let(name=topBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=midBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=bottomBand) {
+          Call(target=sub) {
             Var(name=h)
-            Var(name=startColor)
-            Var(name=midColor)
-            Var(name=endColor)
-            Lit(value=0)
-            Var(name=effectiveStep)
+            Add { Var(name=topBand) Var(name=midBand) }
           }
         }
+        Call(target=sys.ui_drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Var(name=y)
+          Var(name=w)
+          Var(name=topBand)
+          Var(name=startColor)
+        }
+        Call(target=sys.ui_drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Var(name=y) Var(name=topBand) }
+          Var(name=w)
+          Var(name=midBand)
+          Var(name=midColor)
+        }
+        Call(target=sys.ui_drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Add { Var(name=y) Var(name=topBand) } Var(name=midBand) }
+          Var(name=w)
+          Var(name=bottomBand)
+          Var(name=endColor)
+        }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -1455,6 +1466,257 @@ Program {
     }
   }
 
+  Let(name=debugEmitEvent) {
+    Fn(params=eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
+        Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
+        Call(target=sys.stdout_writeLine) {
+          StrConcat {
+            Lit(value="aivectra.event = { type=\"")
+            StrConcat {
+              Var(name=eventType)
+              StrConcat {
+                Lit(value="\", key=\"")
+                StrConcat {
+                  Var(name=keyToken)
+                  StrConcat {
+                    Lit(value="\", text=\"")
+                    StrConcat {
+                      Var(name=textToken)
+                      StrConcat {
+                        Lit(value="\", x=")
+                        StrConcat {
+                          ToString { Var(name=clickX) }
+                          StrConcat {
+                            Lit(value=", y=")
+                            StrConcat {
+                              ToString { Var(name=clickY) }
+                              Lit(value=" }")
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitUi) {
+    Fn(params=action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
+      Block {
+        Call(target=sys.stdout_writeLine) {
+          StrConcat {
+            Lit(value="aivectra.ui = { action=\"")
+            StrConcat {
+              Var(name=action)
+              StrConcat {
+                Lit(value="\", target=\"")
+                StrConcat {
+                  Var(name=target)
+                  StrConcat {
+                    Lit(value="\", focus=")
+                    StrConcat {
+                      If { Var(name=inputFocused) Block { Lit(value="true") } Block { Lit(value="false") } }
+                      StrConcat {
+                        Lit(value=", name_len=")
+                        StrConcat {
+                          ToString { Var(name=nameLen) }
+                          StrConcat {
+                            Lit(value=", submitted_len=")
+                            StrConcat {
+                              ToString { Var(name=submittedLen) }
+                              StrConcat {
+                                Lit(value=", input_rect=\"")
+                                StrConcat {
+                                  Var(name=inputRect)
+                                  StrConcat {
+                                    Lit(value="\", button_rect=\"")
+                                    StrConcat {
+                                      Var(name=buttonRect)
+                                      Lit(value="\" }")
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitSceneNode) {
+    Fn(params=frame,order,id,parent,kind,fill,stroke,strokeWidth,textValue,pathValue,fontSize,x,y,w,h,transform) {
+      Block {
+        Call(target=sys.stdout_writeLine) {
+          StrConcat {
+            Lit(value="aivectra.scene = { frame=")
+            StrConcat {
+              ToString { Var(name=frame) }
+              StrConcat {
+                Lit(value=", order=")
+                StrConcat {
+                  ToString { Var(name=order) }
+                  StrConcat {
+                    Lit(value=", id=\"")
+                    StrConcat {
+                      Var(name=id)
+                      StrConcat {
+                        Lit(value="\", parent=\"")
+                        StrConcat {
+                          Var(name=parent)
+                          StrConcat {
+                            Lit(value="\", kind=\"")
+                            StrConcat {
+                              Var(name=kind)
+                              StrConcat {
+                                Lit(value="\", fill=\"")
+                                StrConcat {
+                                  Var(name=fill)
+                                  StrConcat {
+                                    Lit(value="\", stroke=\"")
+                                    StrConcat {
+                                      Var(name=stroke)
+                                      StrConcat {
+                                        Lit(value="\", stroke_w=")
+                                        StrConcat {
+                                          ToString { Var(name=strokeWidth) }
+                                          StrConcat {
+                                            Lit(value=", text=\"")
+                                            StrConcat {
+                                              Var(name=textValue)
+                                              StrConcat {
+                                                Lit(value="\", path=\"")
+                                                StrConcat {
+                                                  Var(name=pathValue)
+                                                  StrConcat {
+                                                    Lit(value="\", font_size=")
+                                                    StrConcat {
+                                                      ToString { Var(name=fontSize) }
+                                                      StrConcat {
+                                                        Lit(value=", x=")
+                                                        StrConcat {
+                                                          ToString { Var(name=x) }
+                                                          StrConcat {
+                                                            Lit(value=", y=")
+                                                            StrConcat {
+                                                              ToString { Var(name=y) }
+                                                              StrConcat {
+                                                                Lit(value=", w=")
+                                                                StrConcat {
+                                                                  ToString { Var(name=w) }
+                                                                  StrConcat {
+                                                                    Lit(value=", h=")
+                                                                    StrConcat {
+                                                                      ToString { Var(name=h) }
+                                                                      StrConcat {
+                                                                        Lit(value=", transform=\"")
+                                                                        StrConcat {
+                                                                          Var(name=transform)
+                                                                          Lit(value="\" }")
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitEventIf) {
+    Fn(params=enabled,eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitEvent) { Var(name=eventType) Var(name=keyName) Var(name=textValue) Var(name=clickX) Var(name=clickY) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugEmitUiIf) {
+    Fn(params=enabled,action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitUi) { Var(name=action) Var(name=target) Var(name=inputFocused) Var(name=nameLen) Var(name=submittedLen) Var(name=inputRect) Var(name=buttonRect) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugEmitSceneNodeIf) {
+    Fn(params=enabled,frame,order,id,parent,kind,fill,stroke,strokeWidth,textValue,pathValue,fontSize,x,y,w,h,transform) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitSceneNode) { Var(name=frame) Var(name=order) Var(name=id) Var(name=parent) Var(name=kind) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Var(name=textValue) Var(name=pathValue) Var(name=fontSize) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=transform) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugModeLive) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="live") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
   Let(name=layoutSignature) {
     Fn(params=windowWidth,windowHeight) {
       Block {
@@ -1515,9 +1777,6 @@ Program {
   Export(name=text)
   Export(name=label)
   Export(name=window)
-  Export(name=helloWindow)
-  Export(name=helloNamedWindow)
-  Export(name=waitForClose)
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=uiWidth)
@@ -1526,6 +1785,7 @@ Program {
   Export(name=blurBandColor)
   Export(name=drawGaussianBlurRect)
   Export(name=gradientColor3)
+  Export(name=drawLinearGradientRect)
   Export(name=drawRectTransform)
   Export(name=drawEllipseTransform)
   Export(name=drawPathTransform)
@@ -1566,5 +1826,12 @@ Program {
   Export(name=debugControlName)
   Export(name=debugInputToken)
   Export(name=debugLayoutLine)
+  Export(name=debugEmitEvent)
+  Export(name=debugEmitUi)
+  Export(name=debugEmitSceneNode)
+  Export(name=debugEmitEventIf)
+  Export(name=debugEmitUiIf)
+  Export(name=debugEmitSceneNodeIf)
+  Export(name=debugModeLive)
   Export(name=layoutSignature)
 }

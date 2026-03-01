@@ -2,6 +2,7 @@
 out
 build
 .tools
+.artifacts/
 
 .tmp-*
 .toolchain/

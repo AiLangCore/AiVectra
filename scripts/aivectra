@@ -21,11 +21,197 @@ fi
 
 normalize_path_arg() {
   local p="$1"
-  if [[ "$p" == /samples/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* ]]; then
+  if [[ "$p" == /samples/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* || "$p" == /.artifacts/* ]]; then
     printf "%s%s" "$ROOT_DIR" "$p"
     return 0
   fi
   printf "%s" "$p"
+}
+
+resolve_app_path() {
+  local p="$1"
+  local n
+  n="$(normalize_path_arg "$p")"
+  if [[ -d "$n" ]]; then
+    if [[ -f "$n/src/app.aos" ]]; then
+      printf "%s" "$n/src/app.aos"
+      return 0
+    fi
+  fi
+  printf "%s" "$n"
+}
+
+resolve_cwd_app_path_if_project() {
+  local cwd
+  cwd="$(pwd)"
+  if [[ -f "$cwd/project.aiproj" ]]; then
+    resolve_app_path "$cwd"
+    return 0
+  fi
+  return 1
+}
+
+ensure_dir() {
+  local d="$1"
+  mkdir -p "$d"
+}
+
+normalize_debug_artifacts_to_toml() {
+  local out_dir="$1"
+  local f
+  for f in config diagnostics events state_snapshots syscalls vm_trace; do
+    if [[ -f "$out_dir/$f.aos" ]]; then
+      cp "$out_dir/$f.aos" "$out_dir/$f.toml"
+      rm -f "$out_dir/$f.aos"
+    fi
+  done
+}
+
+run_airun_debug_with_toml_artifacts() {
+  local app_path="$1"
+  shift
+  local out_dir=""
+  local wrapper_args=()
+  local app_args=()
+  local parsing_app_args="false"
+  while [[ $# -gt 0 ]]; do
+    if [[ "$parsing_app_args" == "true" ]]; then
+      app_args+=("$1")
+      shift
+      continue
+    fi
+    case "$1" in
+      --)
+        parsing_app_args="true"
+        shift
+        ;;
+      --out)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --out" >&2
+          exit 2
+        fi
+        out_dir="$(normalize_path_arg "$2")"
+        wrapper_args+=("$1" "$out_dir")
+        shift 2
+        ;;
+      *)
+        wrapper_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+  if [[ -z "$out_dir" ]]; then
+    out_dir="$ROOT_DIR/.artifacts/debug/$(basename "$app_path" .aos)-$(date +%s)"
+    wrapper_args+=("--out" "$out_dir")
+  fi
+
+  local debug_mode="off"
+  local arg
+  for arg in "${wrapper_args[@]}"; do
+    case "$arg" in
+      --debug-mode=*)
+        debug_mode="${arg#--debug-mode=}"
+        ;;
+    esac
+  done
+
+  if [[ "$debug_mode" == "live" ]]; then
+    local run_target="$app_path"
+    if [[ "$app_path" == */src/app.aos ]]; then
+      local candidate_dir
+      candidate_dir="$(dirname "$(dirname "$app_path")")"
+      if [[ -f "$candidate_dir/project.aiproj" ]]; then
+        run_target="$candidate_dir"
+      fi
+    fi
+    "$AIRUN_BIN" run "$run_target" -- live "${app_args[@]}"
+    return $?
+  fi
+
+  ensure_dir "$out_dir"
+  "$AIRUN_BIN" debug "${wrapper_args[@]}" "$app_path" "${app_args[@]}"
+  normalize_debug_artifacts_to_toml "$out_dir"
+}
+
+run_airun_debug_scenario_with_toml_artifacts() {
+  local fixture_path="$1"
+  shift
+  local run_fixture="$fixture_path"
+  local tmp_fixture=""
+  if [[ "$fixture_path" == *.toml ]]; then
+    tmp_fixture="$(mktemp /tmp/aivectra-scenario-XXXXXX)"
+    tmp_fixture="${tmp_fixture}.aos"
+    toml_scenario_to_aos "$fixture_path" "$tmp_fixture"
+    run_fixture="$tmp_fixture"
+  fi
+  "$AIRUN_BIN" debug scenario "$run_fixture" "$@"
+  local rc=$?
+  if [[ -n "$tmp_fixture" && -f "$tmp_fixture" ]]; then
+    rm -f "$tmp_fixture"
+  fi
+  if [[ $rc -ne 0 ]]; then
+    return $rc
+  fi
+  # best effort: convert all known debug bundles under .artifacts/debug
+  if [[ -d "$ROOT_DIR/.artifacts/debug" ]]; then
+    local d
+    while IFS= read -r d; do
+      normalize_debug_artifacts_to_toml "$d"
+    done < <(find "$ROOT_DIR/.artifacts/debug" -maxdepth 2 -type d)
+  fi
+}
+
+toml_get_string() {
+  local file="$1"
+  local key="$2"
+  local default_val="${3:-}"
+  local line
+  line="$(rg -n "^${key}\\s*=\\s*\\\"" "$file" | head -n1 | cut -d: -f2- || true)"
+  if [[ -z "$line" ]]; then
+    printf "%s" "$default_val"
+    return 0
+  fi
+  printf "%s" "$line" | sed -E 's/^[^"]*"//; s/"[[:space:]]*$//'
+}
+
+toml_scenario_to_aos() {
+  local in_toml="$1"
+  local out_aos="$2"
+  local name app_path vm debug_mode events_path compare_path out_dir args
+  name="$(toml_get_string "$in_toml" "name" "minimal")"
+  app_path="$(toml_get_string "$in_toml" "appPath" "")"
+  vm="$(toml_get_string "$in_toml" "vm" "bytecode")"
+  debug_mode="$(toml_get_string "$in_toml" "debugMode" "live")"
+  events_path="$(toml_get_string "$in_toml" "eventsPath" "")"
+  compare_path="$(toml_get_string "$in_toml" "comparePath" "")"
+  out_dir="$(toml_get_string "$in_toml" "outDir" ".artifacts/debug/${name}")"
+  args="$(toml_get_string "$in_toml" "args" "")"
+  if [[ -n "$app_path" && "$app_path" != /* ]]; then
+    app_path="$ROOT_DIR/$app_path"
+  fi
+  if [[ -n "$events_path" && "$events_path" != /* ]]; then
+    events_path="$ROOT_DIR/$events_path"
+  fi
+  if [[ -n "$compare_path" && "$compare_path" != /* ]]; then
+    compare_path="$ROOT_DIR/$compare_path"
+  fi
+  if [[ -n "$out_dir" && "$out_dir" != /* ]]; then
+    out_dir="$ROOT_DIR/$out_dir"
+  fi
+  cat > "$out_aos" <<EOF
+Program#p1 {
+  Scenario#s1(
+    name="$name"
+    appPath="$app_path"
+    vm="$vm"
+    debugMode="$debug_mode"
+    eventsPath="$events_path"
+    comparePath="$compare_path"
+    outDir="$out_dir"
+    args="$args"
+  )
+}
+EOF
 }
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" || $# -eq 0 ]]; then
@@ -33,15 +219,435 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" || $# -eq 0
 AiVectra airun wrapper
 usage:
   ./scripts/aivectra [--airun /path/to/airun] <airun-args>
-  ./scripts/aivectra debug <snapshot|replay|scene|live> [project]
+  ./scripts/aivectra init <AppName|path> [--force]
+  ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
   ./scripts/aivectra icon <project-path> [label]
+  ./scripts/aivectra input --window "<title>" --events "<tokens>" [--delay-ms N] [--dry-run]
 
 example:
+  ./scripts/aivectra init MyApp
+  ./scripts/aivectra init ./samples/MyApp --force
   ./scripts/aivectra run ./samples/HelloWorld/
-  ./scripts/aivectra debug replay ./samples/HelloName/
-  ./scripts/aivectra debug scene ./samples/HelloName/
+  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/src/app.aos -- todd
+  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/cwd -- todd
+  ./scripts/aivectra debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal
   ./scripts/aivectra icon ./samples/HelloWorld/ HW
+  ./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"
 EOF
+  exit 0
+fi
+
+if [[ "${1:-}" == "init" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    echo "usage: ./scripts/aivectra init <AppName|path> [--force]" >&2
+    exit 2
+  fi
+
+  FORCE="false"
+  TARGET_RAW="$1"
+  shift || true
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        FORCE="true"
+        shift
+        ;;
+      *)
+        echo "unknown init option: $1" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  if [[ "$TARGET_RAW" == */* || "$TARGET_RAW" == .* || "$TARGET_RAW" == /* ]]; then
+    APP_DIR="$(normalize_path_arg "$TARGET_RAW")"
+  else
+    APP_DIR="$ROOT_DIR/samples/$TARGET_RAW"
+  fi
+  APP_DIR="${APP_DIR%/}"
+  APP_NAME="$(basename "$APP_DIR")"
+  APP_TITLE="$APP_NAME"
+  APP_SLUG="$(printf "%s" "$APP_NAME" | tr '[:upper:]' '[:lower:]')"
+  LIB_PROJECT_ABS="$ROOT_DIR/src/AiVectra"
+  LIB_IMPORT_ABS="$ROOT_DIR/src/AiVectra/src/lib.aos"
+  if command -v python3 >/dev/null 2>&1; then
+    LIB_PROJECT_PATH="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$LIB_PROJECT_ABS" "$APP_DIR")"
+    LIB_IMPORT_PATH="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$LIB_IMPORT_ABS" "$APP_DIR/src")"
+  else
+    LIB_PROJECT_PATH="../../src/AiVectra"
+    LIB_IMPORT_PATH="../../../src/AiVectra/src/lib.aos"
+  fi
+
+  if [[ -e "$APP_DIR" && "$FORCE" != "true" ]]; then
+    echo "target already exists: $APP_DIR (use --force to overwrite files in place)" >&2
+    exit 2
+  fi
+
+  mkdir -p "$APP_DIR/src"
+  mkdir -p "$APP_DIR/Assets/icons"
+  mkdir -p "$APP_DIR/Assets/images"
+  mkdir -p "$APP_DIR/Assets/fonts"
+  mkdir -p "$APP_DIR/Assets/styles"
+  mkdir -p "$APP_DIR/Assets/locale"
+  mkdir -p "$APP_DIR/Targets/macos"
+  mkdir -p "$APP_DIR/Targets/windows"
+  mkdir -p "$APP_DIR/Targets/linux"
+  mkdir -p "$APP_DIR/examples/debug/scenarios"
+  mkdir -p "$APP_DIR/examples/debug/events"
+
+  cat > "$APP_DIR/project.aiproj" <<EOF
+Program {
+  Project(
+    name="$APP_NAME"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include(name="AiVectra" path="$LIB_PROJECT_PATH" version="0.0.1")
+  }
+}
+EOF
+
+  cat > "$APP_DIR/.gitignore" <<'EOF'
+.toolchain/
+.artifacts/
+EOF
+
+  cat > "$APP_DIR/AGENTS.md" <<'EOF'
+AiVectra app rules
+
+- Default template is multithreaded:
+  - one semantic/UI thread
+  - worker thread(s) for long-running operations
+- UI thread never blocks on IO.
+- All state mutation stays on semantic/UI thread.
+- Debug data is TOML artifacts under `.artifacts/debug`.
+EOF
+
+  cat > "$APP_DIR/src/app.aos" <<EOF
+Program {
+  Import(path="$LIB_IMPORT_PATH")
+  Export(name=start)
+
+  Let(name=statusLabel) {
+    Fn(params=workerHandle,workerState) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=workerHandle) Lit(value=0) }
+          Block { Return { Lit(value="Idle") } }
+          Block {
+            If {
+              Eq { Var(name=workerState) Lit(value="running") }
+              Block { Return { Lit(value="Running background task...") } }
+              Block {
+                If {
+                  Eq { Var(name=workerState) Lit(value="done") }
+                  Block { Return { Lit(value="Task complete") } }
+                  Block {
+                    If {
+                      Eq { Var(name=workerState) Lit(value="failed") }
+                      Block { Return { Lit(value="Task failed") } }
+                      Block { Return { Lit(value="Idle") } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=render) {
+    Fn(params=handle,w,h,buttonFlash,workerHandle,workerState) {
+      Block {
+        Let(name=buttonState) {
+          If {
+            Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) }
+            Block { Lit(value="pressed") }
+            Block { Lit(value="normal") }
+          }
+        }
+        Let(name=title) { Lit(value="$APP_TITLE") }
+        Let(name=taskButtonX) { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=180) } Lit(value=0) } }
+        Let(name=taskButtonY) { Add { Var(name=h) Lit(value=-120) } }
+
+        Call(target=sys.ui_beginFrame) { Var(name=handle) }
+        Call(target=drawPanel) { Var(name=handle) Var(name=w) Var(name=h) }
+        Call(target=sys.ui_drawText) { Var(name=handle) Lit(value=64) Lit(value=72) Var(name=title) Lit(value="#ffffff") Lit(value=30) }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Lit(value=116)
+          Lit(value="Multithreaded app template")
+          Lit(value="#cbd5e1")
+          Lit(value=18)
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Lit(value=152)
+          StrConcat { Lit(value="Status: ") Call(target=statusLabel) { Var(name=workerHandle) Var(name=workerState) } }
+          Lit(value="#e2e8f0")
+          Lit(value=18)
+        }
+
+        Call(target=interactiveVectorState) {
+          Var(name=handle)
+          Var(name=taskButtonX)
+          Var(name=taskButtonY)
+          Lit(value=180)
+          Lit(value=52)
+          Var(name=buttonState)
+          Lit(value="rect")
+          Lit(value="")
+          Lit(value="#2563eb")
+          Lit(value="#93c5fd")
+          Lit(value="#3b82f6")
+          Lit(value="#1d4ed8")
+          Lit(value="#64748b")
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Add { Var(name=taskButtonX) Lit(value=34) }
+          Add { Var(name=taskButtonY) Lit(value=15) }
+          Lit(value="Start Task")
+          Lit(value="#ffffff")
+          Lit(value=22)
+        }
+        Call(target=sys.ui_drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Add { Var(name=h) Lit(value=-36) }
+          Lit(value="Click Start Task. Close window to cancel in-flight work.")
+          Lit(value="#94a3b8")
+          Lit(value=14)
+        }
+
+        Call(target=sys.ui_endFrame) { Var(name=handle) }
+        Call(target=sys.ui_present) { Var(name=handle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=loop) {
+    Fn(params=handle,lastW,lastH,buttonFlash,workerHandle,workerState) {
+      Block {
+        Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=960) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=640) } }
+        Let(name=nextFlash) {
+          If {
+            Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) }
+            Block { Add { Var(name=buttonFlash) Lit(value=-1) } }
+            Block { Lit(value=0) }
+          }
+        }
+
+        Let(name=polledState) {
+          If {
+            Call(target=intLt) { Var(name=workerHandle) Lit(value=0) }
+            Block { Var(name=workerState) }
+            Block {
+              Let(name=ws) { Call(target=sys.worker_poll) { Var(name=workerHandle) } }
+              If {
+                Eq { Var(name=ws) Lit(value=1) }
+                Block { Lit(value="done") }
+                Block {
+                  If {
+                    Eq { Var(name=ws) Lit(value=2) }
+                    Block { Lit(value="failed") }
+                    Block { Lit(value="running") }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Let(name=polledHandle) {
+          If {
+            Eq { Var(name=polledState) Lit(value="running") }
+            Block { Var(name=workerHandle) }
+            Block { Lit(value=-1) }
+          }
+        }
+
+        Call(target=render) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) }
+
+        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
+        Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+        Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+        Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="closed") }
+          Block {
+            If {
+              Call(target=intLt) { Lit(value=-1) Var(name=polledHandle) }
+              Block { Call(target=sys.worker_cancel) { Var(name=polledHandle) } Lit(value=0) }
+              Block { Lit(value=0) }
+            }
+            Return { Lit(value=0) }
+          }
+          Block {
+            If {
+              Eq { Var(name=eventType) Lit(value="click") }
+              Block {
+                Let(name=taskButtonX) { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=180) } Lit(value=0) } }
+                Let(name=taskButtonY) { Add { Var(name=h) Lit(value=-120) } }
+                Let(name=buttonHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=taskButtonX) Var(name=taskButtonY) Lit(value=180) Lit(value=52) } }
+                If {
+                  Var(name=buttonHit)
+                  Block {
+                    If {
+                      Call(target=intLt) { Lit(value=-1) Var(name=polledHandle) }
+                      Block {
+                        Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Var(name=polledHandle) Var(name=polledState) } }
+                      }
+                      Block {
+                        Let(name=newHandle) { Call(target=sys.worker_start) { Lit(value="echo") Lit(value="$APP_SLUG background task") } }
+                        If {
+                          Call(target=intLt) { Var(name=newHandle) Lit(value=0) }
+                          Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Lit(value=-1) Lit(value="failed") } } }
+                          Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Var(name=newHandle) Lit(value="running") } } }
+                        }
+                      }
+                    }
+                  }
+                  Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) } } }
+                }
+              }
+              Block {
+                Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Let(name=mode) {
+          If {
+            Eq { ChildCount { Var(name=args) } Lit(value=0) }
+            Block { Lit(value="") }
+            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
+          }
+        }
+        If {
+          Eq { Var(name=mode) Lit(value="snapshot") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Let(name=handle) { Call(target=window) { Lit(value="$APP_TITLE") } }
+            Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+            Let(name=w0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+            Let(name=h0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+            Let(name=w0) { Call(target=stabilizeSize) { Var(name=w0Raw) Lit(value=960) Lit(value=960) } }
+            Let(name=h0) { Call(target=stabilizeSize) { Var(name=h0Raw) Lit(value=640) Lit(value=640) } }
+            Call(target=loop) { Var(name=handle) Var(name=w0) Var(name=h0) Lit(value=0) Lit(value=-1) Lit(value="idle") }
+            Call(target=sys.ui_closeWindow) { Var(name=handle) }
+            Return { Lit(value=0) }
+          }
+        }
+      }
+    }
+  }
+}
+EOF
+
+  # Use the known-good multithreaded scaffold as template source.
+  cp "$ROOT_DIR/samples/WorkerDemo/src/app.aos" "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QImport(path="../../../src/AiVectra/src/lib.aos")\E|Import(path="'"$LIB_IMPORT_PATH"'")|g' "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QLit(value="AiVectra WorkerDemo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
+
+  if [[ -f "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" ]]; then
+    cp "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" "$APP_DIR/Assets/icons/app.svg"
+  else
+    cat > "$APP_DIR/Assets/icons/app.svg" <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <path d="M110 392L228 120h56l118 272h-56l-23-56H188l-23 56h-55zm98-103h95l-47-117-48 117z" fill="#60a5fa"/>
+</svg>
+EOF
+  fi
+
+  cat > "$APP_DIR/Assets/locale/en.toml" <<'EOF'
+title = "My AiVectra App"
+start_task = "Start Task"
+EOF
+
+  cat > "$APP_DIR/Targets/macos/Info.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>$APP_NAME</string>
+  <key>CFBundleIdentifier</key>
+  <string>org.aivectra.$APP_SLUG</string>
+</dict>
+</plist>
+EOF
+
+  cat > "$APP_DIR/Targets/macos/Entitlements.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict/>
+</plist>
+EOF
+
+  cat > "$APP_DIR/Targets/windows/app.manifest" <<EOF
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="$APP_NAME" type="win32"/>
+</assembly>
+EOF
+
+  cat > "$APP_DIR/Targets/linux/app.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$APP_NAME
+Exec=airun run $APP_DIR
+Icon=app
+Categories=Utility;
+EOF
+
+  cat > "$APP_DIR/examples/debug/scenarios/minimal.scenario.toml" <<EOF
+[[scenario]]
+name = "minimal"
+appPath = "$APP_DIR/src/app.aos"
+vm = "bytecode"
+debugMode = "live"
+eventsPath = ""
+comparePath = ""
+outDir = "$APP_DIR/.artifacts/debug/minimal"
+args = ""
+EOF
+
+  cat > "$APP_DIR/examples/debug/events/minimal.events.toml" <<'EOF'
+events = []
+EOF
+
+  echo "created AiVectra multithreaded app: $APP_DIR"
+  echo "next:"
+  echo "  ./scripts/aivectra run $APP_DIR/"
+  echo "  ./scripts/aivectra debug $APP_DIR/src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
   exit 0
 fi
 
@@ -56,54 +662,145 @@ if [[ "${1:-}" == "icon" ]]; then
   exec "$AIRUN_BIN" run "$ROOT_DIR/src/AiVectra.Cli/" icon "$PROJECT" "$@"
 fi
 
+if [[ "${1:-}" == "input" ]]; then
+  shift
+  export SWIFT_MODULECACHE_PATH="${SWIFT_MODULECACHE_PATH:-/tmp/swift-module-cache}"
+  export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-/tmp/clang-module-cache}"
+  mkdir -p "$SWIFT_MODULECACHE_PATH"
+  mkdir -p "$CLANG_MODULE_CACHE_PATH"
+  exec swift "$ROOT_DIR/scripts/inject-ui-events.swift" "$@"
+fi
+
 if [[ "${1:-}" == "debug" ]]; then
-  MODE="${2:-}"
-  TARGET_RAW="${3:-}"
-  TARGET="$ROOT_DIR/samples/HelloName/"
-  if [[ -n "$TARGET_RAW" ]]; then
-    TARGET="$(normalize_path_arg "$TARGET_RAW")"
+  shift
+  # Legacy compatibility:
+  #   ./scripts/aivectra debug live ./samples/WeatherApp
+  #   ./scripts/aivectra debug snapshot ./samples/HelloWorld
+  if [[ "${1:-}" == "live" || "${1:-}" == "snapshot" || "${1:-}" == "replay" || "${1:-}" == "scene" ]]; then
+    LEGACY_MODE="$1"
+    shift
+    LEGACY_TARGET="${1:-$ROOT_DIR/samples/HelloName/}"
+    if [[ $# -gt 0 ]]; then
+      shift
+    fi
+    APP_PATH="$(resolve_app_path "$LEGACY_TARGET")"
+    EXTRA_ARGS=()
+    case "$LEGACY_MODE" in
+      live) EXTRA_ARGS+=("--debug-mode=live") ;;
+      snapshot) EXTRA_ARGS+=("--debug-mode=snapshot") ;;
+      replay) EXTRA_ARGS+=("--debug-mode=replay") ;;
+      scene) EXTRA_ARGS+=("--debug-mode=scene") ;;
+    esac
+    run_airun_debug_with_toml_artifacts "$APP_PATH" "${EXTRA_ARGS[@]}" -- "$@"
+    exit $?
   fi
 
-  case "$MODE" in
-    snapshot|replay|scene)
-      exec "$AIRUN_BIN" run "$TARGET" "$MODE"
-      ;;
-    live)
-      exec "$AIRUN_BIN" run "$TARGET" live
-      ;;
-    *)
-      echo "usage: ./scripts/aivectra debug <snapshot|replay|scene|live> [project]" >&2
+  if [[ "${1:-}" == "scenario" ]]; then
+    if [[ $# -lt 2 ]]; then
+      echo "usage: ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]" >&2
       exit 2
-      ;;
-  esac
+    fi
+    FIXTURE="$(normalize_path_arg "$2")"
+    shift 2
+    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    exit $?
+  fi
+
+  APP_PATH=""
+  WRAPPER_ARGS=()
+  APP_ARGS=()
+
+  while [[ $# -gt 0 ]]; do
+    if [[ -z "$APP_PATH" ]]; then
+      case "$1" in
+        --out|--events|--compare)
+          if [[ $# -lt 2 ]]; then
+            echo "missing value for $1" >&2
+            exit 2
+          fi
+          VAL="$2"
+          if [[ "$1" == "--out" || "$1" == "--events" || "$1" == "--compare" ]]; then
+            VAL="$(normalize_path_arg "$VAL")"
+          fi
+          WRAPPER_ARGS+=("$1" "$VAL")
+          shift 2
+          ;;
+        --debug-mode|--vm)
+          if [[ $# -lt 2 ]]; then
+            echo "missing value for $1" >&2
+            exit 2
+          fi
+          WRAPPER_ARGS+=("$1=$2")
+          shift 2
+          ;;
+        --trace)
+          WRAPPER_ARGS+=("$1")
+          shift
+          ;;
+        --)
+          shift
+          while [[ $# -gt 0 ]]; do
+            APP_ARGS+=("$1")
+            shift
+          done
+          ;;
+        \|)
+          # Legacy separator support. Prefer --.
+          shift
+          while [[ $# -gt 0 ]]; do
+            APP_ARGS+=("$1")
+            shift
+          done
+          ;;
+        -*)
+          echo "unknown debug option: $1" >&2
+          exit 2
+          ;;
+        *)
+          APP_PATH="$(resolve_app_path "$1")"
+          shift
+          ;;
+      esac
+    else
+      APP_ARGS+=("$1")
+      shift
+    fi
+  done
+
+  if [[ -z "$APP_PATH" ]]; then
+    if APP_PATH="$(resolve_cwd_app_path_if_project)"; then
+      :
+    else
+      echo "missing app path for debug command (or run from a folder containing project.aiproj)" >&2
+      exit 2
+    fi
+  fi
+
+  set +u
+  run_airun_debug_with_toml_artifacts "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
+  RC=$?
+  set -u
+  exit $RC
 fi
 
 # Compatibility shim for wrapper-style debug commands:
 #   ./scripts/aivectra run debug snapshot /samples/HelloWorld/
 if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
-  MODE="${3:-}"
-  TARGET_RAW="${4:-}"
-  TARGET="$ROOT_DIR/samples/HelloName/"
-  if [[ -n "$TARGET_RAW" ]]; then
-    TARGET="$(normalize_path_arg "$TARGET_RAW")"
+  shift 2
+  if [[ "${1:-}" == "scenario" ]]; then
+    FIXTURE="$(normalize_path_arg "${2:-}")"
+    shift 2 || true
+    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    exit $?
   fi
-
-  case "$MODE" in
-    snapshot|replay|scene)
-      exec "$AIRUN_BIN" run "$TARGET" "$MODE"
-      ;;
-    live)
-      exec "$AIRUN_BIN" run "$TARGET" live
-      ;;
-    *)
-      echo "usage: ./scripts/aivectra run debug <snapshot|replay|scene|live> [target]" >&2
-      exit 2
-      ;;
-  esac
+  APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/samples/HelloName/src/app.aos}")"
+  shift || true
+  run_airun_debug_with_toml_artifacts "$APP_PATH" -- "$@"
+  exit $?
 fi
 
 if [[ "${1:-}" == "run" && "${2:-}" == ".debug" ]]; then
-  echo "'.debug' is no longer supported. Use: ./scripts/aivectra debug <snapshot|replay|scene|live> [project]" >&2
+  echo "'.debug' is no longer supported. Use: ./scripts/aivectra debug <app.aos|project-dir> [--out <dir>]" >&2
   exit 2
 fi
 

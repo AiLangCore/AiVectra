@@ -216,21 +216,55 @@ Wrapper/CLI:
   - `AIRUN_BIN=/path/to/airun ./scripts/aivectra`
   - `./scripts/aivectra --airun /path/to/airun`
 - Example:
+  - `./scripts/aivectra init MyApp`
   - `./scripts/aivectra run ./samples/HelloWorld/`
   - `./scripts/aivectra run ./samples/InteractiveSvgMvp/`
   - `./scripts/aivectra icon ./samples/HelloWorld/`
-- Debug tooling via AiLang CLI project (`src/AiVectra.Cli`):
-  - `./scripts/aivectra run ./src/AiVectra.Cli/ debug snapshot`
-  - `./scripts/aivectra run ./src/AiVectra.Cli/ debug replay`
-  - `./scripts/aivectra run ./samples/HelloName/`
+  - `./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"`
+- Tool-side input injection (no sample/app instrumentation required):
+  - `./scripts/aivectra input --window "<title-substring>" --events "<tokens>"`
+  - tokens are semicolon-delimited:
+    - `text:<value>`
+    - `key:<name>` (`enter`, `backspace`, `left`, `right`, `cmd+w`, etc.)
+    - `click:x,y` absolute screen coordinates
+    - `clickr:x,y` relative to matched window origin
+    - `touch:x,y` / `touchr:x,y` aliases to click
+    - `wait:ms`
+    - `close` (sends `cmd+w`)
+  - optional flags:
+    - `--delay-ms N` (default 35)
+    - `--dry-run`
+- Debug tooling (TOML artifacts; no sample instrumentation):
+  - `./scripts/bootstrap-golden-publish-fixtures.sh`
+  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/hello-world`
+  - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
+  - `./scripts/test-debug-ci-parity.sh`
+  - Debug APIs in the SDK/CLI are generic only; sample-specific debug formats must stay out of `src/AiVectra`.
 - Golden checks:
   - `./scripts/test-golden-ui.sh`
   - `./scripts/test-interactive-svg-mvp.sh`
   - `./scripts/test-screenshot-debug-reality.sh` (requires macOS Screen Recording permission)
-- Compatibility wrapper:
-  - `./scripts/ui-debug.sh snapshot`
-  - `./scripts/ui-debug.sh replay`
-  - `./scripts/ui-debug.sh live`
+- Artifact bundle files:
+  - `config.toml`
+  - `stdout.txt`
+  - `vm_trace.toml`
+  - `state_snapshots.toml`
+  - `syscalls.toml`
+  - `events.toml`
+  - `diagnostics.toml`
+
+Agent debug workflow:
+
+- Bootstrap fixtures from clean checkout:
+  - `./scripts/bootstrap-golden-publish-fixtures.sh`
+- Run app with artifact capture:
+  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/my-run`
+- Run deterministic replay from fixture (when provided by AiLang runtime):
+  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --events ./examples/debug/events/minimal.events.toml --out .artifacts/debug/replay-run`
+- Run named scenario fixture:
+  - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
+- CI parity check:
+  - `./scripts/test-debug-ci-parity.sh`
 
 App icon generation:
 
@@ -249,11 +283,7 @@ Run the library project directly (sanity check):
 
 Windowed hello world baseline:
 
-- `helloWindow()` creates a host window, draws the hello frame via `sys.ui_*`, presents it, then closes it.
-- `helloNamedWindow(name)` creates a host window and renders `Hello {name}!`.
-- `waitForClose(windowHandle)` blocks until `sys.ui_pollEvent` reports `type="closed"`.
-- `window(title)` creates a window handle via `sys.ui_createWindow`.
-- `rect(windowHandle)` and `text(windowHandle)` emit real draw calls.
+- `samples/HelloWorld/src/app.aos` demonstrates direct syscall-backed rendering through AiVectra library primitives.
 
 ---
 
