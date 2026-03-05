@@ -1,7 +1,9 @@
-[aivectra] snapshot size=640x360
-[aivectra] layout panel=20,20,600,320 input=72,112,496,52 button=250,200,140,52 hintY=268 statusY=314
-[aivectra] snapshot size=976x614
-[aivectra] layout panel=20,20,936,574 input=72,112,832,52 button=418,454,140,52 hintY=522 statusY=568
-[aivectra] snapshot size=1280x800
-[aivectra] layout panel=20,20,1240,760 input=72,112,1136,52 button=570,640,140,52 hintY=708 statusY=754
-Ok#ok1(type=void)
+AiVectra CLI (AiLang)
+usage:
+  aivectra debug <snapshot|replay|live>
+  aivectra icon <project-path> [label]
+AiVectra CLI (AiLang)
+usage:
+  aivectra debug <snapshot|replay|live>
+  aivectra icon <project-path> [label]
+Ok#ok1(type=int value=0)

@@ -1,11 +1,9 @@
-[aivectra] replay begin
-[aivectra] layout panel=20,20,936,574 input=72,112,832,52 button=418,454,140,52 hintY=522 statusY=568
-[aivectra] event type=key key=t text=t click=-1,-1
-[aivectra] event type=key key=o text=o click=-1,-1
-[aivectra] event type=key key=d text=d click=-1,-1
-[aivectra] event type=key key=d text=d click=-1,-1
-[aivectra] event type=key key=enter text= click=-1,-1
-[aivectra] replay greeting=Greeting: Hello, todd!
-[aivectra] event type=click key= text= click=488,480
-[aivectra] replay end
-Ok#ok1(type=void)
+AiVectra CLI (AiLang)
+usage:
+  aivectra debug <snapshot|replay|live>
+  aivectra icon <project-path> [label]
+AiVectra CLI (AiLang)
+usage:
+  aivectra debug <snapshot|replay|live>
+  aivectra icon <project-path> [label]
+Ok#ok1(type=int value=0)

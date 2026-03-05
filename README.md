@@ -201,7 +201,7 @@ If you have a temporary local binary in this repo, replace `airun` with `./.tool
 
 Run the sample app from repo root:
 
-`airun run ./samples/HelloWorld/src/app.aos`
+`airun run ./samples/HelloWorld/`
 
 Run the named greeting example:
 
@@ -216,6 +216,8 @@ Wrapper/CLI:
   - `AIRUN_BIN=/path/to/airun ./scripts/aivectra`
   - `./scripts/aivectra --airun /path/to/airun`
 - Example:
+  - `./scripts/aivectra doctor`
+  - `./scripts/aivectra test`
   - `./scripts/aivectra init MyApp`
   - `./scripts/aivectra run ./samples/HelloWorld/`
   - `./scripts/aivectra run ./samples/InteractiveSvgMvp/`
@@ -236,7 +238,7 @@ Wrapper/CLI:
     - `--dry-run`
 - Debug tooling (TOML artifacts; no sample instrumentation):
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
-  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/hello-world`
+  - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/hello-world`
   - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
   - `./scripts/test-debug-ci-parity.sh`
   - Debug APIs in the SDK/CLI are generic only; sample-specific debug formats must stay out of `src/AiVectra`.
@@ -244,6 +246,8 @@ Wrapper/CLI:
   - `./scripts/test-golden-ui.sh`
   - `./scripts/test-interactive-svg-mvp.sh`
   - `./scripts/test-screenshot-debug-reality.sh` (requires macOS Screen Recording permission)
+  - `./scripts/test-cli-contract.sh` (CLI parse/forwarding/cwd/exit conformance)
+  - `./scripts/test-all.sh` (all gates; set `AIVECTRA_SCREENSHOT_TEST=1` to include screenshot reality)
 - Artifact bundle files:
   - `config.toml`
   - `stdout.txt`
@@ -258,9 +262,12 @@ Agent debug workflow:
 - Bootstrap fixtures from clean checkout:
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
 - Run app with artifact capture:
-  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/my-run`
+  - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/my-run`
+
+CLI behavior contract:
+- See `SPEC/CLI.md` for normative command grammar, forwarding, cwd inference, and exit semantics.
 - Run deterministic replay from fixture (when provided by AiLang runtime):
-  - `./tools/airun debug ./examples/debug/apps/debug_minimal.aos --events ./examples/debug/events/minimal.events.toml --out .artifacts/debug/replay-run`
+  - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --events ./examples/debug/events/minimal.events.toml --out .artifacts/debug/replay-run`
 - Run named scenario fixture:
   - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
 - CI parity check:
@@ -280,6 +287,12 @@ App icon generation:
 Run the library project directly (sanity check):
 
 `airun run ./src/AiVectra/src/lib.aos`
+
+Native runtime note:
+- `./scripts/aivectra` checks runtime capabilities from `airun --help`.
+- When runtime requires prebuilt bytecode, wrapper emits:
+  - `Err#err1(code=AIV001 ... )`
+- When runtime supports source/project targets, wrapper runs `.aos`/project inputs directly.
 
 Windowed hello world baseline:
 

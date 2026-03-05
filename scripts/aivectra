@@ -31,14 +31,71 @@ normalize_path_arg() {
 resolve_app_path() {
   local p="$1"
   local n
+  local h
+  local runtime_supports_source="false"
+  local prefer_prebuilt="false"
+  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  if [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]; then
+    runtime_supports_source="true"
+  fi
+  if is_native_c_runtime; then
+    prefer_prebuilt="true"
+  fi
   n="$(normalize_path_arg "$p")"
   if [[ -d "$n" ]]; then
-    if [[ -f "$n/src/app.aos" ]]; then
-      printf "%s" "$n/src/app.aos"
-      return 0
+    if [[ "$prefer_prebuilt" == "true" ]]; then
+      if [[ -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/src/app.aibc1" ]]; then
+        printf "%s" "$n/src/app.aibc1"
+        return 0
+      fi
+    fi
+    if [[ "$runtime_supports_source" == "true" ]]; then
+      if [[ -f "$n/src/app.aos" ]]; then
+        printf "%s" "$n/src/app.aos"
+        return 0
+      fi
+      if [[ -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+    else
+      if [[ -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/src/app.aos" ]]; then
+        printf "%s" "$n/src/app.aos"
+        return 0
+      fi
     fi
   fi
   printf "%s" "$n"
+}
+
+is_native_c_runtime() {
+  local v
+  v="$("$AIRUN_BIN" version 2>/dev/null || true)"
+  [[ "$v" == airun-native-c* ]]
+}
+
+supports_source_targets() {
+  local h
+  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]
+}
+
+native_runtime_guard() {
+  local program_path="$1"
+  if ! supports_source_targets; then
+    if [[ "$program_path" != *.aibc1 ]]; then
+      echo "Err#err1(code=AIV001 message=\"Current runtime requires prebuilt .aibc1 input for this project. Build/publish app.aibc1 and re-run.\" nodeId=program)" >&2
+      exit 2
+    fi
+  fi
 }
 
 resolve_cwd_app_path_if_project() {
@@ -117,19 +174,21 @@ run_airun_debug_with_toml_artifacts() {
 
   if [[ "$debug_mode" == "live" ]]; then
     local run_target="$app_path"
-    if [[ "$app_path" == */src/app.aos ]]; then
+    if ! is_native_c_runtime && [[ "$app_path" == */src/app.aos ]]; then
       local candidate_dir
       candidate_dir="$(dirname "$(dirname "$app_path")")"
       if [[ -f "$candidate_dir/project.aiproj" ]]; then
         run_target="$candidate_dir"
       fi
     fi
+    native_runtime_guard "$run_target"
     "$AIRUN_BIN" run "$run_target" -- live "${app_args[@]}"
     return $?
   fi
 
+  native_runtime_guard "$app_path"
   ensure_dir "$out_dir"
-  "$AIRUN_BIN" debug "${wrapper_args[@]}" "$app_path" "${app_args[@]}"
+  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]}" "${app_args[@]}"
   normalize_debug_artifacts_to_toml "$out_dir"
 }
 
@@ -220,12 +279,16 @@ AiVectra airun wrapper
 usage:
   ./scripts/aivectra [--airun /path/to/airun] <airun-args>
   ./scripts/aivectra init <AppName|path> [--force]
+  ./scripts/aivectra doctor
+  ./scripts/aivectra test
   ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
   ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
   ./scripts/aivectra icon <project-path> [label]
   ./scripts/aivectra input --window "<title>" --events "<tokens>" [--delay-ms N] [--dry-run]
 
 example:
+  ./scripts/aivectra doctor
+  ./scripts/aivectra test
   ./scripts/aivectra init MyApp
   ./scripts/aivectra init ./samples/MyApp --force
   ./scripts/aivectra run ./samples/HelloWorld/
@@ -236,6 +299,14 @@ example:
   ./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"
 EOF
   exit 0
+fi
+
+if [[ "${1:-}" == "doctor" ]]; then
+  exec "$ROOT_DIR/scripts/doctor.sh"
+fi
+
+if [[ "${1:-}" == "test" ]]; then
+  exec "$ROOT_DIR/scripts/test-all.sh"
 fi
 
 if [[ "${1:-}" == "init" ]]; then
@@ -374,10 +445,10 @@ Program {
         Let(name=taskButtonX) { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=180) } Lit(value=0) } }
         Let(name=taskButtonY) { Add { Var(name=h) Lit(value=-120) } }
 
-        Call(target=sys.ui_beginFrame) { Var(name=handle) }
+        Call(target=sys.ui.beginFrame) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=w) Var(name=h) }
-        Call(target=sys.ui_drawText) { Var(name=handle) Lit(value=64) Lit(value=72) Var(name=title) Lit(value="#ffffff") Lit(value=30) }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=64) Lit(value=72) Var(name=title) Lit(value="#ffffff") Lit(value=30) }
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=64)
           Lit(value=116)
@@ -385,7 +456,7 @@ Program {
           Lit(value="#cbd5e1")
           Lit(value=18)
         }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=64)
           Lit(value=152)
@@ -409,7 +480,7 @@ Program {
           Lit(value="#1d4ed8")
           Lit(value="#64748b")
         }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Add { Var(name=taskButtonX) Lit(value=34) }
           Add { Var(name=taskButtonY) Lit(value=15) }
@@ -417,7 +488,7 @@ Program {
           Lit(value="#ffffff")
           Lit(value=22)
         }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=64)
           Add { Var(name=h) Lit(value=-36) }
@@ -426,8 +497,8 @@ Program {
           Lit(value=14)
         }
 
-        Call(target=sys.ui_endFrame) { Var(name=handle) }
-        Call(target=sys.ui_present) { Var(name=handle) }
+        Call(target=sys.ui.endFrame) { Var(name=handle) }
+        Call(target=sys.ui.present) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }
@@ -436,7 +507,7 @@ Program {
   Let(name=loop) {
     Fn(params=handle,lastW,lastH,buttonFlash,workerHandle,workerState) {
       Block {
-        Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
         Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
         Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
         Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=960) } }
@@ -454,7 +525,7 @@ Program {
             Call(target=intLt) { Var(name=workerHandle) Lit(value=0) }
             Block { Var(name=workerState) }
             Block {
-              Let(name=ws) { Call(target=sys.worker_poll) { Var(name=workerHandle) } }
+              Let(name=ws) { Call(target=sys.worker.poll) { Var(name=workerHandle) } }
               If {
                 Eq { Var(name=ws) Lit(value=1) }
                 Block { Lit(value="done") }
@@ -479,7 +550,7 @@ Program {
 
         Call(target=render) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) }
 
-        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
         Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
         Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
         Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
@@ -489,7 +560,7 @@ Program {
           Block {
             If {
               Call(target=intLt) { Lit(value=-1) Var(name=polledHandle) }
-              Block { Call(target=sys.worker_cancel) { Var(name=polledHandle) } Lit(value=0) }
+              Block { Call(target=sys.worker.cancel) { Var(name=polledHandle) } Lit(value=0) }
               Block { Lit(value=0) }
             }
             Return { Lit(value=0) }
@@ -510,7 +581,7 @@ Program {
                         Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Var(name=polledHandle) Var(name=polledState) } }
                       }
                       Block {
-                        Let(name=newHandle) { Call(target=sys.worker_start) { Lit(value="echo") Lit(value="$APP_SLUG background task") } }
+                        Let(name=newHandle) { Call(target=sys.worker.start) { Lit(value="echo") Lit(value="$APP_SLUG background task") } }
                         If {
                           Call(target=intLt) { Var(name=newHandle) Lit(value=0) }
                           Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Lit(value=-1) Lit(value="failed") } } }
@@ -547,13 +618,12 @@ Program {
           Block { Return { Lit(value=0) } }
           Block {
             Let(name=handle) { Call(target=window) { Lit(value="$APP_TITLE") } }
-            Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+            Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
             Let(name=w0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
             Let(name=h0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
             Let(name=w0) { Call(target=stabilizeSize) { Var(name=w0Raw) Lit(value=960) Lit(value=960) } }
             Let(name=h0) { Call(target=stabilizeSize) { Var(name=h0Raw) Lit(value=640) Lit(value=640) } }
             Call(target=loop) { Var(name=handle) Var(name=w0) Var(name=h0) Lit(value=0) Lit(value=-1) Lit(value="idle") }
-            Call(target=sys.ui_closeWindow) { Var(name=handle) }
             Return { Lit(value=0) }
           }
         }
@@ -662,6 +732,22 @@ if [[ "${1:-}" == "icon" ]]; then
   exec "$AIRUN_BIN" run "$ROOT_DIR/src/AiVectra.Cli/" icon "$PROJECT" "$@"
 fi
 
+if [[ "${1:-}" == "run" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    if APP_PATH="$(resolve_cwd_app_path_if_project)"; then
+      set -- "$APP_PATH"
+    else
+      echo "missing app path for run command (or run from a folder containing project.aiproj)" >&2
+      exit 2
+    fi
+  fi
+  RUN_TARGET="$(resolve_app_path "$1")"
+  shift || true
+  native_runtime_guard "$RUN_TARGET"
+  exec "$AIRUN_BIN" run "$RUN_TARGET" "$@"
+fi
+
 if [[ "${1:-}" == "input" ]]; then
   shift
   export SWIFT_MODULECACHE_PATH="${SWIFT_MODULECACHE_PATH:-/tmp/swift-module-cache}"
@@ -673,6 +759,9 @@ fi
 
 if [[ "${1:-}" == "debug" ]]; then
   shift
+  if [[ "${1:-}" == "run" ]]; then
+    shift
+  fi
   # Legacy compatibility:
   #   ./scripts/aivectra debug live ./samples/WeatherApp
   #   ./scripts/aivectra debug snapshot ./samples/HelloWorld

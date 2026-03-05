@@ -91,10 +91,10 @@ Program {
         Let(name=caretX) { Add { Lit(value=88) Call(target=mul) { Lit(value=12) Var(name=caretInVisible) Lit(value=0) } } }
         Let(name=caretY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
 
-        Call(target=sys.ui_beginFrame) { Var(name=handle) }
+        Call(target=sys.ui.beginFrame) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=windowWidth) Var(name=windowHeight) }
 
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=72)
@@ -150,7 +150,7 @@ Program {
           Lit(value="#172554")
           Lit(value="#0f172a")
         }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=88)
           Var(name=inputTextY)
@@ -165,7 +165,7 @@ Program {
             If {
               Var(name=caretVisible)
               Block {
-                Call(target=sys.ui_drawRect) {
+                Call(target=sys.ui.drawRect) {
                   Var(name=handle)
                   Var(name=caretX)
                   Var(name=caretY)
@@ -201,7 +201,7 @@ Program {
           Lit(value="#1d4ed8")
           Lit(value="#64748b")
         }
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Var(name=submitLabelX)
           Var(name=submitLabelY)
@@ -210,7 +210,7 @@ Program {
           Lit(value=22)
         }
 
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=72)
           Var(name=hintTextY)
@@ -219,7 +219,7 @@ Program {
           Lit(value=15)
         }
 
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=72)
           Add { Var(name=hintTextY) Lit(value=22) }
@@ -228,7 +228,7 @@ Program {
           Lit(value=15)
         }
 
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Lit(value=72)
           Var(name=statusTextY)
@@ -237,8 +237,8 @@ Program {
           Lit(value=18)
         }
 
-        Call(target=sys.ui_endFrame) { Var(name=handle) }
-        Call(target=sys.ui_present) { Var(name=handle) }
+        Call(target=sys.ui.endFrame) { Var(name=handle) }
+        Call(target=sys.ui.present) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }
@@ -610,249 +610,72 @@ Program {
     }
   }
 
-  Let(name=isBackKey) {
-    Fn(params=keyName) {
+  Let(name=keySetContains) {
+    Fn(params=setNode,keyName) {
       Block {
         If {
-          Eq { Var(name=keyName) Lit(value="backspace") }
+          Eq { Call(target=mapGetString) { Var(name=setNode) Var(name=keyName) Lit(value=0) } Lit(value="") }
+          Block { Return { Lit(value=false) } }
           Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=keyName) Lit(value="Backspace") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=keyName) Lit(value="back") }
-                  Block { Return { Lit(value=true) } }
-                  Block {
-                    If {
-                      Eq { Var(name=keyName) Lit(value="BackSpace") }
-                      Block { Return { Lit(value=true) } }
-                      Block {
-                        If {
-                          Eq { Var(name=keyName) Lit(value="back_space") }
-                          Block { Return { Lit(value=true) } }
-                          Block {
-                            If {
-                              Eq { Var(name=keyName) Lit(value="DeleteBackward") }
-                              Block { Return { Lit(value=true) } }
-                              Block {
-                                If {
-                                  Eq { Var(name=keyName) Lit(value="delete_backward") }
-                                  Block { Return { Lit(value=true) } }
-                                  Block {
-                                    If {
-                                      Eq { Var(name=keyName) Lit(value="x11:22") }
-                                      Block { Return { Lit(value=true) } }
-                                      Block {
-                                    If {
-                                      Eq { Var(name=keyName) Lit(value="x11:107") }
-                                      Block { Return { Lit(value=true) } }
-                                      Block {
-                                        If {
-                                              Eq { Var(name=keyName) Lit(value="deleteBackward") }
-                                              Block { Return { Lit(value=true) } }
-                                          Block {
-                                            If {
-                                              Eq { Var(name=keyName) Lit(value="deletebackward") }
-                                              Block { Return { Lit(value=true) } }
-                                              Block {
-                                                If {
-                                                  Eq { Var(name=keyName) Lit(value="delete") }
-                                                  Block { Return { Lit(value=true) } }
-                                                  Block {
-                                                    If {
-                                                      Eq { Var(name=keyName) Lit(value="Delete") }
-                                                      Block { Return { Lit(value=true) } }
-                                                      Block {
-                                                        If {
-                                                          Eq { Var(name=keyName) Lit(value="del") }
-                                                          Block { Return { Lit(value=true) } }
-                                                          Block {
-                                                            If {
-                                                              Eq { Var(name=keyName) Lit(value="x11:51") }
-                                                              Block { Return { Lit(value=true) } }
-                                                              Block {
-                                                                If {
-                                                                  Eq { Var(name=keyName) Lit(value="DeleteBackspace") }
-                                                                  Block { Return { Lit(value=true) } }
-                                                                  Block { Return { Lit(value=false) } }
-                                                                }
-                                                              }
-                                                            }
-                                                          }
-                                                        }
-                                                      }
-                                                    }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+        }
+      }
+    }
+  }
+
+  Let(name=backKeySet) {
+    Fn(params=_) {
+      Block {
+        Return {
+          Map {
+            Field(key="backspace") { Lit(value="1") }
+            Field(key="Backspace") { Lit(value="1") }
+            Field(key="back") { Lit(value="1") }
+            Field(key="BackSpace") { Lit(value="1") }
+            Field(key="back_space") { Lit(value="1") }
+            Field(key="DeleteBackward") { Lit(value="1") }
+            Field(key="delete_backward") { Lit(value="1") }
+            Field(key="deleteBackward") { Lit(value="1") }
+            Field(key="deletebackward") { Lit(value="1") }
+            Field(key="delete") { Lit(value="1") }
+            Field(key="Delete") { Lit(value="1") }
+            Field(key="del") { Lit(value="1") }
+            Field(key="DeleteBackspace") { Lit(value="1") }
+            Field(key="x11:22") { Lit(value="1") }
+            Field(key="x11:51") { Lit(value="1") }
+            Field(key="x11:107") { Lit(value="1") }
           }
         }
       }
+    }
+  }
+
+  Let(name=isBackKey) {
+    Fn(params=keyName) {
+      Block { Return { Call(target=keySetContains) { Call(target=backKeySet) { Lit(value=0) } Var(name=keyName) } } }
     }
   }
 
   Let(name=isDeleteKey) {
     Fn(params=keyName) {
-      Block {
-        If {
-          Eq { Var(name=keyName) Lit(value="DeleteForward") }
-          Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=keyName) Lit(value="delete_forward") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=keyName) Lit(value="forwardDelete") }
-                  Block { Return { Lit(value=true) } }
-                  Block {
-                    If {
-                      Eq { Var(name=keyName) Lit(value="ForwardDelete") }
-                      Block { Return { Lit(value=true) } }
-                      Block {
-                        If {
-                          Eq { Var(name=keyName) Lit(value="x11:119") }
-                          Block { Return { Lit(value=true) } }
-                          Block { Return { Lit(value=false) } }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      Block { Return { Call(target=keySetContains) { Map { Field(key="DeleteForward") { Lit(value="1") } Field(key="delete_forward") { Lit(value="1") } Field(key="forwardDelete") { Lit(value="1") } Field(key="ForwardDelete") { Lit(value="1") } Field(key="x11:119") { Lit(value="1") } } Var(name=keyName) } } }
     }
   }
 
   Let(name=isEnterKey) {
     Fn(params=keyName) {
-      Block {
-        If {
-          Eq { Var(name=keyName) Lit(value="enter") }
-          Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=keyName) Lit(value="Enter") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=keyName) Lit(value="return") }
-                  Block { Return { Lit(value=true) } }
-                  Block {
-                    If {
-                      Eq { Var(name=keyName) Lit(value="Return") }
-                      Block { Return { Lit(value=true) } }
-                      Block {
-                        If {
-                          Eq { Var(name=keyName) Lit(value="kp_enter") }
-                          Block { Return { Lit(value=true) } }
-                          Block {
-                            If {
-                              Eq { Var(name=keyName) Lit(value="KP_Enter") }
-                              Block { Return { Lit(value=true) } }
-                              Block {
-                                If {
-                                  Eq { Var(name=keyName) Lit(value="NumpadEnter") }
-                                  Block { Return { Lit(value=true) } }
-                                  Block { Return { Lit(value=false) } }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      Block { Return { Call(target=keySetContains) { Map { Field(key="enter") { Lit(value="1") } Field(key="Enter") { Lit(value="1") } Field(key="return") { Lit(value="1") } Field(key="Return") { Lit(value="1") } Field(key="kp_enter") { Lit(value="1") } Field(key="KP_Enter") { Lit(value="1") } Field(key="NumpadEnter") { Lit(value="1") } } Var(name=keyName) } } }
     }
   }
 
   Let(name=isLeftKey) {
     Fn(params=keyName) {
-      Block {
-        If {
-          Eq { Var(name=keyName) Lit(value="left") }
-          Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=keyName) Lit(value="ArrowLeft") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=keyName) Lit(value="Left") }
-                  Block { Return { Lit(value=true) } }
-                  Block {
-                    If {
-                      Eq { Var(name=keyName) Lit(value="x11:113") }
-                      Block { Return { Lit(value=true) } }
-                      Block { Return { Lit(value=false) } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      Block { Return { Call(target=keySetContains) { Map { Field(key="left") { Lit(value="1") } Field(key="ArrowLeft") { Lit(value="1") } Field(key="Left") { Lit(value="1") } Field(key="x11:113") { Lit(value="1") } } Var(name=keyName) } } }
     }
   }
 
   Let(name=isRightKey) {
     Fn(params=keyName) {
-      Block {
-        If {
-          Eq { Var(name=keyName) Lit(value="right") }
-          Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=keyName) Lit(value="ArrowRight") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=keyName) Lit(value="Right") }
-                  Block { Return { Lit(value=true) } }
-                  Block {
-                    If {
-                      Eq { Var(name=keyName) Lit(value="x11:114") }
-                      Block { Return { Lit(value=true) } }
-                      Block { Return { Lit(value=false) } }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      Block { Return { Call(target=keySetContains) { Map { Field(key="right") { Lit(value="1") } Field(key="ArrowRight") { Lit(value="1") } Field(key="Right") { Lit(value="1") } Field(key="x11:114") { Lit(value="1") } } Var(name=keyName) } } }
     }
   }
 
@@ -1029,25 +852,56 @@ Program {
     }
   }
 
+  Let(name=isInsertableText) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Eq { Call(target=textLen) { Var(name=textValue) } Lit(value=1) }
+          Block {
+            If {
+              Eq { Call(target=debugControlName) { Var(name=textValue) } Lit(value="") }
+              Block {
+                If {
+                  Call(target=isForbiddenInputChar) { Var(name=textValue) }
+                  Block { Return { Lit(value=false) } }
+                  Block { Return { Lit(value=true) } }
+                }
+              }
+              Block { Return { Lit(value=false) } }
+            }
+          }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=keyboardEventTypeMap) {
+    Fn(params=_) {
+      Block {
+        Return {
+          Map {
+            Field(key="key") { Lit(value="1") }
+            Field(key="text") { Lit(value="1") }
+            Field(key="textinput") { Lit(value="1") }
+            Field(key="key_down") { Lit(value="1") }
+            Field(key="keydown") { Lit(value="1") }
+            Field(key="keypress") { Lit(value="1") }
+            Field(key="char") { Lit(value="1") }
+            Field(key="input") { Lit(value="1") }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=isKeyboardLikeEvent) {
     Fn(params=eventType) {
       Block {
         If {
-          Eq { Var(name=eventType) Lit(value="key") }
+          Eq { Call(target=mapGetString) { Call(target=keyboardEventTypeMap) { Lit(value=0) } Var(name=eventType) Lit(value=0) } Lit(value="") }
+          Block { Return { Lit(value=false) } }
           Block { Return { Lit(value=true) } }
-          Block {
-            If {
-              Eq { Var(name=eventType) Lit(value="text") }
-              Block { Return { Lit(value=true) } }
-              Block {
-                If {
-                  Eq { Var(name=eventType) Lit(value="textinput") }
-                  Block { Return { Lit(value=true) } }
-                  Block { Return { Lit(value=false) } }
-                }
-              }
-            }
-          }
         }
       }
     }
@@ -1056,7 +910,7 @@ Program {
   Let(name=loop) {
     Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,buttonFlash,caret,blinkTick,debugLive,prevSceneSig) {
       Block {
-        Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
         Let(name=windowWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
         Let(name=windowHeightRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
         Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastWidth) Lit(value=640) } }
@@ -1110,7 +964,7 @@ Program {
           Var(name=caretVisible)
         }
 
-        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
         Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
         Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
         Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
@@ -1496,24 +1350,7 @@ Program {
                                                   }
                                                   Block {
                                                     If {
-                                                      Call(target=isForbiddenInputChar) { Var(name=fallbackText) }
-                                                      Block {
-                                                        Return {
-                                                          Call(target=loop) {
-                                                            Var(name=handle)
-                                                            Var(name=name)
-                                                            Var(name=submittedName)
-                                                            Var(name=windowWidth)
-                                                            Var(name=windowHeight)
-                                                            Var(name=inputFocused)
-                                                            Var(name=nextFlash)
-                                                            Var(name=safeCaret)
-                                                            Lit(value=0)
-                                                            Var(name=debugLive)
-                                                            Var(name=sceneSig)
-                                                          }
-                                                        }
-                                                      }
+                                                      Call(target=isInsertableText) { Var(name=fallbackText) }
                                                       Block {
                                                         Let(name=nextName) { Call(target=textInsertAt) { Var(name=name) Var(name=safeCaret) Var(name=fallbackText) } }
                                                         Let(name=nextCaretRaw) { Add { Var(name=safeCaret) Call(target=textLen) { Var(name=fallbackText) } } }
@@ -1541,6 +1378,23 @@ Program {
                                                             Var(name=inputFocused)
                                                             Var(name=nextFlash)
                                                             Var(name=nextCaret)
+                                                            Lit(value=0)
+                                                            Var(name=debugLive)
+                                                            Var(name=sceneSig)
+                                                          }
+                                                        }
+                                                      }
+                                                      Block {
+                                                        Return {
+                                                          Call(target=loop) {
+                                                            Var(name=handle)
+                                                            Var(name=name)
+                                                            Var(name=submittedName)
+                                                            Var(name=windowWidth)
+                                                            Var(name=windowHeight)
+                                                            Var(name=inputFocused)
+                                                            Var(name=nextFlash)
+                                                            Var(name=safeCaret)
                                                             Lit(value=0)
                                                             Var(name=debugLive)
                                                             Var(name=sceneSig)
@@ -1625,7 +1479,7 @@ Program {
         }
         Let(name=debugLive) { Call(target=debugModeLive) { Var(name=mode) } }
         Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello Name") } }
-        Let(name=initialSizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
+        Let(name=initialSizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
         Let(name=initialWidthRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="width") Lit(value=0) } }
         Let(name=initialHeightRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="height") Lit(value=0) } }
         Let(name=initialWidth) { Call(target=stabilizeSize) { Var(name=initialWidthRaw) Lit(value=640) Lit(value=640) } }
@@ -1643,7 +1497,6 @@ Program {
           Var(name=debugLive)
           Lit(value="")
         }
-        Call(target=sys.ui_closeWindow) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }

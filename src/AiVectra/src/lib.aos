@@ -14,7 +14,7 @@ Program {
   Let(name=rect) {
     Fn(params=windowHandle) {
       Block {
-        Call(target=sys.ui_drawRect) {
+        Call(target=sys.ui.drawRect) {
           Var(name=windowHandle)
           Lit(value=20)
           Lit(value=20)
@@ -43,7 +43,7 @@ Program {
   Let(name=text) {
     Fn(params=windowHandle,value) {
       Block {
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=windowHandle)
           Lit(value=208)
           Lit(value=180)
@@ -68,7 +68,61 @@ Program {
     Fn(params=title) {
       Block {
         Return {
-          Call(target=sys.ui_createWindow) { Var(name=title) Lit(value=640) Lit(value=360) }
+          Call(target=sys.ui.createWindow) { Var(name=title) Lit(value=640) Lit(value=360) }
+        }
+      }
+    }
+  }
+
+  Let(name=appBuild) {
+    Fn(params=title,width,height) {
+      Block {
+        Return { Call(target=sys.ui.createWindow) { Var(name=title) Var(name=width) Var(name=height) } }
+      }
+    }
+  }
+
+  Let(name=appRun) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) } }
+      }
+    }
+  }
+
+  Let(name=appLoop) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Call(target=appRender) { Var(name=windowHandle) Var(name=model) }
+        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+        If {
+          Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+          Block { Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) } } }
+          Block {
+            Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+            Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
+            Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
+            Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+            Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+            If {
+              Eq { Var(name=eventType) Lit(value="closed") }
+              Block { Return { Var(name=model) } }
+              Block {
+                Let(name=nextModel) {
+                  Call(target=appUpdate) {
+                    Var(name=model)
+                    Var(name=eventType)
+                    Var(name=eventKey)
+                    Var(name=eventText)
+                    Var(name=eventX)
+                    Var(name=eventY)
+                  }
+                }
+                Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=nextModel) } }
+              }
+            }
+          }
         }
       }
     }
@@ -92,14 +146,22 @@ Program {
             StrConcat { Var(name=name) Lit(value="!") }
           }
         }
-        Call(target=sys.ui_beginFrame) { Var(name=handle) }
-        Call(target=rect) { Var(name=handle) }
-        Call(target=label) { Var(name=handle) Var(name=greeting) }
-        Call(target=sys.ui_endFrame) { Var(name=handle) }
-        Call(target=sys.ui_present) { Var(name=handle) }
+        Call(target=drawHelloFrame) { Var(name=handle) Var(name=greeting) }
         Call(target=waitForClose) { Var(name=handle) }
-        Call(target=sys.ui_closeWindow) { Var(name=handle) }
         Return { Var(name=handle) }
+      }
+    }
+  }
+
+  Let(name=drawHelloFrame) {
+    Fn(params=windowHandle,greeting) {
+      Block {
+        Call(target=sys.ui.beginFrame) { Var(name=windowHandle) }
+        Call(target=rect) { Var(name=windowHandle) }
+        Call(target=label) { Var(name=windowHandle) Var(name=greeting) }
+        Call(target=sys.ui.endFrame) { Var(name=windowHandle) }
+        Call(target=sys.ui.present) { Var(name=windowHandle) }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -107,15 +169,20 @@ Program {
   Let(name=waitForClose) {
     Fn(params=windowHandle) {
       Block {
-        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=windowHandle) } }
+        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
         If {
-          Eq {
-            Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
-            Lit(value="closed")
-          }
-          Block { Return { Lit(value=0) } }
+          Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+          Block { Return { Call(target=waitForClose) { Var(name=windowHandle) } } }
           Block {
-            Return { Call(target=waitForClose) { Var(name=windowHandle) } }
+            If {
+              Eq {
+                Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
+                Lit(value="closed")
+              }
+              Block { Return { Lit(value=0) } }
+              Block { Return { Call(target=waitForClose) { Var(name=windowHandle) } } }
+            }
           }
         }
       }
@@ -179,7 +246,7 @@ Program {
       Block {
         Return {
           Call(target=attrInt) {
-            Call(target=sys.ui_getWindowSize) { Var(name=handle) }
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
             Lit(value="width")
             Lit(value=0)
           }
@@ -193,7 +260,7 @@ Program {
       Block {
         Return {
           Call(target=attrInt) {
-            Call(target=sys.ui_getWindowSize) { Var(name=handle) }
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
             Lit(value="height")
             Lit(value=0)
           }
@@ -273,62 +340,62 @@ Program {
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=1) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=1) } Call(target=sub) { Var(name=y) Lit(value=1) } Add { Var(name=w) Lit(value=2) } Add { Var(name=h) Lit(value=2) } Call(target=blurBandColor) { Lit(value=1) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=1) } Call(target=sub) { Var(name=y) Lit(value=1) } Add { Var(name=w) Lit(value=2) } Add { Var(name=h) Lit(value=2) } Call(target=blurBandColor) { Lit(value=1) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=2) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=2) } Call(target=sub) { Var(name=y) Lit(value=2) } Add { Var(name=w) Lit(value=4) } Add { Var(name=h) Lit(value=4) } Call(target=blurBandColor) { Lit(value=2) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=2) } Call(target=sub) { Var(name=y) Lit(value=2) } Add { Var(name=w) Lit(value=4) } Add { Var(name=h) Lit(value=4) } Call(target=blurBandColor) { Lit(value=2) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=3) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=3) } Call(target=sub) { Var(name=y) Lit(value=3) } Add { Var(name=w) Lit(value=6) } Add { Var(name=h) Lit(value=6) } Call(target=blurBandColor) { Lit(value=3) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=3) } Call(target=sub) { Var(name=y) Lit(value=3) } Add { Var(name=w) Lit(value=6) } Add { Var(name=h) Lit(value=6) } Call(target=blurBandColor) { Lit(value=3) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=4) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=4) } Call(target=sub) { Var(name=y) Lit(value=4) } Add { Var(name=w) Lit(value=8) } Add { Var(name=h) Lit(value=8) } Call(target=blurBandColor) { Lit(value=4) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=4) } Call(target=sub) { Var(name=y) Lit(value=4) } Add { Var(name=w) Lit(value=8) } Add { Var(name=h) Lit(value=8) } Call(target=blurBandColor) { Lit(value=4) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=5) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=5) } Call(target=sub) { Var(name=y) Lit(value=5) } Add { Var(name=w) Lit(value=10) } Add { Var(name=h) Lit(value=10) } Call(target=blurBandColor) { Lit(value=5) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=5) } Call(target=sub) { Var(name=y) Lit(value=5) } Add { Var(name=w) Lit(value=10) } Add { Var(name=h) Lit(value=10) } Call(target=blurBandColor) { Lit(value=5) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=6) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=6) } Call(target=sub) { Var(name=y) Lit(value=6) } Add { Var(name=w) Lit(value=12) } Add { Var(name=h) Lit(value=12) } Call(target=blurBandColor) { Lit(value=6) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=6) } Call(target=sub) { Var(name=y) Lit(value=6) } Add { Var(name=w) Lit(value=12) } Add { Var(name=h) Lit(value=12) } Call(target=blurBandColor) { Lit(value=6) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=7) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=7) } Call(target=sub) { Var(name=y) Lit(value=7) } Add { Var(name=w) Lit(value=14) } Add { Var(name=h) Lit(value=14) } Call(target=blurBandColor) { Lit(value=7) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=7) } Call(target=sub) { Var(name=y) Lit(value=7) } Add { Var(name=w) Lit(value=14) } Add { Var(name=h) Lit(value=14) } Call(target=blurBandColor) { Lit(value=7) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=8) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=8) } Call(target=sub) { Var(name=y) Lit(value=8) } Add { Var(name=w) Lit(value=16) } Add { Var(name=h) Lit(value=16) } Call(target=blurBandColor) { Lit(value=8) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=8) } Call(target=sub) { Var(name=y) Lit(value=8) } Add { Var(name=w) Lit(value=16) } Add { Var(name=h) Lit(value=16) } Call(target=blurBandColor) { Lit(value=8) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=9) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=9) } Call(target=sub) { Var(name=y) Lit(value=9) } Add { Var(name=w) Lit(value=18) } Add { Var(name=h) Lit(value=18) } Call(target=blurBandColor) { Lit(value=9) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=9) } Call(target=sub) { Var(name=y) Lit(value=9) } Add { Var(name=w) Lit(value=18) } Add { Var(name=h) Lit(value=18) } Call(target=blurBandColor) { Lit(value=9) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=10) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=10) } Call(target=sub) { Var(name=y) Lit(value=10) } Add { Var(name=w) Lit(value=20) } Add { Var(name=h) Lit(value=20) } Call(target=blurBandColor) { Lit(value=10) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=10) } Call(target=sub) { Var(name=y) Lit(value=10) } Add { Var(name=w) Lit(value=20) } Add { Var(name=h) Lit(value=20) } Call(target=blurBandColor) { Lit(value=10) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=11) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=11) } Call(target=sub) { Var(name=y) Lit(value=11) } Add { Var(name=w) Lit(value=22) } Add { Var(name=h) Lit(value=22) } Call(target=blurBandColor) { Lit(value=11) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=11) } Call(target=sub) { Var(name=y) Lit(value=11) } Add { Var(name=w) Lit(value=22) } Add { Var(name=h) Lit(value=22) } Call(target=blurBandColor) { Lit(value=11) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         If {
           Call(target=intGte) { Var(name=effectiveRadius) Lit(value=12) }
-          Block { Call(target=sys.ui_drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=12) } Call(target=sub) { Var(name=y) Lit(value=12) } Add { Var(name=w) Lit(value=24) } Add { Var(name=h) Lit(value=24) } Call(target=blurBandColor) { Lit(value=12) Var(name=effectiveRadius) } } }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=12) } Call(target=sub) { Var(name=y) Lit(value=12) } Add { Var(name=w) Lit(value=24) } Add { Var(name=h) Lit(value=24) } Call(target=blurBandColor) { Lit(value=12) Var(name=effectiveRadius) } } }
           Block { Lit(value=0) }
         }
         Return { Lit(value=0) }
@@ -373,7 +440,7 @@ Program {
                 Var(name=endColor)
               }
             }
-            Call(target=sys.ui_drawRect) {
+            Call(target=sys.ui.drawRect) {
               Var(name=handle)
               Var(name=x)
               Add { Var(name=y) Var(name=row) }
@@ -412,7 +479,7 @@ Program {
             Add { Var(name=topBand) Var(name=midBand) }
           }
         }
-        Call(target=sys.ui_drawRect) {
+        Call(target=sys.ui.drawRect) {
           Var(name=handle)
           Var(name=x)
           Var(name=y)
@@ -420,7 +487,7 @@ Program {
           Var(name=topBand)
           Var(name=startColor)
         }
-        Call(target=sys.ui_drawRect) {
+        Call(target=sys.ui.drawRect) {
           Var(name=handle)
           Var(name=x)
           Add { Var(name=y) Var(name=topBand) }
@@ -428,7 +495,7 @@ Program {
           Var(name=midBand)
           Var(name=midColor)
         }
-        Call(target=sys.ui_drawRect) {
+        Call(target=sys.ui.drawRect) {
           Var(name=handle)
           Var(name=x)
           Add { Add { Var(name=y) Var(name=topBand) } Var(name=midBand) }
@@ -450,7 +517,7 @@ Program {
   Let(name=drawRectTransform) {
     Fn(params=handle,x,y,w,h,color,tx,ty) {
       Block {
-        Call(target=sys.ui_drawRect) {
+        Call(target=sys.ui.drawRect) {
           Var(name=handle)
           Call(target=translateCoord) { Var(name=x) Var(name=tx) }
           Call(target=translateCoord) { Var(name=y) Var(name=ty) }
@@ -466,7 +533,7 @@ Program {
   Let(name=drawEllipseTransform) {
     Fn(params=handle,x,y,w,h,color,tx,ty) {
       Block {
-        Call(target=sys.ui_drawEllipse) {
+        Call(target=sys.ui.drawEllipse) {
           Var(name=handle)
           Call(target=translateCoord) { Var(name=x) Var(name=tx) }
           Call(target=translateCoord) { Var(name=y) Var(name=ty) }
@@ -482,7 +549,7 @@ Program {
   Let(name=drawPathTransform) {
     Fn(params=handle,pathData,color,strokeWidth) {
       Block {
-        Call(target=sys.ui_drawPath) {
+        Call(target=sys.ui.drawPath) {
           Var(name=handle)
           Var(name=pathData)
           Var(name=color)
@@ -496,7 +563,7 @@ Program {
   Let(name=drawTextTransform) {
     Fn(params=handle,x,y,value,color,size,tx,ty) {
       Block {
-        Call(target=sys.ui_drawText) {
+        Call(target=sys.ui.drawText) {
           Var(name=handle)
           Call(target=translateCoord) { Var(name=x) Var(name=tx) }
           Call(target=translateCoord) { Var(name=y) Var(name=ty) }
@@ -555,7 +622,7 @@ Program {
         If {
           Eq { Var(name=shapeKind) Lit(value="ellipse") }
           Block {
-            Call(target=sys.ui_drawEllipse) {
+            Call(target=sys.ui.drawEllipse) {
               Var(name=handle)
               Var(name=x)
               Var(name=y)
@@ -568,7 +635,7 @@ Program {
             If {
               Eq { Var(name=shapeKind) Lit(value="path") }
               Block {
-                Call(target=sys.ui_drawPath) {
+                Call(target=sys.ui.drawPath) {
                   Var(name=handle)
                   Var(name=pathData)
                   Var(name=fillColor)
@@ -576,7 +643,7 @@ Program {
                 }
               }
               Block {
-                Call(target=sys.ui_drawRect) {
+                Call(target=sys.ui.drawRect) {
                   Var(name=handle)
                   Var(name=x)
                   Var(name=y)
@@ -919,7 +986,7 @@ Program {
             Return {
               Add {
                 Lit(value=1)
-                Call(target=textLen) { Call(target=sys.str_remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+                Call(target=textLen) { Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
               }
             }
           }
@@ -957,7 +1024,7 @@ Program {
           Block {
             Return {
               Call(target=fitTextTail) {
-                Call(target=sys.str_remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
+                Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
                 Var(name=maxChars)
               }
             }
@@ -988,9 +1055,9 @@ Program {
       Block {
         Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
         Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
-        Let(name=prefix) { Call(target=sys.str_substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
+        Let(name=prefix) { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
         Let(name=suffixLen) { Call(target=sub) { Var(name=len) Var(name=idx) } }
-        Let(name=suffix) { Call(target=sys.str_substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
+        Let(name=suffix) { Call(target=sys.str.substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
         Return { StrConcat { Var(name=prefix) StrConcat { Var(name=chunk) Var(name=suffix) } } }
       }
     }
@@ -1010,7 +1077,7 @@ Program {
               Block { Return { Var(name=textValue) } }
               Block {
                 Return {
-                  Call(target=sys.str_remove) {
+                  Call(target=sys.str.remove) {
                     Var(name=textValue)
                     Add { Var(name=idx) Lit(value=-1) }
                     Lit(value=1)
@@ -1068,7 +1135,7 @@ Program {
 
   Let(name=textPrefix) {
     Fn(params=textValue,caret) {
-      Block { Return { Call(target=sys.str_substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
+      Block { Return { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
     }
   }
 
@@ -1090,7 +1157,7 @@ Program {
           Block { Return { Var(name=textValue) } }
           Block {
             Return {
-              Call(target=sys.str_remove) {
+              Call(target=sys.str.remove) {
                 Var(name=textValue)
                 Add { Var(name=len) Lit(value=-1) }
                 Lit(value=1)
@@ -1281,7 +1348,7 @@ Program {
   Let(name=debugSizeLine) {
     Fn(params=rawWidth,rawHeight,stableWidth,stableHeight) {
       Block {
-        Call(target=sys.stdout_writeLine) {
+        Call(target=sys.stdout.writeLine) {
           StrConcat {
             Lit(value="[aivectra] size raw=")
             StrConcat {
@@ -1315,12 +1382,12 @@ Program {
       Block {
         Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
         Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
-        Call(target=sys.stdout_writeLine) { Lit(value="[[aivectra.event]]") }
-        Call(target=sys.stdout_writeLine) { StrConcat { Lit(value="type=\"") StrConcat { Var(name=eventType) Lit(value="\"") } } }
-        Call(target=sys.stdout_writeLine) { StrConcat { Lit(value="key=\"") StrConcat { Var(name=keyToken) Lit(value="\"") } } }
-        Call(target=sys.stdout_writeLine) { StrConcat { Lit(value="text=\"") StrConcat { Var(name=textToken) Lit(value="\"") } } }
-        Call(target=sys.stdout_writeLine) { StrConcat { Lit(value="x=") ToString { Var(name=clickX) } } }
-        Call(target=sys.stdout_writeLine) { StrConcat { Lit(value="y=") ToString { Var(name=clickY) } } }
+        Call(target=sys.stdout.writeLine) { Lit(value="[[aivectra.event]]") }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="type=\"") StrConcat { Var(name=eventType) Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="key=\"") StrConcat { Var(name=keyToken) Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="text=\"") StrConcat { Var(name=textToken) Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="x=") ToString { Var(name=clickX) } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="y=") ToString { Var(name=clickY) } } }
         Return { Lit(value=0) }
       }
     }
@@ -1460,7 +1527,7 @@ Program {
   Let(name=debugLayoutLine) {
     Fn(params=windowWidth,windowHeight) {
       Block {
-        Call(target=sys.stdout_writeLine) { Call(target=layoutSignature) { Var(name=windowWidth) Var(name=windowHeight) } }
+        Call(target=sys.stdout.writeLine) { Call(target=layoutSignature) { Var(name=windowWidth) Var(name=windowHeight) } }
         Return { Lit(value=0) }
       }
     }
@@ -1471,7 +1538,7 @@ Program {
       Block {
         Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
         Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
-        Call(target=sys.stdout_writeLine) {
+        Call(target=sys.stdout.writeLine) {
           StrConcat {
             Lit(value="aivectra.event = { type=\"")
             StrConcat {
@@ -1512,7 +1579,7 @@ Program {
   Let(name=debugEmitUi) {
     Fn(params=action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
       Block {
-        Call(target=sys.stdout_writeLine) {
+        Call(target=sys.stdout.writeLine) {
           StrConcat {
             Lit(value="aivectra.ui = { action=\"")
             StrConcat {
@@ -1565,7 +1632,7 @@ Program {
   Let(name=debugEmitSceneNode) {
     Fn(params=frame,order,id,parent,kind,fill,stroke,strokeWidth,textValue,pathValue,fontSize,x,y,w,h,transform) {
       Block {
-        Call(target=sys.stdout_writeLine) {
+        Call(target=sys.stdout.writeLine) {
           StrConcat {
             Lit(value="aivectra.scene = { frame=")
             StrConcat {

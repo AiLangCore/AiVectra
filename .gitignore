@@ -6,3 +6,4 @@ build
 
 .tmp-*
 .toolchain/
+*.aibc1

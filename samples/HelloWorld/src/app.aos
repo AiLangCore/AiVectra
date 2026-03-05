@@ -2,70 +2,26 @@ Program {
   Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
-  Let(name=render) {
-    Fn(params=handle,w,h) {
+  Let(name=appRender) {
+    Fn(params=windowHandle,model) {
       Block {
-        Call(target=sys.ui_beginFrame) { Var(name=handle) }
-        Call(target=drawPanel) { Var(name=handle) Var(name=w) Var(name=h) }
-        Call(target=sys.ui_drawText) {
-          Var(name=handle)
-          Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=228) } Lit(value=0) }
-          Call(target=halfFloor) { Call(target=sub) { Var(name=h) Lit(value=24) } Lit(value=0) }
-          Lit(value="Hello, World!")
-          Lit(value="#ffffff")
-          Lit(value=28)
-        }
-        Call(target=sys.ui_endFrame) { Var(name=handle) }
-        Call(target=sys.ui_present) { Var(name=handle) }
+        Call(target=drawHelloFrame) { Var(name=windowHandle) Var(name=model) }
         Return { Lit(value=0) }
       }
     }
   }
 
-  Let(name=loop) {
-    Fn(params=handle,lastW,lastH) {
-      Block {
-        Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
-        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
-        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=640) } }
-        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=360) } }
-
-        Call(target=render) { Var(name=handle) Var(name=w) Var(name=h) }
-
-        Let(name=evt) { Call(target=sys.ui_pollEvent) { Var(name=handle) } }
-        If {
-          Eq { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } Lit(value="closed") }
-          Block { Return { Lit(value=0) } }
-          Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) } } }
-        }
-      }
+  Let(name=appUpdate) {
+    Fn(params=model,eventType,eventKey,eventText,eventX,eventY) {
+      Block { Return { Var(name=model) } }
     }
   }
 
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) {
-          If {
-            Eq { ChildCount { Var(name=args) } Lit(value=0) }
-            Block { Lit(value="") }
-            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
-          }
-        }
-        If {
-          Eq { Var(name=mode) Lit(value="snapshot") }
-          Block { Return { Lit(value=0) } }
-          Block { Lit(value=0) }
-        }
-        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello") } }
-        Let(name=sizeNode) { Call(target=sys.ui_getWindowSize) { Var(name=handle) } }
-        Let(name=w0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=h0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
-        Let(name=w0) { Call(target=stabilizeSize) { Var(name=w0Raw) Lit(value=640) Lit(value=640) } }
-        Let(name=h0) { Call(target=stabilizeSize) { Var(name=h0Raw) Lit(value=360) Lit(value=360) } }
-        Call(target=loop) { Var(name=handle) Var(name=w0) Var(name=h0) }
-        Call(target=sys.ui_closeWindow) { Var(name=handle) }
+        Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Hello") Lit(value=640) Lit(value=360) } }
+        Call(target=appRun) { Var(name=handle) Lit(value="Hello, World!") }
         Return { Lit(value=0) }
       }
     }
