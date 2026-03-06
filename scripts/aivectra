@@ -557,7 +557,7 @@ run_via_macos_bundle_if_possible() {
   shift
   local target_abs
   target_abs="$(abs_path "$target")"
-  if [[ "$(uname -s)" != "Darwin" ]]; then
+  if [[ "$(uname -s)" != "Darwin" || "${AIVECTRA_RUN_USE_BUNDLE:-0}" != "1" ]]; then
     "$AIRUN_BIN" run "$target_abs" "$@"
     return $?
   fi
