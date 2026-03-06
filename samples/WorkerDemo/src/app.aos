@@ -1,0 +1,426 @@
+Program {
+  Import(path="../../../src/AiVectra/src/lib.aos")
+  Export(name=start)
+
+  Let(name=emptyList) {
+    Fn(params=_) {
+      Block { Return { Map { } } }
+    }
+  }
+
+  Let(name=listAppendString) {
+    Fn(params=listNode,key,value) {
+      Block {
+        Return {
+          AppendChild {
+            Var(name=listNode)
+            MakeLitString {
+              Var(name=key)
+              Var(name=value)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=listAppendInt) {
+    Fn(params=listNode,key,value) {
+      Block {
+        Return {
+          AppendChild {
+            Var(name=listNode)
+            MakeLitInt {
+              Var(name=key)
+              Var(name=value)
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=lineAt) {
+    Fn(params=listNode,index) {
+      Block {
+        Return { AttrValueString { ChildAt { Var(name=listNode) Var(name=index) } Lit(value=0) } }
+      }
+    }
+  }
+
+  Let(name=taskRec) {
+    Fn(params=id,dueTick,secsLabel) {
+      Block {
+        Let(name=base) { MakeBlock { Lit(value="task_rec") } }
+        Let(name=withId) { Call(target=listAppendInt) { Var(name=base) Lit(value="id") Var(name=id) } }
+        Let(name=withDue) { Call(target=listAppendInt) { Var(name=withId) Lit(value="due") Var(name=dueTick) } }
+        Return { Call(target=listAppendString) { Var(name=withDue) Lit(value="secs") Var(name=secsLabel) } }
+      }
+    }
+  }
+
+  Let(name=taskRecId) {
+    Fn(params=rec) {
+      Block { Return { AttrValueInt { ChildAt { Var(name=rec) Lit(value=0) } Lit(value=0) } } }
+    }
+  }
+
+  Let(name=taskRecDue) {
+    Fn(params=rec) {
+      Block { Return { AttrValueInt { ChildAt { Var(name=rec) Lit(value=1) } Lit(value=0) } } }
+    }
+  }
+
+  Let(name=taskRecSecs) {
+    Fn(params=rec) {
+      Block { Return { AttrValueString { ChildAt { Var(name=rec) Lit(value=2) } Lit(value=0) } } }
+    }
+  }
+
+  Let(name=delayIndexFromTaskId) {
+    Fn(params=taskId) {
+      Block {
+        Let(name=q) { Call(target=divFloor) { Var(name=taskId) Lit(value=5) Lit(value=0) } }
+        Let(name=mulQ) { Call(target=mul) { Var(name=q) Lit(value=5) Lit(value=0) } }
+        Return { Call(target=sub) { Var(name=taskId) Var(name=mulQ) } }
+      }
+    }
+  }
+
+  Let(name=delayTicksFromTaskId) {
+    Fn(params=taskId) {
+      Block {
+        Let(name=i) { Call(target=delayIndexFromTaskId) { Var(name=taskId) } }
+        If {
+          Eq { Var(name=i) Lit(value=0) }
+          Block { Return { Lit(value=60) } }
+          Block {
+            If {
+              Eq { Var(name=i) Lit(value=1) }
+              Block { Return { Lit(value=120) } }
+              Block {
+                If {
+                  Eq { Var(name=i) Lit(value=2) }
+                  Block { Return { Lit(value=180) } }
+                  Block {
+                    If {
+                      Eq { Var(name=i) Lit(value=3) }
+                      Block { Return { Lit(value=240) } }
+                      Block { Return { Lit(value=300) } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=delayLabelFromTicks) {
+    Fn(params=ticks) {
+      Block {
+        If {
+          Eq { Var(name=ticks) Lit(value=60) }
+          Block { Return { Lit(value="1.0") } }
+          Block {
+            If {
+              Eq { Var(name=ticks) Lit(value=120) }
+              Block { Return { Lit(value="2.0") } }
+              Block {
+                If {
+                  Eq { Var(name=ticks) Lit(value=180) }
+                  Block { Return { Lit(value="3.0") } }
+                  Block {
+                    If {
+                      Eq { Var(name=ticks) Lit(value=240) }
+                      Block { Return { Lit(value="4.0") } }
+                      Block { Return { Lit(value="5.0") } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appendCompletedLine) {
+    Fn(params=logs,id,secsLabel) {
+      Block {
+        Return {
+          Call(target=listAppendString) {
+            Var(name=logs)
+            Lit(value="line")
+            StrConcat {
+              Lit(value="Task #")
+              StrConcat {
+                ToString { Var(name=id) }
+                StrConcat {
+                  Lit(value=" completed in ")
+                  StrConcat { Var(name=secsLabel) Lit(value="s") }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appendStartedLine) {
+    Fn(params=logs,id) {
+      Block {
+        Return {
+          Call(target=listAppendString) {
+            Var(name=logs)
+            Lit(value="line")
+            StrConcat {
+              Lit(value="Task #")
+              StrConcat { ToString { Var(name=id) } Lit(value=" started") }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=makePollResult) {
+    Fn(params=tasks,logs) {
+      Block {
+        Let(name=base) { MakeBlock { Lit(value="poll_result") } }
+        Let(name=withTasks) { AppendChild { Var(name=base) Var(name=tasks) } }
+        Return { AppendChild { Var(name=withTasks) Var(name=logs) } }
+      }
+    }
+  }
+
+  Let(name=pollTasksOut) {
+    Fn(params=result) {
+      Block { Return { ChildAt { Var(name=result) Lit(value=0) } } }
+    }
+  }
+
+  Let(name=pollLogsOut) {
+    Fn(params=result) {
+      Block { Return { ChildAt { Var(name=result) Lit(value=1) } } }
+    }
+  }
+
+  Let(name=pollTasksLoop) {
+    Fn(params=tasks,index,tick,nextTasks,logs) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=tasks) } }
+          Block { Return { Call(target=makePollResult) { Var(name=nextTasks) Var(name=logs) } } }
+          Block {
+            Let(name=rec) { ChildAt { Var(name=tasks) Var(name=index) } }
+            Let(name=dueTick) { Call(target=taskRecDue) { Var(name=rec) } }
+            If {
+              Call(target=intLt) { Var(name=tick) Var(name=dueTick) }
+              Block {
+                Return {
+                  Call(target=pollTasksLoop) {
+                    Var(name=tasks)
+                    Add { Var(name=index) Lit(value=1) }
+                    Var(name=tick)
+                    AppendChild { Var(name=nextTasks) Var(name=rec) }
+                    Var(name=logs)
+                  }
+                }
+              }
+              Block {
+                Let(name=nextLogs) {
+                  Call(target=appendCompletedLine) {
+                    Var(name=logs)
+                    Call(target=taskRecId) { Var(name=rec) }
+                    Call(target=taskRecSecs) { Var(name=rec) }
+                  }
+                }
+                Return {
+                  Call(target=pollTasksLoop) {
+                    Var(name=tasks)
+                    Add { Var(name=index) Lit(value=1) }
+                    Var(name=tick)
+                    Var(name=nextTasks)
+                    Var(name=nextLogs)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=pollTasks) {
+    Fn(params=tasks,tick,logs) {
+      Block {
+        Return {
+          Call(target=pollTasksLoop) {
+            Var(name=tasks)
+            Lit(value=0)
+            Var(name=tick)
+            Call(target=emptyList) { Lit(value=0) }
+            Var(name=logs)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=joinLinesFrom) {
+    Fn(params=logs,index,count) {
+      Block {
+        If {
+          Eq { Var(name=index) Var(name=count) }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=line) { Call(target=lineAt) { Var(name=logs) Var(name=index) } }
+            If {
+              Eq { Add { Var(name=index) Lit(value=1) } Var(name=count) }
+              Block { Return { Var(name=line) } }
+              Block {
+                Return {
+                  StrConcat {
+                    Var(name=line)
+                    StrConcat {
+                      Lit(value="\n")
+                      Call(target=joinLinesFrom) { Var(name=logs) Add { Var(name=index) Lit(value=1) } Var(name=count) }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=visibleLogText) {
+    Fn(params=logs,maxLines) {
+      Block {
+        Let(name=count) { ChildCount { Var(name=logs) } }
+        Let(name=startIndex) {
+          If {
+            Call(target=intLt) { Var(name=count) Var(name=maxLines) }
+            Block { Lit(value=0) }
+            Block { Call(target=sub) { Var(name=count) Var(name=maxLines) } }
+          }
+        }
+        Return { Call(target=joinLinesFrom) { Var(name=logs) Var(name=startIndex) Var(name=count) } }
+      }
+    }
+  }
+
+  Let(name=decPositive) {
+    Fn(params=value) {
+      Block {
+        If {
+          Call(target=intLt) { Lit(value=0) Var(name=value) }
+          Block { Return { Add { Var(name=value) Lit(value=-1) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=render) {
+    Fn(params=handle,w,h,logs,activeCount,buttonFlash) {
+      Block {
+        Call(target=sys.ui.beginFrame) { Var(name=handle) }
+        Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#0f172a") }
+        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Lit(value=36) Lit(value="Worker Demo") Lit(value="#ffffff") Lit(value=26) }
+
+        Call(target=sys.ui.endFrame) { Var(name=handle) }
+        Call(target=sys.ui.present) { Var(name=handle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=loop) {
+    Fn(params=handle,nextTaskId,tasks,logs,lastW,lastH,buttonFlash,tick) {
+      Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=900) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=620) } }
+
+        Let(name=polled) { Call(target=pollTasks) { Var(name=tasks) Var(name=tick) Var(name=logs) } }
+        Let(name=tasksNow) { Call(target=pollTasksOut) { Var(name=polled) } }
+        Let(name=logsNow) { Call(target=pollLogsOut) { Var(name=polled) } }
+        Let(name=nextFlash) { Call(target=decPositive) { Var(name=buttonFlash) } }
+
+        Call(target=render) { Var(name=handle) Var(name=w) Var(name=h) Var(name=logsNow) ChildCount { Var(name=tasksNow) } Var(name=nextFlash) }
+
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
+        Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+        Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+        Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+        Let(name=nextTick) { Add { Var(name=tick) Lit(value=1) } }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="closed") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            If {
+              Eq { Var(name=eventType) Lit(value="click") }
+              Block {
+                If {
+                  Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=40) Lit(value=140) Lit(value=44) }
+                  Block {
+                    Let(name=taskId) { Var(name=nextTaskId) }
+                    Let(name=delayTicks) { Call(target=delayTicksFromTaskId) { Var(name=taskId) } }
+                    Let(name=delayLabel) { Call(target=delayLabelFromTicks) { Var(name=delayTicks) } }
+                    Let(name=dueTick) { Add { Var(name=tick) Var(name=delayTicks) } }
+                    Let(name=tasksNext) { AppendChild { Var(name=tasksNow) Call(target=taskRec) { Var(name=taskId) Var(name=dueTick) Var(name=delayLabel) } } }
+                    Let(name=logsNext) { Call(target=appendStartedLine) { Var(name=logsNow) Var(name=taskId) } }
+                    Return { Call(target=loop) { Var(name=handle) Add { Var(name=taskId) Lit(value=1) } Var(name=tasksNext) Var(name=logsNext) Var(name=w) Var(name=h) Lit(value=8) Var(name=nextTick) } }
+                  }
+                  Block {
+                    Return { Call(target=loop) { Var(name=handle) Var(name=nextTaskId) Var(name=tasksNow) Var(name=logsNow) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=nextTick) } }
+                  }
+                }
+              }
+              Block {
+                Return { Call(target=loop) { Var(name=handle) Var(name=nextTaskId) Var(name=tasksNow) Var(name=logsNow) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=nextTick) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="snapshot") }
+          Block { Return { Lit(value=0) } }
+          Block { Lit(value=0) }
+        }
+        Let(name=handle) { Call(target=sys.ui.createWindow) { Lit(value="AiVectra WorkerDemo") Lit(value=900) Lit(value=620) } }
+        Call(target=loop) {
+          Var(name=handle)
+          Lit(value=1)
+          Call(target=emptyList) { Lit(value=0) }
+          Call(target=emptyList) { Lit(value=0) }
+          Lit(value=900)
+          Lit(value=620)
+          Lit(value=0)
+          Lit(value=0)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+}

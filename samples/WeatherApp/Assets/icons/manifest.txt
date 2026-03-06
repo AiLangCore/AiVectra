@@ -1,0 +1,5 @@
+AiVectra AppIcon
+format=svg
+file=app.svg
+style=ailang_logo
+label=AV

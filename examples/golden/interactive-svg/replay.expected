@@ -1,0 +1,8 @@
+[aivectra] replay begin
+[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,424,832,52 button=408,492,160,56
+[aivectra] replay overlapHit=top-ellipse
+[aivectra] replay insert=Jone
+[aivectra] replay backspace=Jon
+[aivectra] replay greeting=Greeting: Hello, Joe!
+[aivectra] replay end
+Ok#ok1(type=void)

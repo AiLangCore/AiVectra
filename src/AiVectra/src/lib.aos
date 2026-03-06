@@ -1,144 +1,330 @@
-Program#aivl_p1 {
-  Let#aivl_l1(name=version) {
-    Fn#aivl_f1(params=_) {
-      Block#aivl_b1 { Return#aivl_r1 { Lit#aivl_i1(value="0.0.1") } }
+Program {
+  Let(name=version) {
+    Fn(params=_) {
+      Block { Return { Lit(value="0.0.1") } }
     }
   }
 
-  Let#aivl_l2(name=library) {
-    Fn#aivl_f2(params=_) {
-      Block#aivl_b2 { Return#aivl_r2 { Lit#aivl_i2(value="AiVectra") } }
+  Let(name=library) {
+    Fn(params=_) {
+      Block { Return { Lit(value="AiVectra") } }
     }
   }
 
-  Let#aivl_l3(name=rect) {
-    Fn#aivl_f3(params=windowHandle) {
-      Block#aivl_b3 {
-        Call#aivl_c3(target=sys.ui_drawRect) {
-          Var#aivl_v1(name=windowHandle)
-          Lit#aivl_i3(value=20)
-          Lit#aivl_i4(value=20)
-          Lit#aivl_i24(value=600)
-          Lit#aivl_i25(value=320)
-          Lit#aivl_i26(value="#1e293b")
+  Let(name=rect) {
+    Fn(params=windowHandle) {
+      Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=panelX) { Lit(value=20) }
+        Let(name=panelY) { Lit(value=20) }
+        Let(name=panelWRaw) { Call(target=sub) { Var(name=w) Lit(value=40) } }
+        Let(name=panelHRaw) { Call(target=sub) { Var(name=h) Lit(value=40) } }
+        Let(name=panelW) { Call(target=stabilizeSize) { Var(name=panelWRaw) Lit(value=600) Lit(value=1) } }
+        Let(name=panelH) { Call(target=stabilizeSize) { Var(name=panelHRaw) Lit(value=320) Lit(value=1) } }
+        Call(target=sys.ui.drawRect) {
+          Var(name=windowHandle)
+          Var(name=panelX)
+          Var(name=panelY)
+          Var(name=panelW)
+          Var(name=panelH)
+          Lit(value="#1e293b")
         }
-        Return#aivl_r3 { Lit#aivl_i27(value=0) }
+        Return { Lit(value=0) }
       }
     }
   }
 
-  Let#aivl_l4(name=circle) {
-    Fn#aivl_f4(params=spec) {
-      Block#aivl_b4 {
-        Return#aivl_r4 {
-          StrConcat#aivl_s3 {
-            Lit#aivl_i5(value="Circle(")
-            StrConcat#aivl_s4 { Var#aivl_v2(name=spec) Lit#aivl_i6(value=")") }
+  Let(name=circle) {
+    Fn(params=spec) {
+      Block {
+        Return {
+          StrConcat {
+            Lit(value="Circle(")
+            StrConcat { ToString { Var(name=spec) } Lit(value=")") }
           }
         }
       }
     }
   }
 
-  Let#aivl_l5(name=text) {
-    Fn#aivl_f5(params=windowHandle,value) {
-      Block#aivl_b5 {
-        Call#aivl_c4(target=sys.ui_drawText) {
-          Var#aivl_v3(name=windowHandle)
-          Lit#aivl_i7(value=208)
-          Lit#aivl_i8(value=180)
-          Var#aivl_v27(name=value)
-          Lit#aivl_i29(value="#ffffff")
-          Lit#aivl_i30(value=28)
-        }
-        Return#aivl_r5 { Lit#aivl_i31(value=0) }
-      }
-    }
-  }
-
-  Let#aivl_l6(name=label) {
-    Fn#aivl_f6(params=windowHandle,value) {
-      Block#aivl_b6 {
-        Return#aivl_r6 { Call#aivl_c5(target=text) { Var#aivl_v4(name=windowHandle) Var#aivl_v28(name=value) } }
-      }
-    }
-  }
-
-  Let#aivl_l7(name=window) {
-    Fn#aivl_f7(params=title) {
-      Block#aivl_b7 {
-        Return#aivl_r7 {
-          Call#aivl_c6(target=sys.ui_createWindow) { Var#aivl_v5(name=title) Lit#aivl_i11(value=640) Lit#aivl_i12(value=360) }
-        }
-      }
-    }
-  }
-
-  Let#aivl_l8(name=helloWindow) {
-    Fn#aivl_f8(params=_) {
-      Block#aivl_b8 {
-        Return#aivl_r8 { Call#aivl_c18(target=helloNamedWindow) { Lit#aivl_i40(value="World") } }
-      }
-    }
-  }
-
-  Let#aivl_l15(name=helloNamedWindow) {
-    Fn#aivl_f11(params=name) {
-      Block#aivl_b17 {
-        Let#aivl_l16(name=handle) { Call#aivl_c1(target=window) { Lit#aivl_i13(value="AiVectra Hello") } }
-        Let#aivl_l17(name=greeting) {
-          StrConcat#aivl_s12 {
-            Lit#aivl_i41(value="Hello ")
-            StrConcat#aivl_s13 { Var#aivl_v29(name=name) Lit#aivl_i42(value="!") }
+  Let(name=text) {
+    Fn(params=windowHandle,value) {
+      Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=panelX) { Lit(value=20) }
+        Let(name=panelY) { Lit(value=20) }
+        Let(name=panelWRaw) { Call(target=sub) { Var(name=w) Lit(value=40) } }
+        Let(name=panelHRaw) { Call(target=sub) { Var(name=h) Lit(value=40) } }
+        Let(name=panelW) { Call(target=stabilizeSize) { Var(name=panelWRaw) Lit(value=600) Lit(value=1) } }
+        Let(name=panelH) { Call(target=stabilizeSize) { Var(name=panelHRaw) Lit(value=320) Lit(value=1) } }
+        Let(name=fontCandidate) { Call(target=divFloor) { Var(name=panelH) Lit(value=9) Lit(value=0) } }
+        Let(name=fontSize) {
+          If {
+            Call(target=intLt) { Var(name=fontCandidate) Lit(value=18) }
+            Block { Lit(value=18) }
+            Block {
+              If {
+                Call(target=intLt) { Lit(value=34) Var(name=fontCandidate) }
+                Block { Lit(value=34) }
+                Block { Var(name=fontCandidate) }
+              }
+            }
           }
         }
-        Call#aivl_c2(target=sys.ui_beginFrame) { Var#aivl_v6(name=handle) }
-        Call#aivl_c7(target=rect) { Var#aivl_v7(name=handle) }
-        Call#aivl_c8(target=label) { Var#aivl_v8(name=handle) Var#aivl_v30(name=greeting) }
-        Call#aivl_c9(target=sys.ui_endFrame) { Var#aivl_v9(name=handle) }
-        Call#aivl_c10(target=sys.ui_present) { Var#aivl_v10(name=handle) }
-        Call#aivl_c11(target=waitForClose) { Var#aivl_v13(name=handle) }
-        Call#aivl_c12(target=sys.ui_closeWindow) { Var#aivl_v11(name=handle) }
-        Return#aivl_r15 { Var#aivl_v12(name=handle) }
+        Let(name=charWidth) { Add { Call(target=halfFloor) { Var(name=fontSize) Lit(value=0) } Lit(value=1) } }
+        Let(name=textWidth) { Call(target=mul) { Var(name=charWidth) Call(target=textLen) { Var(name=value) } Lit(value=0) } }
+        Let(name=xOffsetRaw) { Call(target=sub) { Var(name=panelW) Var(name=textWidth) } }
+        Let(name=xOffset) {
+          If {
+            Call(target=intLt) { Var(name=xOffsetRaw) Lit(value=0) }
+            Block { Lit(value=0) }
+            Block { Call(target=halfFloor) { Var(name=xOffsetRaw) Lit(value=0) } }
+          }
+        }
+        Let(name=textX) { Add { Var(name=panelX) Var(name=xOffset) } }
+        Let(name=textY) { Add { Var(name=panelY) Call(target=halfFloor) { Add { Var(name=panelH) Var(name=fontSize) } Lit(value=0) } } }
+        Call(target=sys.ui.drawText) {
+          Var(name=windowHandle)
+          Var(name=textX)
+          Var(name=textY)
+          Var(name=value)
+          Lit(value="#ffffff")
+          Var(name=fontSize)
+        }
+        Return { Lit(value=0) }
       }
     }
   }
 
-  Let#aivl_l12(name=waitForClose) {
-    Fn#aivl_f9(params=windowHandle) {
-      Block#aivl_b9 {
-        Let#aivl_l13(name=evt) { Call#aivl_c13(target=sys.ui_pollEvent) { Var#aivl_v14(name=windowHandle) } }
-        If#aivl_if2 {
-          Eq#aivl_e11 {
-            Call#aivl_c16(target=attrString) { Var#aivl_v15(name=evt) Lit#aivl_i33(value="type") Lit#aivl_i37(value=0) }
-            Lit#aivl_i34(value="closed")
-          }
-          Block#aivl_b10 { Return#aivl_r9 { Lit#aivl_i35(value=0) } }
-          Block#aivl_b11 {
-            Call#aivl_c14(target=sys.time_sleepMs) { Lit#aivl_i36(value=16) }
-            Return#aivl_r10 { Call#aivl_c15(target=waitForClose) { Var#aivl_v16(name=windowHandle) } }
-          }
+  Let(name=label) {
+    Fn(params=windowHandle,value) {
+      Block {
+        Return { Call(target=text) { Var(name=windowHandle) Var(name=value) } }
+      }
+    }
+  }
+
+  Let(name=window) {
+    Fn(params=title) {
+      Block {
+        Return {
+          Call(target=sys.ui.createWindow) { Var(name=title) Lit(value=640) Lit(value=360) }
         }
       }
     }
   }
 
-  Let#aivl_l14(name=attrString) {
-    Fn#aivl_f10(params=node,key,index) {
-      Block#aivl_b12 {
-        If#aivl_if3 {
-          Eq#aivl_e12 { Var#aivl_v17(name=index) AttrCount#aivl_ac1 { Var#aivl_v18(name=node) } }
-          Block#aivl_b13 { Return#aivl_r11 { Lit#aivl_i38(value="") } }
-          Block#aivl_b14 {
-            If#aivl_if4 {
-              Eq#aivl_e13 { AttrKey#aivl_ak1 { Var#aivl_v19(name=node) Var#aivl_v20(name=index) } Var#aivl_v21(name=key) }
-              Block#aivl_b15 { Return#aivl_r12 { AttrValueString#aivl_avs2 { Var#aivl_v22(name=node) Var#aivl_v23(name=index) } } }
-              Block#aivl_b16 {
-                Return#aivl_r13 {
-                  Call#aivl_c17(target=attrString) {
-                    Var#aivl_v24(name=node)
-                    Var#aivl_v25(name=key)
-                    Add#aivl_a1 { Var#aivl_v26(name=index) Lit#aivl_i39(value=1) }
+  Let(name=appBuild) {
+    Fn(params=title,width,height) {
+      Block {
+        Return { Call(target=sys.ui.createWindow) { Var(name=title) Var(name=width) Var(name=height) } }
+      }
+    }
+  }
+
+  Let(name=appRun) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) } }
+      }
+    }
+  }
+
+  Let(name=appLoop) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Let(name=currentModel) { Var(name=model) }
+        Loop {
+          Block {
+            Call(target=appRender) { Var(name=windowHandle) Var(name=currentModel) }
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
+            Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+            Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
+            Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
+            Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+            Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+            If {
+              Eq { Var(name=eventType) Lit(value="closed") }
+              Block { Break { } }
+              Block { Lit(value=0) }
+            }
+            Let(name=nextModel) {
+              Call(target=appUpdate) {
+                Var(name=currentModel)
+                Var(name=eventType)
+                Var(name=eventKey)
+                Var(name=eventText)
+                Var(name=eventX)
+                Var(name=eventY)
+              }
+            }
+            Let(name=currentModel) { Var(name=nextModel) }
+            Continue { }
+          }
+        }
+        Return { Var(name=currentModel) }
+      }
+    }
+  }
+
+  Let(name=helloWindow) {
+    Fn(params=_) {
+      Block {
+        Return { Call(target=helloNamedWindow) { Lit(value="World") } }
+      }
+    }
+  }
+
+  Let(name=helloNamedWindow) {
+    Fn(params=name) {
+      Block {
+        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello") } }
+        Let(name=greeting) {
+          StrConcat {
+            Lit(value="Hello ")
+            StrConcat { ToString { Var(name=name) } Lit(value="!") }
+          }
+        }
+        Call(target=debugEmitSceneNode) {
+          Lit(value=1)
+          Lit(value=1)
+          Lit(value="hello_panel")
+          Lit(value="root")
+          Lit(value="Rect")
+          Lit(value="#1e293b")
+          Lit(value="")
+          Lit(value=0)
+          Lit(value="")
+          Lit(value="")
+          Lit(value=0)
+          Lit(value=20)
+          Lit(value=20)
+          Lit(value=600)
+          Lit(value=320)
+          Lit(value="matrix(1,0,0,1,0,0)")
+        }
+        Call(target=debugEmitSceneNode) {
+          Lit(value=1)
+          Lit(value=2)
+          Lit(value="hello_text")
+          Lit(value="root")
+          Lit(value="Text")
+          Lit(value="#ffffff")
+          Lit(value="")
+          Lit(value=0)
+          Var(name=greeting)
+          Lit(value="")
+          Lit(value=28)
+          Lit(value=208)
+          Lit(value=180)
+          Lit(value=0)
+          Lit(value=0)
+          Lit(value="matrix(1,0,0,1,0,0)")
+        }
+        Call(target=waitForCloseHello) { Var(name=handle) Var(name=greeting) }
+        Return { Var(name=handle) }
+      }
+    }
+  }
+
+  Let(name=waitForCloseHello) {
+    Fn(params=windowHandle,greeting) {
+      Block {
+        Loop {
+          Block {
+            Call(target=drawHelloFrame) { Var(name=windowHandle) Var(name=greeting) }
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq {
+                Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
+                Lit(value="closed")
+              }
+              Block { Break { } }
+              Block { Continue { } }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawHelloFrame) {
+    Fn(params=windowHandle,greeting) {
+      Block {
+        Call(target=sys.ui.beginFrame) { Var(name=windowHandle) }
+        Call(target=rect) { Var(name=windowHandle) }
+        Call(target=label) { Var(name=windowHandle) Var(name=greeting) }
+        Call(target=sys.ui.endFrame) { Var(name=windowHandle) }
+        Call(target=sys.ui.present) { Var(name=windowHandle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=waitForClose) {
+    Fn(params=windowHandle) {
+      Block {
+        Loop {
+          Block {
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq {
+                Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
+                Lit(value="closed")
+              }
+              Block { Break { } }
+              Block { Continue { } }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=attrString) {
+    Fn(params=node,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) AttrCount { Var(name=node) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            If {
+              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
+              Block { Return { AttrValueString { Var(name=node) Var(name=index) } } }
+              Block {
+                Return {
+                  Call(target=attrString) {
+                    Var(name=node)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
                   }
                 }
               }
@@ -149,15 +335,1754 @@ Program#aivl_p1 {
     }
   }
 
-  Export#aivl_e1(name=library)
-  Export#aivl_e2(name=version)
-  Export#aivl_e3(name=rect)
-  Export#aivl_e4(name=circle)
-  Export#aivl_e5(name=text)
-  Export#aivl_e6(name=label)
-  Export#aivl_e7(name=window)
-  Export#aivl_e8(name=helloWindow)
-  Export#aivl_e9(name=waitForClose)
-  Export#aivl_e10(name=attrString)
-  Export#aivl_e14(name=helloNamedWindow)
+  Let(name=attrInt) {
+    Fn(params=node,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) AttrCount { Var(name=node) } }
+          Block { Return { Lit(value=-1) } }
+          Block {
+            If {
+              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
+              Block { Return { AttrValueInt { Var(name=node) Var(name=index) } } }
+              Block {
+                Return {
+                  Call(target=attrInt) {
+                    Var(name=node)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=uiWidth) {
+    Fn(params=handle) {
+      Block {
+        Return {
+          Call(target=attrInt) {
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
+            Lit(value="width")
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=uiHeight) {
+    Fn(params=handle) {
+      Block {
+        Return {
+          Call(target=attrInt) {
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
+            Lit(value="height")
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawPanel) {
+    Fn(params=handle,windowWidth,windowHeight) {
+      Block {
+        Call(target=drawGaussianBlurRect) {
+          Var(name=handle)
+          Lit(value=20)
+          Lit(value=20)
+          Add { Var(name=windowWidth) Lit(value=-40) }
+          Add { Var(name=windowHeight) Lit(value=-40) }
+          Lit(value=12)
+        }
+        Call(target=drawLinearGradientRect) {
+          Var(name=handle)
+          Lit(value=20)
+          Lit(value=20)
+          Add { Var(name=windowWidth) Lit(value=-40) }
+          Add { Var(name=windowHeight) Lit(value=-40) }
+          Lit(value="#1e293b")
+          Lit(value="#334155")
+          Lit(value="#1e293b")
+          Lit(value=8)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=blurBandColor) {
+    Fn(params=current,maxRadius) {
+      Block {
+        Let(name=half) { Call(target=halfFloor) { Var(name=maxRadius) Lit(value=0) } }
+        Let(name=quarter) { Call(target=halfFloor) { Var(name=half) Lit(value=0) } }
+        If {
+          Eq { Var(name=current) Var(name=maxRadius) }
+          Block { Return { Lit(value="#020617") } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=half) Var(name=current) }
+              Block { Return { Lit(value="#0f172a") } }
+              Block {
+                If {
+                  Call(target=intLt) { Var(name=quarter) Var(name=current) }
+                  Block { Return { Lit(value="#172554") } }
+                  Block { Return { Lit(value="#1e293b") } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawGaussianBlurRect) {
+    Fn(params=handle,x,y,w,h,radius) {
+      Block {
+        Let(name=effectiveRadius) {
+          If {
+            Call(target=intLt) { Var(name=radius) Lit(value=1) }
+            Block { Lit(value=1) }
+            Block {
+              If {
+                Call(target=intLt) { Lit(value=12) Var(name=radius) }
+                Block { Lit(value=12) }
+                Block { Var(name=radius) }
+              }
+            }
+          }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=1) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=1) } Call(target=sub) { Var(name=y) Lit(value=1) } Add { Var(name=w) Lit(value=2) } Add { Var(name=h) Lit(value=2) } Call(target=blurBandColor) { Lit(value=1) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=2) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=2) } Call(target=sub) { Var(name=y) Lit(value=2) } Add { Var(name=w) Lit(value=4) } Add { Var(name=h) Lit(value=4) } Call(target=blurBandColor) { Lit(value=2) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=3) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=3) } Call(target=sub) { Var(name=y) Lit(value=3) } Add { Var(name=w) Lit(value=6) } Add { Var(name=h) Lit(value=6) } Call(target=blurBandColor) { Lit(value=3) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=4) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=4) } Call(target=sub) { Var(name=y) Lit(value=4) } Add { Var(name=w) Lit(value=8) } Add { Var(name=h) Lit(value=8) } Call(target=blurBandColor) { Lit(value=4) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=5) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=5) } Call(target=sub) { Var(name=y) Lit(value=5) } Add { Var(name=w) Lit(value=10) } Add { Var(name=h) Lit(value=10) } Call(target=blurBandColor) { Lit(value=5) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=6) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=6) } Call(target=sub) { Var(name=y) Lit(value=6) } Add { Var(name=w) Lit(value=12) } Add { Var(name=h) Lit(value=12) } Call(target=blurBandColor) { Lit(value=6) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=7) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=7) } Call(target=sub) { Var(name=y) Lit(value=7) } Add { Var(name=w) Lit(value=14) } Add { Var(name=h) Lit(value=14) } Call(target=blurBandColor) { Lit(value=7) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=8) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=8) } Call(target=sub) { Var(name=y) Lit(value=8) } Add { Var(name=w) Lit(value=16) } Add { Var(name=h) Lit(value=16) } Call(target=blurBandColor) { Lit(value=8) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=9) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=9) } Call(target=sub) { Var(name=y) Lit(value=9) } Add { Var(name=w) Lit(value=18) } Add { Var(name=h) Lit(value=18) } Call(target=blurBandColor) { Lit(value=9) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=10) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=10) } Call(target=sub) { Var(name=y) Lit(value=10) } Add { Var(name=w) Lit(value=20) } Add { Var(name=h) Lit(value=20) } Call(target=blurBandColor) { Lit(value=10) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=11) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=11) } Call(target=sub) { Var(name=y) Lit(value=11) } Add { Var(name=w) Lit(value=22) } Add { Var(name=h) Lit(value=22) } Call(target=blurBandColor) { Lit(value=11) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=12) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=12) } Call(target=sub) { Var(name=y) Lit(value=12) } Add { Var(name=w) Lit(value=24) } Add { Var(name=h) Lit(value=24) } Call(target=blurBandColor) { Lit(value=12) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=gradientColor3) {
+    Fn(params=offset,size,startColor,midColor,endColor) {
+      Block {
+        Let(name=half) { Call(target=halfFloor) { Var(name=size) Lit(value=0) } }
+        Let(name=quarter) { Call(target=halfFloor) { Var(name=half) Lit(value=0) } }
+        Let(name=threeQuarter) { Add { Var(name=half) Var(name=quarter) } }
+        If {
+          Call(target=intLt) { Var(name=offset) Var(name=quarter) }
+          Block { Return { Var(name=startColor) } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=offset) Var(name=threeQuarter) }
+              Block { Return { Var(name=midColor) } }
+              Block { Return { Var(name=endColor) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawLinearGradientRectLoop) {
+    Fn(params=handle,x,y,w,h,startColor,midColor,endColor,row,step) {
+      Block {
+        If {
+          Call(target=intGte) { Var(name=row) Var(name=h) }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Let(name=color) {
+              Call(target=gradientColor3) {
+                Var(name=row)
+                Var(name=h)
+                Var(name=startColor)
+                Var(name=midColor)
+                Var(name=endColor)
+              }
+            }
+            Call(target=sys.ui.drawRect) {
+              Var(name=handle)
+              Var(name=x)
+              Add { Var(name=y) Var(name=row) }
+              Var(name=w)
+              Var(name=step)
+              Var(name=color)
+            }
+            Return {
+              Call(target=drawLinearGradientRectLoop) {
+                Var(name=handle)
+                Var(name=x)
+                Var(name=y)
+                Var(name=w)
+                Var(name=h)
+                Var(name=startColor)
+                Var(name=midColor)
+                Var(name=endColor)
+                Add { Var(name=row) Var(name=step) }
+                Var(name=step)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawLinearGradientRect) {
+    Fn(params=handle,x,y,w,h,startColor,midColor,endColor,step) {
+      Block {
+        Let(name=topBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=midBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=bottomBand) {
+          Call(target=sub) {
+            Var(name=h)
+            Add { Var(name=topBand) Var(name=midBand) }
+          }
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Var(name=y)
+          Var(name=w)
+          Var(name=topBand)
+          Var(name=startColor)
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Var(name=y) Var(name=topBand) }
+          Var(name=w)
+          Var(name=midBand)
+          Var(name=midColor)
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Add { Var(name=y) Var(name=topBand) } Var(name=midBand) }
+          Var(name=w)
+          Var(name=bottomBand)
+          Var(name=endColor)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=translateCoord) {
+    Fn(params=value,delta) {
+      Block { Return { Add { Var(name=value) Var(name=delta) } } }
+    }
+  }
+
+  Let(name=drawRectTransform) {
+    Fn(params=handle,x,y,w,h,color,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=w)
+          Var(name=h)
+          Var(name=color)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawEllipseTransform) {
+    Fn(params=handle,x,y,w,h,color,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawEllipse) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=w)
+          Var(name=h)
+          Var(name=color)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawPathTransform) {
+    Fn(params=handle,pathData,color,strokeWidth) {
+      Block {
+        Call(target=sys.ui.drawPath) {
+          Var(name=handle)
+          Var(name=pathData)
+          Var(name=color)
+          Var(name=strokeWidth)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawTextTransform) {
+    Fn(params=handle,x,y,value,color,size,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=value)
+          Var(name=color)
+          Var(name=size)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=interactiveFillForState) {
+    Fn(params=state,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
+      Block {
+        If {
+          Eq { Var(name=state) Lit(value="pressed") }
+          Block { Return { Var(name=pressedFill) } }
+          Block {
+            If {
+              Eq { Var(name=state) Lit(value="hover") }
+              Block { Return { Var(name=hoverFill) } }
+              Block {
+                If {
+                  Eq { Var(name=state) Lit(value="focused") }
+                  Block { Return { Var(name=focusedFill) } }
+                  Block {
+                    If {
+                      Eq { Var(name=state) Lit(value="disabled") }
+                      Block { Return { Var(name=disabledFill) } }
+                      Block { Return { Var(name=normalFill) } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=interactiveVectorState) {
+    Fn(params=handle,x,y,w,h,state,shapeKind,pathData,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
+      Block {
+        Let(name=fillColor) {
+          Call(target=interactiveFillForState) {
+            Var(name=state)
+            Var(name=normalFill)
+            Var(name=pressedFill)
+            Var(name=hoverFill)
+            Var(name=focusedFill)
+            Var(name=disabledFill)
+          }
+        }
+        If {
+          Eq { Var(name=shapeKind) Lit(value="ellipse") }
+          Block {
+            Call(target=sys.ui.drawEllipse) {
+              Var(name=handle)
+              Var(name=x)
+              Var(name=y)
+              Var(name=w)
+              Var(name=h)
+              Var(name=fillColor)
+            }
+          }
+          Block {
+            If {
+              Eq { Var(name=shapeKind) Lit(value="path") }
+              Block {
+                Call(target=sys.ui.drawPath) {
+                  Var(name=handle)
+                  Var(name=pathData)
+                  Var(name=fillColor)
+                  Lit(value=0)
+                }
+              }
+              Block {
+                Call(target=sys.ui.drawRect) {
+                  Var(name=handle)
+                  Var(name=x)
+                  Var(name=y)
+                  Var(name=w)
+                  Var(name=h)
+                  Var(name=fillColor)
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=intLt) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Eq { Var(name=a) Var(name=b) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            If {
+              Eq { Var(name=a) Lit(value=0) }
+              Block { Return { Lit(value=true) } }
+              Block {
+                If {
+                  Eq { Var(name=b) Lit(value=0) }
+                  Block { Return { Lit(value=false) } }
+                  Block {
+                    Return {
+                      Call(target=intLt) {
+                        Add { Var(name=a) Lit(value=-1) }
+                        Add { Var(name=b) Lit(value=-1) }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=intGte) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=a) Var(name=b) }
+          Block { Return { Lit(value=false) } }
+          Block { Return { Lit(value=true) } }
+        }
+      }
+    }
+  }
+
+  Let(name=intLte) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=b) Var(name=a) }
+          Block { Return { Lit(value=false) } }
+          Block { Return { Lit(value=true) } }
+        }
+      }
+    }
+  }
+
+  Let(name=pointInRect) {
+    Fn(params=x,y,rx,ry,rw,rh) {
+      Block {
+        If {
+          Call(target=intGte) { Var(name=x) Var(name=rx) }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=x) Add { Var(name=rx) Var(name=rw) } }
+              Block {
+                If {
+                  Call(target=intGte) { Var(name=y) Var(name=ry) }
+                  Block { Return { Call(target=intLt) { Var(name=y) Add { Var(name=ry) Var(name=rh) } } } }
+                  Block { Return { Lit(value=false) } }
+                }
+              }
+              Block { Return { Lit(value=false) } }
+            }
+          }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=pointInEllipse) {
+    Fn(params=x,y,ex,ey,ew,eh) {
+      Block {
+        Let(name=insideBounds) { Call(target=pointInRect) { Var(name=x) Var(name=y) Var(name=ex) Var(name=ey) Var(name=ew) Var(name=eh) } }
+        If {
+          Var(name=insideBounds)
+          Block {
+            Let(name=quarterX) { Call(target=halfFloor) { Call(target=halfFloor) { Var(name=ew) Lit(value=0) } Lit(value=0) } }
+            Let(name=quarterY) { Call(target=halfFloor) { Call(target=halfFloor) { Var(name=eh) Lit(value=0) } Lit(value=0) } }
+            Let(name=leftBand) { Add { Var(name=ex) Var(name=quarterX) } }
+            Let(name=rightBand) { Add { Var(name=ex) Add { Var(name=quarterX) Add { Var(name=quarterX) Var(name=quarterX) } } } }
+            Let(name=topBand) { Add { Var(name=ey) Var(name=quarterY) } }
+            Let(name=bottomBand) { Add { Var(name=ey) Add { Var(name=quarterY) Add { Var(name=quarterY) Var(name=quarterY) } } } }
+            Let(name=inMidX) {
+              If {
+                Call(target=intGte) { Var(name=x) Var(name=leftBand) }
+                Block { Call(target=intLt) { Var(name=x) Var(name=rightBand) } }
+                Block { Lit(value=false) }
+              }
+            }
+            Let(name=inMidY) {
+              If {
+                Call(target=intGte) { Var(name=y) Var(name=topBand) }
+                Block { Call(target=intLt) { Var(name=y) Var(name=bottomBand) } }
+                Block { Lit(value=false) }
+              }
+            }
+            If {
+              Var(name=inMidX)
+              Block { Return { Lit(value=true) } }
+              Block { Return { Var(name=inMidY) } }
+            }
+          }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=pointInPathBounds) {
+    Fn(params=x,y,px,py,pw,ph) {
+      Block {
+        Return { Call(target=pointInRect) { Var(name=x) Var(name=y) Var(name=px) Var(name=py) Var(name=pw) Var(name=ph) } }
+      }
+    }
+  }
+
+  Let(name=resolveSize) {
+    Fn(params=raw,current,defaultValue) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=raw) Lit(value=1) }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=current) Lit(value=1) }
+              Block { Return { Var(name=defaultValue) } }
+              Block { Return { Var(name=current) } }
+            }
+          }
+          Block { Return { Var(name=raw) } }
+        }
+      }
+    }
+  }
+
+  Let(name=stabilizeSize) {
+    Fn(params=raw,current,defaultValue) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=raw) Lit(value=1) }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=current) Lit(value=1) }
+              Block { Return { Var(name=defaultValue) } }
+              Block { Return { Var(name=current) } }
+            }
+          }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=current) Lit(value=1) }
+              Block { Return { Var(name=raw) } }
+              Block {
+                If {
+                  Eq { Var(name=raw) Var(name=current) }
+                  Block { Return { Var(name=current) } }
+                  Block {
+                    If {
+                      Eq { Var(name=raw) Add { Var(name=current) Lit(value=1) } }
+                      Block { Return { Var(name=current) } }
+                      Block {
+                        If {
+                          Eq { Var(name=raw) Add { Var(name=current) Lit(value=-1) } }
+                          Block { Return { Var(name=current) } }
+                          Block {
+                            If {
+                              Eq { Var(name=raw) Add { Var(name=current) Lit(value=2) } }
+                              Block { Return { Var(name=current) } }
+                              Block {
+                                If {
+                                  Eq { Var(name=raw) Add { Var(name=current) Lit(value=-2) } }
+                                  Block { Return { Var(name=current) } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=raw) Add { Var(name=current) Var(name=current) } }
+                                      Block { Return { Var(name=current) } }
+                                      Block {
+                                        If {
+                                          Eq { Var(name=current) Add { Var(name=raw) Var(name=raw) } }
+                                          Block { Return { Var(name=current) } }
+                                          Block { Return { Var(name=raw) } }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=halfFloor) {
+    Fn(params=value,acc) {
+      Block {
+        If {
+          Eq { Var(name=value) Lit(value=0) }
+          Block { Return { Var(name=acc) } }
+          Block {
+            If {
+              Eq { Var(name=value) Lit(value=1) }
+              Block { Return { Var(name=acc) } }
+              Block {
+                Return {
+                  Call(target=halfFloor) {
+                    Add { Var(name=value) Lit(value=-2) }
+                    Add { Var(name=acc) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=subAbs) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=a) Var(name=b) }
+          Block { Return { Call(target=sub) { Var(name=b) Var(name=a) } } }
+          Block { Return { Call(target=sub) { Var(name=a) Var(name=b) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=mul) {
+    Fn(params=a,b,acc) {
+      Block {
+        If {
+          Eq { Var(name=b) Lit(value=0) }
+          Block { Return { Var(name=acc) } }
+          Block {
+            Return {
+              Call(target=mul) {
+                Var(name=a)
+                Add { Var(name=b) Lit(value=-1) }
+                Add { Var(name=acc) Var(name=a) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=sub) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Eq { Var(name=b) Lit(value=0) }
+          Block { Return { Var(name=a) } }
+          Block { Return { Call(target=sub) { Add { Var(name=a) Lit(value=-1) } Add { Var(name=b) Lit(value=-1) } } } }
+        }
+      }
+    }
+  }
+
+  Let(name=buttonX) {
+    Fn(params=windowWidth) {
+      Block {
+        Return {
+          Call(target=halfFloor) {
+            Add { Var(name=windowWidth) Lit(value=-140) }
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=buttonY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-160) } } }
+    }
+  }
+
+  Let(name=inputWidth) {
+    Fn(params=windowWidth) {
+      Block { Return { Add { Var(name=windowWidth) Lit(value=-144) } } }
+    }
+  }
+
+  Let(name=hintY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-92) } } }
+    }
+  }
+
+  Let(name=statusY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-46) } } }
+    }
+  }
+
+  Let(name=textLen) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Return {
+              Add {
+                Lit(value=1)
+                Call(target=textLen) { Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=divFloor) {
+    Fn(params=value,step,acc) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=value) Var(name=step) }
+          Block { Return { Var(name=acc) } }
+          Block {
+            Return {
+              Call(target=divFloor) {
+                Call(target=sub) { Var(name=value) Var(name=step) }
+                Var(name=step)
+                Add { Var(name=acc) Lit(value=1) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=fitTextTail) {
+    Fn(params=textValue,maxChars) {
+      Block {
+        If {
+          Call(target=intLte) { Call(target=textLen) { Var(name=textValue) } Var(name=maxChars) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Return {
+              Call(target=fitTextTail) {
+                Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
+                Var(name=maxChars)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=visibleTextTail) {
+    Fn(params=textValue,fieldWidth) {
+      Block {
+        Let(name=contentWidth) {
+          If {
+            Call(target=intLt) { Var(name=fieldWidth) Lit(value=33) }
+            Block { Lit(value=0) }
+            Block { Call(target=sub) { Var(name=fieldWidth) Lit(value=32) } }
+          }
+        }
+        Let(name=maxChars) { Call(target=divFloor) { Var(name=contentWidth) Lit(value=12) Lit(value=0) } }
+        Return { Call(target=fitTextTail) { Var(name=textValue) Var(name=maxChars) } }
+      }
+    }
+  }
+
+  Let(name=textInsertAt) {
+    Fn(params=textValue,index,chunk) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
+        Let(name=prefix) { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
+        Let(name=suffixLen) { Call(target=sub) { Var(name=len) Var(name=idx) } }
+        Let(name=suffix) { Call(target=sys.str.substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
+        Return { StrConcat { ToString { Var(name=prefix) } StrConcat { ToString { Var(name=chunk) } ToString { Var(name=suffix) } } } }
+      }
+    }
+  }
+
+  Let(name=textDeleteAt) {
+    Fn(params=textValue,index) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        If {
+          Eq { Var(name=len) Lit(value=0) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
+            If {
+              Eq { Var(name=idx) Lit(value=0) }
+              Block { Return { Var(name=textValue) } }
+              Block {
+                Return {
+                  Call(target=sys.str.remove) {
+                    Var(name=textValue)
+                    Add { Var(name=idx) Lit(value=-1) }
+                    Lit(value=1)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=caretClamp) {
+    Fn(params=caret,textLength) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=caret) Lit(value=0) }
+          Block { Return { Lit(value=0) } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=textLength) Var(name=caret) }
+              Block { Return { Var(name=textLength) } }
+              Block { Return { Var(name=caret) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=caretLeft) {
+    Fn(params=caret) {
+      Block {
+        If {
+          Eq { Var(name=caret) Lit(value=0) }
+          Block { Return { Lit(value=0) } }
+          Block { Return { Add { Var(name=caret) Lit(value=-1) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=caretRight) {
+    Fn(params=caret,textLength) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=caret) Var(name=textLength) }
+          Block { Return { Add { Var(name=caret) Lit(value=1) } } }
+          Block { Return { Var(name=textLength) } }
+        }
+      }
+    }
+  }
+
+  Let(name=textPrefix) {
+    Fn(params=textValue,caret) {
+      Block { Return { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
+    }
+  }
+
+  Let(name=caretPixelOffset) {
+    Fn(params=textValue,caret,charWidth) {
+      Block {
+        Let(name=prefix) { Call(target=textPrefix) { Var(name=textValue) Var(name=caret) } }
+        Return { Call(target=mul) { Var(name=charWidth) Call(target=textLen) { Var(name=prefix) } Lit(value=0) } }
+      }
+    }
+  }
+
+  Let(name=removeLastChar) {
+    Fn(params=textValue) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        If {
+          Eq { Var(name=len) Lit(value=0) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Return {
+              Call(target=sys.str.remove) {
+                Var(name=textValue)
+                Add { Var(name=len) Lit(value=-1) }
+                Lit(value=1)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=mapGetString) {
+    Fn(params=map,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=map) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=field) { ChildAt { Var(name=map) Var(name=index) } }
+            If {
+              Eq { AttrValueString { Var(name=field) Lit(value=0) } Var(name=key) }
+              Block { Return { AttrValueString { ChildAt { Var(name=field) Lit(value=0) } Lit(value=0) } } }
+              Block {
+                Return {
+                  Call(target=mapGetString) {
+                    Var(name=map)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=keyTextMap) {
+    Fn(params=_) {
+      Block {
+        Return {
+          Map {
+            Field(key="a") { Lit(value="a") }
+            Field(key="b") { Lit(value="b") }
+            Field(key="c") { Lit(value="c") }
+            Field(key="d") { Lit(value="d") }
+            Field(key="e") { Lit(value="e") }
+            Field(key="f") { Lit(value="f") }
+            Field(key="g") { Lit(value="g") }
+            Field(key="h") { Lit(value="h") }
+            Field(key="i") { Lit(value="i") }
+            Field(key="j") { Lit(value="j") }
+            Field(key="k") { Lit(value="k") }
+            Field(key="l") { Lit(value="l") }
+            Field(key="m") { Lit(value="m") }
+            Field(key="n") { Lit(value="n") }
+            Field(key="o") { Lit(value="o") }
+            Field(key="p") { Lit(value="p") }
+            Field(key="q") { Lit(value="q") }
+            Field(key="r") { Lit(value="r") }
+            Field(key="s") { Lit(value="s") }
+            Field(key="t") { Lit(value="t") }
+            Field(key="u") { Lit(value="u") }
+            Field(key="v") { Lit(value="v") }
+            Field(key="w") { Lit(value="w") }
+            Field(key="x") { Lit(value="x") }
+            Field(key="y") { Lit(value="y") }
+            Field(key="z") { Lit(value="z") }
+            Field(key="A") { Lit(value="A") }
+            Field(key="B") { Lit(value="B") }
+            Field(key="C") { Lit(value="C") }
+            Field(key="D") { Lit(value="D") }
+            Field(key="E") { Lit(value="E") }
+            Field(key="F") { Lit(value="F") }
+            Field(key="G") { Lit(value="G") }
+            Field(key="H") { Lit(value="H") }
+            Field(key="I") { Lit(value="I") }
+            Field(key="J") { Lit(value="J") }
+            Field(key="K") { Lit(value="K") }
+            Field(key="L") { Lit(value="L") }
+            Field(key="M") { Lit(value="M") }
+            Field(key="N") { Lit(value="N") }
+            Field(key="O") { Lit(value="O") }
+            Field(key="P") { Lit(value="P") }
+            Field(key="Q") { Lit(value="Q") }
+            Field(key="R") { Lit(value="R") }
+            Field(key="S") { Lit(value="S") }
+            Field(key="T") { Lit(value="T") }
+            Field(key="U") { Lit(value="U") }
+            Field(key="V") { Lit(value="V") }
+            Field(key="W") { Lit(value="W") }
+            Field(key="X") { Lit(value="X") }
+            Field(key="Y") { Lit(value="Y") }
+            Field(key="Z") { Lit(value="Z") }
+            Field(key="0") { Lit(value="0") }
+            Field(key="1") { Lit(value="1") }
+            Field(key="2") { Lit(value="2") }
+            Field(key="3") { Lit(value="3") }
+            Field(key="4") { Lit(value="4") }
+            Field(key="5") { Lit(value="5") }
+            Field(key="6") { Lit(value="6") }
+            Field(key="7") { Lit(value="7") }
+            Field(key="8") { Lit(value="8") }
+            Field(key="9") { Lit(value="9") }
+            Field(key="digit0") { Lit(value="0") }
+            Field(key="digit1") { Lit(value="1") }
+            Field(key="digit2") { Lit(value="2") }
+            Field(key="digit3") { Lit(value="3") }
+            Field(key="digit4") { Lit(value="4") }
+            Field(key="digit5") { Lit(value="5") }
+            Field(key="digit6") { Lit(value="6") }
+            Field(key="digit7") { Lit(value="7") }
+            Field(key="digit8") { Lit(value="8") }
+            Field(key="digit9") { Lit(value="9") }
+            Field(key="numpad0") { Lit(value="0") }
+            Field(key="numpad1") { Lit(value="1") }
+            Field(key="numpad2") { Lit(value="2") }
+            Field(key="numpad3") { Lit(value="3") }
+            Field(key="numpad4") { Lit(value="4") }
+            Field(key="numpad5") { Lit(value="5") }
+            Field(key="numpad6") { Lit(value="6") }
+            Field(key="numpad7") { Lit(value="7") }
+            Field(key="numpad8") { Lit(value="8") }
+            Field(key="numpad9") { Lit(value="9") }
+            Field(key="kp_0") { Lit(value="0") }
+            Field(key="kp_1") { Lit(value="1") }
+            Field(key="kp_2") { Lit(value="2") }
+            Field(key="kp_3") { Lit(value="3") }
+            Field(key="kp_4") { Lit(value="4") }
+            Field(key="kp_5") { Lit(value="5") }
+            Field(key="kp_6") { Lit(value="6") }
+            Field(key="kp_7") { Lit(value="7") }
+            Field(key="kp_8") { Lit(value="8") }
+            Field(key="kp_9") { Lit(value="9") }
+            Field(key="space") { Lit(value=" ") }
+            Field(key=" ") { Lit(value=" ") }
+            Field(key="tab") { Lit(value="\t") }
+            Field(key="Tab") { Lit(value="\t") }
+            Field(key="\t") { Lit(value="\t") }
+            Field(key=".") { Lit(value=".") }
+            Field(key=",") { Lit(value=",") }
+            Field(key="-") { Lit(value="-") }
+            Field(key="_") { Lit(value="_") }
+            Field(key="`") { Lit(value="`") }
+            Field(key="~") { Lit(value="~") }
+            Field(key="'") { Lit(value="'") }
+            Field(key="\"") { Lit(value="\"") }
+            Field(key=":") { Lit(value=":") }
+            Field(key=";") { Lit(value=";") }
+            Field(key="!") { Lit(value="!") }
+            Field(key="?") { Lit(value="?") }
+            Field(key="@") { Lit(value="@") }
+            Field(key="#") { Lit(value="#") }
+            Field(key="$") { Lit(value="$") }
+            Field(key="%") { Lit(value="%") }
+            Field(key="&") { Lit(value="&") }
+            Field(key="+") { Lit(value="+") }
+            Field(key="=") { Lit(value="=") }
+            Field(key="/") { Lit(value="/") }
+            Field(key="\\") { Lit(value="\\") }
+            Field(key="(") { Lit(value="(") }
+            Field(key=")") { Lit(value=")") }
+            Field(key="[") { Lit(value="[") }
+            Field(key="]") { Lit(value="]") }
+            Field(key="{") { Lit(value="{") }
+            Field(key="}") { Lit(value="}") }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=keyToText) {
+    Fn(params=keyName) {
+      Block {
+        Return {
+          Call(target=mapGetString) {
+            Call(target=keyTextMap) { Lit(value=0) }
+            Var(name=keyName)
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=debugSizeLine) {
+    Fn(params=rawWidth,rawHeight,stableWidth,stableHeight) {
+      Block {
+        Call(target=sys.stdout.writeLine) {
+          StrConcat {
+            Lit(value="[aivectra] size raw=")
+            StrConcat {
+              ToString { Var(name=rawWidth) }
+              StrConcat {
+                Lit(value="x")
+                StrConcat {
+                  ToString { Var(name=rawHeight) }
+                  StrConcat {
+                    Lit(value=" stable=")
+                    StrConcat {
+                      ToString { Var(name=stableWidth) }
+                      StrConcat {
+                        Lit(value="x")
+                        ToString { Var(name=stableHeight) }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEventLine) {
+    Fn(params=eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
+        Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
+        Call(target=sys.stdout.writeLine) { Lit(value="[[aivectra.event]]") }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="type=\"") StrConcat { ToString { Var(name=eventType) } Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="key=\"") StrConcat { ToString { Var(name=keyToken) } Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="text=\"") StrConcat { ToString { Var(name=textToken) } Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="x=") ToString { Var(name=clickX) } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="y=") ToString { Var(name=clickY) } } }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugControlName) {
+    Fn(params=value) {
+      Block {
+        If {
+          Eq { Var(name=value) Lit(value="backspace") }
+          Block { Return { Lit(value="backspace") } }
+          Block {
+            If {
+              Eq { Var(name=value) Lit(value="Backspace") }
+              Block { Return { Lit(value="backspace") } }
+              Block {
+                If {
+                  Eq { Var(name=value) Lit(value="DeleteBackward") }
+                  Block { Return { Lit(value="backspace") } }
+                  Block {
+                    If {
+                      Eq { Var(name=value) Lit(value="delete_backward") }
+                      Block { Return { Lit(value="backspace") } }
+                      Block {
+                        If {
+                          Eq { Var(name=value) Lit(value="x11:22") }
+                          Block { Return { Lit(value="backspace") } }
+                          Block {
+                            If {
+                              Eq { Var(name=value) Lit(value="x11:107") }
+                              Block { Return { Lit(value="backspace") } }
+                              Block {
+                                If {
+                                  Eq { Var(name=value) Lit(value="enter") }
+                                  Block { Return { Lit(value="enter") } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=value) Lit(value="Enter") }
+                                      Block { Return { Lit(value="enter") } }
+                                      Block {
+                                        If {
+                                          Eq { Var(name=value) Lit(value="return") }
+                                          Block { Return { Lit(value="enter") } }
+                                          Block {
+                                            If {
+                                              Eq { Var(name=value) Lit(value="Return") }
+                                              Block { Return { Lit(value="enter") } }
+                                              Block {
+                                                If {
+                                                  Eq { Var(name=value) Lit(value="kp_enter") }
+                                                  Block { Return { Lit(value="enter") } }
+                                                  Block {
+                                                    If {
+                                                      Eq { Var(name=value) Lit(value="Delete") }
+                                                      Block { Return { Lit(value="delete") } }
+                                                      Block {
+                                                        If {
+                                                          Eq { Var(name=value) Lit(value="delete") }
+                                                          Block { Return { Lit(value="delete") } }
+                                                          Block { Return { Lit(value="") } }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=debugInputToken) {
+    Fn(params=value) {
+      Block {
+        If {
+          Eq { Var(name=value) Lit(value="") }
+          Block { Return { Lit(value="<empty>") } }
+          Block {
+            Let(name=controlName) { Call(target=debugControlName) { Var(name=value) } }
+            If {
+              Eq { Var(name=controlName) Lit(value="") }
+              Block {
+                Let(name=mapped) { Call(target=keyToText) { Var(name=value) } }
+                If {
+                  Eq { Var(name=mapped) Lit(value="") }
+                  Block {
+                    Return {
+                      StrConcat {
+                        Lit(value="<raw:")
+                        StrConcat { ToString { Call(target=textLen) { Var(name=value) } } Lit(value="b>") }
+                      }
+                    }
+                  }
+                  Block {
+                    Return {
+                      StrConcat {
+                        Lit(value="'")
+                        StrConcat { ToString { Var(name=mapped) } Lit(value="'") }
+                      }
+                    }
+                  }
+                }
+              }
+              Block {
+                Return {
+                  StrConcat {
+                    Lit(value="<")
+                    StrConcat { ToString { Var(name=controlName) } Lit(value=">") }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=debugLayoutLine) {
+    Fn(params=windowWidth,windowHeight) {
+      Block {
+        Call(target=sys.stdout.writeLine) { Call(target=layoutSignature) { Var(name=windowWidth) Var(name=windowHeight) } }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitEvent) {
+    Fn(params=eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
+        Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
+        Call(target=sys.stdout.writeLine) {
+          StrConcat {
+            Lit(value="aivectra.event = { type=\"")
+            StrConcat {
+              ToString { Var(name=eventType) }
+              StrConcat {
+                Lit(value="\", key=\"")
+                StrConcat {
+                  ToString { Var(name=keyToken) }
+                  StrConcat {
+                    Lit(value="\", text=\"")
+                    StrConcat {
+                      ToString { Var(name=textToken) }
+                      StrConcat {
+                        Lit(value="\", x=")
+                        StrConcat {
+                          ToString { Var(name=clickX) }
+                          StrConcat {
+                            Lit(value=", y=")
+                            StrConcat {
+                              ToString { Var(name=clickY) }
+                              Lit(value=" }")
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitUi) {
+    Fn(params=action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
+      Block {
+        Call(target=sys.stdout.writeLine) {
+          StrConcat {
+            Lit(value="aivectra.ui = { action=\"")
+            StrConcat {
+              ToString { Var(name=action) }
+              StrConcat {
+                Lit(value="\", target=\"")
+                StrConcat {
+                  ToString { Var(name=target) }
+                  StrConcat {
+                    Lit(value="\", focus=")
+                    StrConcat {
+                      If { Var(name=inputFocused) Block { Lit(value="true") } Block { Lit(value="false") } }
+                      StrConcat {
+                        Lit(value=", name_len=")
+                        StrConcat {
+                          ToString { Var(name=nameLen) }
+                          StrConcat {
+                            Lit(value=", submitted_len=")
+                            StrConcat {
+                              ToString { Var(name=submittedLen) }
+                              StrConcat {
+                                Lit(value=", input_rect=\"")
+                                StrConcat {
+                                  ToString { Var(name=inputRect) }
+                                  StrConcat {
+                                    Lit(value="\", button_rect=\"")
+                                    StrConcat {
+                                      ToString { Var(name=buttonRect) }
+                                      Lit(value="\" }")
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitSceneNode) {
+    Fn(params=frame,order,id,parent,kind,fill,stroke,strokeWidth,textValue,pathValue,fontSize,x,y,w,h,transform) {
+      Block {
+        Call(target=sys.stdout.writeLine) {
+          StrConcat {
+            Lit(value="aivectra.scene = { frame=")
+            StrConcat {
+              ToString { Var(name=frame) }
+              StrConcat {
+                Lit(value=", order=")
+                StrConcat {
+                  ToString { Var(name=order) }
+                  StrConcat {
+                    Lit(value=", id=\"")
+                    StrConcat {
+                      ToString { Var(name=id) }
+                      StrConcat {
+                        Lit(value="\", parent=\"")
+                        StrConcat {
+                          ToString { Var(name=parent) }
+                          StrConcat {
+                            Lit(value="\", kind=\"")
+                            StrConcat {
+                              ToString { Var(name=kind) }
+                              StrConcat {
+                                Lit(value="\", fill=\"")
+                                StrConcat {
+                                  ToString { Var(name=fill) }
+                                  StrConcat {
+                                    Lit(value="\", stroke=\"")
+                                    StrConcat {
+                                      ToString { Var(name=stroke) }
+                                      StrConcat {
+                                        Lit(value="\", stroke_w=")
+                                        StrConcat {
+                                          ToString { Var(name=strokeWidth) }
+                                          StrConcat {
+                                            Lit(value=", text=\"")
+                                            StrConcat {
+                                              ToString { Var(name=textValue) }
+                                              StrConcat {
+                                                Lit(value="\", path=\"")
+                                                StrConcat {
+                                                  ToString { Var(name=pathValue) }
+                                                  StrConcat {
+                                                    Lit(value="\", font_size=")
+                                                    StrConcat {
+                                                      ToString { Var(name=fontSize) }
+                                                      StrConcat {
+                                                        Lit(value=", x=")
+                                                        StrConcat {
+                                                          ToString { Var(name=x) }
+                                                          StrConcat {
+                                                            Lit(value=", y=")
+                                                            StrConcat {
+                                                              ToString { Var(name=y) }
+                                                              StrConcat {
+                                                                Lit(value=", w=")
+                                                                StrConcat {
+                                                                  ToString { Var(name=w) }
+                                                                  StrConcat {
+                                                                    Lit(value=", h=")
+                                                                    StrConcat {
+                                                                      ToString { Var(name=h) }
+                                                                      StrConcat {
+                                                                        Lit(value=", transform=\"")
+                                                                        StrConcat {
+                                                                          ToString { Var(name=transform) }
+                                                                          Lit(value="\" }")
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=debugEmitEventIf) {
+    Fn(params=enabled,eventType,keyName,textValue,clickX,clickY) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitEvent) { Var(name=eventType) Var(name=keyName) Var(name=textValue) Var(name=clickX) Var(name=clickY) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugEmitUiIf) {
+    Fn(params=enabled,action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitUi) { Var(name=action) Var(name=target) Var(name=inputFocused) Var(name=nameLen) Var(name=submittedLen) Var(name=inputRect) Var(name=buttonRect) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugEmitSceneNodeIf) {
+    Fn(params=enabled,frame,order,id,parent,kind,fill,stroke,strokeWidth,textValue,pathValue,fontSize,x,y,w,h,transform) {
+      Block {
+        If {
+          Var(name=enabled)
+          Block { Return { Call(target=debugEmitSceneNode) { Var(name=frame) Var(name=order) Var(name=id) Var(name=parent) Var(name=kind) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Var(name=textValue) Var(name=pathValue) Var(name=fontSize) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=transform) } } }
+          Block { Return { Lit(value=0) } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugModeLive) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="live") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=argStringAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block { Return { AttrValueString { ChildAt { Var(name=args) Var(name=index) } Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=appModeFromArgsAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=candidate) { Call(target=argStringAt) { Var(name=args) Var(name=index) } }
+            If {
+              Eq { Var(name=candidate) Lit(value="live") }
+              Block { Return { Lit(value="live") } }
+              Block {
+                If {
+                  Eq { Var(name=candidate) Lit(value="snapshot") }
+                  Block { Return { Lit(value="snapshot") } }
+                  Block {
+                    If {
+                      Eq { Var(name=candidate) Lit(value="replay") }
+                      Block { Return { Lit(value="replay") } }
+                      Block {
+                        If {
+                          Eq { Var(name=candidate) Lit(value="scene") }
+                          Block { Return { Lit(value="scene") } }
+                          Block {
+                            Return {
+                              Call(target=appModeFromArgsAt) {
+                                Var(name=args)
+                                Add { Var(name=index) Lit(value=1) }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appModeFromArgs) {
+    Fn(params=args) {
+      Block { Return { Call(target=appModeFromArgsAt) { Var(name=args) Lit(value=0) } } }
+    }
+  }
+
+  Let(name=layoutSignature) {
+    Fn(params=windowWidth,windowHeight) {
+      Block {
+        Let(name=entryWidth) { Call(target=inputWidth) { Var(name=windowWidth) } }
+        Let(name=submitX) { Call(target=buttonX) { Var(name=windowWidth) } }
+        Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
+        Let(name=hintTextY) { Call(target=hintY) { Var(name=windowHeight) } }
+        Let(name=statusTextY) { Call(target=statusY) { Var(name=windowHeight) } }
+        Return {
+          StrConcat {
+            Lit(value="[aivectra] layout panel=20,20,")
+            StrConcat {
+              ToString { Add { Var(name=windowWidth) Lit(value=-40) } }
+              StrConcat {
+                Lit(value=",")
+                StrConcat {
+                  ToString { Add { Var(name=windowHeight) Lit(value=-40) } }
+                  StrConcat {
+                    Lit(value=" input=72,112,")
+                    StrConcat {
+                      ToString { Var(name=entryWidth) }
+                      StrConcat {
+                        Lit(value=",52 button=")
+                        StrConcat {
+                          ToString { Var(name=submitX) }
+                          StrConcat {
+                            Lit(value=",")
+                            StrConcat {
+                              ToString { Var(name=submitY) }
+                              StrConcat {
+                                Lit(value=",140,52 hintY=")
+                                StrConcat {
+                                  ToString { Var(name=hintTextY) }
+                                  StrConcat {
+                                    Lit(value=" statusY=")
+                                    ToString { Var(name=statusTextY) }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Export(name=library)
+  Export(name=version)
+  Export(name=rect)
+  Export(name=text)
+  Export(name=label)
+  Export(name=window)
+  Export(name=attrString)
+  Export(name=attrInt)
+  Export(name=uiWidth)
+  Export(name=uiHeight)
+  Export(name=drawPanel)
+  Export(name=blurBandColor)
+  Export(name=drawGaussianBlurRect)
+  Export(name=gradientColor3)
+  Export(name=drawLinearGradientRect)
+  Export(name=drawRectTransform)
+  Export(name=drawEllipseTransform)
+  Export(name=drawPathTransform)
+  Export(name=drawTextTransform)
+  Export(name=interactiveFillForState)
+  Export(name=interactiveVectorState)
+  Export(name=pointInRect)
+  Export(name=pointInEllipse)
+  Export(name=pointInPathBounds)
+  Export(name=stabilizeSize)
+  Export(name=buttonX)
+  Export(name=buttonY)
+  Export(name=inputWidth)
+  Export(name=hintY)
+  Export(name=statusY)
+  Export(name=removeLastChar)
+  Export(name=textInsertAt)
+  Export(name=textDeleteAt)
+  Export(name=caretClamp)
+  Export(name=caretLeft)
+  Export(name=caretRight)
+  Export(name=caretPixelOffset)
+  Export(name=keyToText)
+  Export(name=intLt)
+  Export(name=intGte)
+  Export(name=intLte)
+  Export(name=halfFloor)
+  Export(name=mul)
+  Export(name=sub)
+  Export(name=textLen)
+  Export(name=divFloor)
+  Export(name=fitTextTail)
+  Export(name=visibleTextTail)
+  Export(name=mapGetString)
+  Export(name=keyTextMap)
+  Export(name=debugSizeLine)
+  Export(name=debugEventLine)
+  Export(name=debugControlName)
+  Export(name=debugInputToken)
+  Export(name=debugLayoutLine)
+  Export(name=debugEmitEvent)
+  Export(name=debugEmitUi)
+  Export(name=debugEmitSceneNode)
+  Export(name=debugEmitEventIf)
+  Export(name=debugEmitUiIf)
+  Export(name=debugEmitSceneNodeIf)
+  Export(name=debugModeLive)
+  Export(name=argStringAt)
+  Export(name=appModeFromArgs)
+  Export(name=layoutSignature)
 }

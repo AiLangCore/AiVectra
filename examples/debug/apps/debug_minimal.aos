@@ -1,0 +1,11 @@
+Program {
+  Export(name=start)
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Return { Lit(value=0) }
+      }
+    }
+  }
+}

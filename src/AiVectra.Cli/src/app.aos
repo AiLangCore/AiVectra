@@ -1,0 +1,174 @@
+Program {
+  Export(name=start)
+
+  Let(name=printHelp) {
+    Fn(params=_) {
+      Block {
+        Call(target=sys.stdout.writeLine) { Lit(value="AiVectra CLI (AiLang)") }
+        Call(target=sys.stdout.writeLine) { Lit(value="usage:") }
+        Call(target=sys.stdout.writeLine) { Lit(value="  aivectra debug <snapshot|replay|live>") }
+        Call(target=sys.stdout.writeLine) { Lit(value="  aivectra icon <project-path> [label]") }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=printSnapshotSet) {
+    Fn(params=_) {
+      Block {
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=640x360") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout panel=20,20,600,320 input=72,112,496,52 button=250,200,140,52 hintY=268 statusY=314") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=976x614") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout panel=20,20,936,574 input=72,112,832,52 button=418,454,140,52 hintY=522 statusY=568") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=1280x800") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout panel=20,20,1240,760 input=72,112,1136,52 button=570,640,140,52 hintY=708 statusY=754") }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=printReplayTrace) {
+    Fn(params=_) {
+      Block {
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay begin") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout panel=20,20,936,574 input=72,112,832,52 button=418,454,140,52 hintY=522 statusY=568") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=key key=t text=t click=-1,-1") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=key key=o text=o click=-1,-1") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=key key=d text=d click=-1,-1") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=key key=d text=d click=-1,-1") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=key key=enter text= click=-1,-1") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay greeting=Greeting: Hello, todd!") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] event type=click key= text= click=488,480") }
+        Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay end") }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Let(name=count) { ChildCount { Var(name=args) } }
+        Let(name=cmd1) {
+          If {
+            Eq { Var(name=count) Lit(value=0) }
+            Block { Lit(value="") }
+            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
+          }
+        }
+        Let(name=cmd2) {
+          If {
+            Eq { Var(name=count) Lit(value=0) }
+            Block { Lit(value="") }
+            Block {
+              If {
+                Eq { Var(name=count) Lit(value=1) }
+                Block { Lit(value="") }
+                Block { AttrValueString { ChildAt { Var(name=args) Lit(value=1) } Lit(value=0) } }
+              }
+            }
+          }
+        }
+        Let(name=cmd3) {
+          If {
+            Eq { Var(name=count) Lit(value=0) }
+            Block { Lit(value="") }
+            Block {
+              If {
+                Eq { Var(name=count) Lit(value=1) }
+                Block { Lit(value="") }
+                Block {
+                  If {
+                    Eq { Var(name=count) Lit(value=2) }
+                    Block { Lit(value="") }
+                    Block { AttrValueString { ChildAt { Var(name=args) Lit(value=2) } Lit(value=0) } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Let(name=cmd4) {
+          If {
+            Eq { Var(name=count) Lit(value=0) }
+            Block { Lit(value="") }
+            Block {
+              If {
+                Eq { Var(name=count) Lit(value=1) }
+                Block { Lit(value="") }
+                Block {
+                  If {
+                    Eq { Var(name=count) Lit(value=2) }
+                    Block { Lit(value="") }
+                    Block {
+                      If {
+                        Eq { Var(name=count) Lit(value=3) }
+                        Block { Lit(value="") }
+                        Block { AttrValueString { ChildAt { Var(name=args) Lit(value=3) } Lit(value=0) } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Let(name=debugMode) {
+          If {
+            Eq { Var(name=cmd1) Lit(value="debug") }
+            Block { Var(name=cmd2) }
+            Block {
+              If {
+                Eq { Var(name=cmd2) Lit(value="debug") }
+                Block { Var(name=cmd3) }
+                Block {
+                  If {
+                    Eq { Var(name=cmd3) Lit(value="debug") }
+                    Block { Var(name=cmd4) }
+                    Block { Lit(value="") }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        If {
+          Eq { Var(name=debugMode) Lit(value="snapshot") }
+          Block {
+            Return { Call(target=printSnapshotSet) { Lit(value=0) } }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=debugMode) Lit(value="replay") }
+          Block {
+            Return { Call(target=printReplayTrace) { Lit(value=0) } }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=debugMode) Lit(value="live") }
+          Block {
+            Call(target=sys.stdout.writeLine) { Lit(value="Run: airun run ./samples/HelloName/") }
+            Return { Lit(value=0) }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=cmd1) Lit(value="icon") }
+          Block {
+            Call(target=sys.stdout.writeLine) { Lit(value="usage: aivectra icon <project-path> [label]") }
+            Return { Lit(value=0) }
+          }
+          Block { Lit(value=0) }
+        }
+
+        Return { Call(target=printHelp) { Lit(value=0) } }
+      }
+    }
+  }
+}

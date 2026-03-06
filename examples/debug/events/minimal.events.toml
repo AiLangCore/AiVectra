@@ -1,0 +1,4 @@
+# Optional deterministic event fixture.
+# Leave empty for initial-render-only runs.
+# Event fixture schema is owned by AiLang debug runtime.
+events = []

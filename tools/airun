@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+REAL_AIRUN="$ROOT_DIR/.tools/airun"
+if [[ "${1:-}" == "debug" ]]; then
+  shift
+  exec "$ROOT_DIR/scripts/aivectra" --airun "$REAL_AIRUN" debug "$@"
+fi
+exec "$REAL_AIRUN" "$@"

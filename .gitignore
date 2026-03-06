@@ -2,5 +2,10 @@
 out
 build
 .tools
+.artifacts/
+artifacts/
 
 .tmp-*
+.tmp_*
+.toolchain/
+*.aibc1

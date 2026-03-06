@@ -1,0 +1,9 @@
+Program {
+  Project(
+    name="HelloWorld"
+    entryFile="Src/app.aos"
+    entryExport="start"
+  ) {
+    Include(name="AiVectra" path="../../src/AiVectra" version="0.0.1")
+  }
+}

@@ -1,0 +1,5 @@
+style=label_monogram
+label=HW
+source=/Users/toddhenderson/RiderProjects/AiVectra/Assets/icons/ailang_default_appicon.svg
+output=./samples/HelloWorld//Assets/icons/app.svg
+note=label override requested; default logo SVG copied until label renderer lands

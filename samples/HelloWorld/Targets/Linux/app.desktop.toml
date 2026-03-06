@@ -1,0 +1,4 @@
+name = "HelloWorld"
+exec = "airun run ./samples/HelloWorld/"
+icon = "app"
+categories = ["Utility"]

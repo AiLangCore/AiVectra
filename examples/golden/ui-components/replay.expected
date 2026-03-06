@@ -1,0 +1,5 @@
+AiVectra CLI (AiLang)
+usage:
+  aivectra debug <snapshot|replay|live>
+  aivectra icon <project-path> [label]
+Ok#ok1(type=int value=0)

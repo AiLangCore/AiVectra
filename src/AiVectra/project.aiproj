@@ -1,5 +1,5 @@
-Program#aivl_proj_p1 {
-  Project#aivl_proj1(
+Program {
+  Project(
     name="AiVectra"
     entryFile="src/lib.aos"
     entryExport="library"

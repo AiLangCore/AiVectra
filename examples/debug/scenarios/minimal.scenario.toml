@@ -1,0 +1,9 @@
+[[scenario]]
+name = "minimal"
+appPath = "examples/debug/apps/debug_minimal.aos"
+vm = "bytecode"
+debugMode = "live"
+eventsPath = ""
+comparePath = ""
+outDir = ".artifacts/debug/minimal"
+args = ""

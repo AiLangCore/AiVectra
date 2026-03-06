@@ -1,0 +1,1747 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/airun"
+AIRUN_BIN="${AIRUN_BIN:-$AIRUN_BIN_DEFAULT}"
+if [[ ! -x "$AIRUN_BIN" ]]; then
+  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-airun}"
+fi
+
+# Optional override: ./scripts/aivectra --airun /path/to/airun ...
+if [[ "${1:-}" == "--airun" ]]; then
+  if [[ -z "${2:-}" ]]; then
+    echo "missing value for --airun" >&2
+    exit 2
+  fi
+  AIRUN_BIN="$2"
+  shift 2
+fi
+
+normalize_path_arg() {
+  local p="$1"
+  if [[ "$p" == /samples/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* || "$p" == /.artifacts/* ]]; then
+    printf "%s%s" "$ROOT_DIR" "$p"
+    return 0
+  fi
+  printf "%s" "$p"
+}
+
+abs_path() {
+  local p="$1"
+  if [[ "$p" == /* ]]; then
+    printf "%s" "$p"
+    return 0
+  fi
+  local d
+  d="$(dirname "$p")"
+  local b
+  b="$(basename "$p")"
+  (cd "$d" 2>/dev/null && printf "%s/%s" "$(pwd)" "$b") || printf "%s" "$p"
+}
+
+resolve_app_path() {
+  local p="$1"
+  local n
+  local h
+  local runtime_supports_source="false"
+  local prefer_prebuilt="${AIVECTRA_PREFER_PREBUILT:-0}"
+  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  if [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]; then
+    runtime_supports_source="true"
+  fi
+  n="$(normalize_path_arg "$p")"
+  if [[ -d "$n" ]]; then
+    if [[ "$runtime_supports_source" == "true" ]]; then
+      if [[ -f "$n/src/app.aos" ]]; then
+        printf "%s" "$n/src/app.aos"
+        return 0
+      fi
+      if [[ "$prefer_prebuilt" == "1" && -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ "$prefer_prebuilt" == "1" && -f "$n/src/app.aibc1" ]]; then
+        printf "%s" "$n/src/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+    else
+      if [[ "$prefer_prebuilt" == "1" ]]; then
+        if [[ -f "$n/app.aibc1" ]]; then
+          printf "%s" "$n/app.aibc1"
+          return 0
+        fi
+        if [[ -f "$n/src/app.aibc1" ]]; then
+          printf "%s" "$n/src/app.aibc1"
+          return 0
+        fi
+      fi
+      if [[ -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/src/app.aibc1" ]]; then
+        printf "%s" "$n/src/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/src/app.aos" ]]; then
+        printf "%s" "$n/src/app.aos"
+        return 0
+      fi
+    fi
+  fi
+  printf "%s" "$n"
+}
+
+is_native_c_runtime() {
+  local v
+  v="$("$AIRUN_BIN" version 2>/dev/null || true)"
+  [[ "$v" == airun-native-c* ]]
+}
+
+supports_source_targets() {
+  local h
+  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]
+}
+
+native_runtime_guard() {
+  local program_path="$1"
+  if ! supports_source_targets; then
+    if [[ "$program_path" != *.aibc1 ]]; then
+      echo "Err#err1(code=AIV001 message=\"Current runtime requires prebuilt .aibc1 input for this project. Build/publish app.aibc1 and re-run.\" nodeId=program)" >&2
+      exit 2
+    fi
+  fi
+}
+
+resolve_cwd_app_path_if_project() {
+  local cwd
+  cwd="$(pwd)"
+  if [[ -f "$cwd/project.aiproj" ]]; then
+    resolve_app_path "$cwd"
+    return 0
+  fi
+  return 1
+}
+
+project_dir_from_target() {
+  local t="$1"
+  local n
+  n="$(normalize_path_arg "$t")"
+  if [[ -d "$n" && -f "$n/project.aiproj" ]]; then
+    printf "%s" "$n"
+    return 0
+  fi
+  if [[ -f "$n" ]]; then
+    case "$n" in
+      */src/app.aos|*/src/app.aibc1)
+        printf "%s" "$(dirname "$(dirname "$n")")"
+        return 0
+        ;;
+      */app.aibc1|*/project.aiproj)
+        printf "%s" "$(dirname "$n")"
+        return 0
+        ;;
+    esac
+  fi
+  printf ""
+}
+
+project_name_from_dir() {
+  local d="$1"
+  local n
+  n="$(rg -n '^name\\s*=\\s*"' "$d/project.aiproj" 2>/dev/null | head -n1 | sed -E 's/^[^"]*"//; s/".*$//')"
+  if [[ -n "$n" ]]; then
+    printf "%s" "$n"
+  else
+    printf "%s" "$(basename "$d")"
+  fi
+}
+
+normalize_target_name() {
+  local raw="$1"
+  case "$raw" in
+    apple-macos|macos|mac)
+      printf "%s" "apple-macos"
+      ;;
+    windows|win)
+      printf "%s" "windows"
+      ;;
+    linux)
+      printf "%s" "linux"
+      ;;
+    wasm-spa|web-spa)
+      printf "%s" "wasm-spa"
+      ;;
+    wasm-fullstack|web-fullstack)
+      printf "%s" "wasm-fullstack"
+      ;;
+    default)
+      printf "%s" "default"
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+set_default_target_flags() {
+  T_APPLE_MAC="true"
+  T_WINDOWS="true"
+  T_LINUX="true"
+  T_WASM_SPA="false"
+  T_WASM_FULLSTACK="false"
+}
+
+set_empty_target_flags() {
+  T_APPLE_MAC="false"
+  T_WINDOWS="false"
+  T_LINUX="false"
+  T_WASM_SPA="false"
+  T_WASM_FULLSTACK="false"
+}
+
+add_target_flag() {
+  local t="$1"
+  case "$t" in
+    apple-macos) T_APPLE_MAC="true" ;;
+    windows) T_WINDOWS="true" ;;
+    linux) T_LINUX="true" ;;
+    wasm-spa) T_WASM_SPA="true" ;;
+    wasm-fullstack) T_WASM_FULLSTACK="true" ;;
+    default)
+      T_APPLE_MAC="true"
+      T_WINDOWS="true"
+      T_LINUX="true"
+      ;;
+  esac
+}
+
+remove_target_flag() {
+  local t="$1"
+  case "$t" in
+    apple-macos) T_APPLE_MAC="false" ;;
+    windows) T_WINDOWS="false" ;;
+    linux) T_LINUX="false" ;;
+    wasm-spa) T_WASM_SPA="false" ;;
+    wasm-fullstack) T_WASM_FULLSTACK="false" ;;
+  esac
+}
+
+scaffold_target_files() {
+  local app_dir="$1"
+  local app_name="$2"
+  local app_slug="$3"
+  local target="$4"
+  case "$target" in
+    apple-macos)
+      mkdir -p "$app_dir/Targets/Apple/Mac"
+      cat > "$app_dir/Targets/Apple/Mac/Info.plist.toml" <<EOF
+bundle_id = "org.aivectra.$app_slug"
+display_name = "$app_name"
+version = "0.0.1"
+EOF
+      cat > "$app_dir/Targets/Apple/Mac/Entitlements.plist.toml" <<'EOF'
+app_sandbox = false
+EOF
+      ;;
+    windows)
+      mkdir -p "$app_dir/Targets/Microsoft/Windows"
+      cat > "$app_dir/Targets/Microsoft/Windows/app.manifest.toml" <<EOF
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="$app_name" type="win32"/>
+</assembly>
+EOF
+      ;;
+    linux)
+      mkdir -p "$app_dir/Targets/Linux"
+      cat > "$app_dir/Targets/Linux/app.desktop.toml" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$app_name
+Exec=airun run $app_dir
+Icon=app
+Categories=Utility;
+EOF
+      ;;
+    wasm-spa)
+      mkdir -p "$app_dir/Targets/Web/WasmSpa/www"
+      cat > "$app_dir/Targets/Web/WasmSpa/www/README.md" <<'EOF'
+WASM SPA web root assets.
+EOF
+      ;;
+    wasm-fullstack)
+      mkdir -p "$app_dir/Targets/Web/WasmFullStack/www"
+      cat > "$app_dir/Targets/Web/WasmFullStack/www/README.md" <<'EOF'
+WASM FullStack web root assets.
+EOF
+      ;;
+  esac
+}
+
+detect_project_target_flags() {
+  local app_dir="$1"
+  set_empty_target_flags
+  [[ -f "$app_dir/Targets/Apple/Mac/Info.plist.toml" ]] && T_APPLE_MAC="true"
+  [[ -f "$app_dir/Targets/Microsoft/Windows/app.manifest.toml" ]] && T_WINDOWS="true"
+  [[ -f "$app_dir/Targets/Linux/app.desktop.toml" ]] && T_LINUX="true"
+  [[ -d "$app_dir/Targets/Web/WasmSpa" ]] && T_WASM_SPA="true"
+  [[ -d "$app_dir/Targets/Web/WasmFullStack" ]] && T_WASM_FULLSTACK="true"
+  return 0
+}
+
+build_macos_icns_from_svg() {
+  local svg="$1"
+  local out_icns="$2"
+  local tmp
+  tmp="$(mktemp -d /tmp/aivectra-icon-XXXXXX)"
+  local base_png="$tmp/base.png"
+  local iconset="$tmp/icon.iconset"
+  mkdir -p "$iconset"
+
+  if ! command -v iconutil >/dev/null 2>&1; then
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  if command -v qlmanage >/dev/null 2>&1; then
+    qlmanage -t -s 1024 -o "$tmp" "$svg" >/dev/null 2>&1 || true
+    local ql_png
+    ql_png="$(find "$tmp" -maxdepth 1 -type f -name "*.png" | head -n1 || true)"
+    if [[ -n "$ql_png" && -f "$ql_png" ]]; then
+      cp "$ql_png" "$base_png"
+    fi
+  fi
+  if [[ ! -f "$base_png" ]] && command -v magick >/dev/null 2>&1; then
+    magick "$svg" -background none -resize 1024x1024 "$base_png" >/dev/null 2>&1 || true
+  fi
+  if [[ ! -f "$base_png" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  if command -v sips >/dev/null 2>&1; then
+    sips -z 16 16 "$base_png" --out "$iconset/icon_16x16.png" >/dev/null 2>&1 || true
+    sips -z 32 32 "$base_png" --out "$iconset/icon_16x16@2x.png" >/dev/null 2>&1 || true
+    sips -z 32 32 "$base_png" --out "$iconset/icon_32x32.png" >/dev/null 2>&1 || true
+    sips -z 64 64 "$base_png" --out "$iconset/icon_32x32@2x.png" >/dev/null 2>&1 || true
+    sips -z 128 128 "$base_png" --out "$iconset/icon_128x128.png" >/dev/null 2>&1 || true
+    sips -z 256 256 "$base_png" --out "$iconset/icon_128x128@2x.png" >/dev/null 2>&1 || true
+    sips -z 256 256 "$base_png" --out "$iconset/icon_256x256.png" >/dev/null 2>&1 || true
+    sips -z 512 512 "$base_png" --out "$iconset/icon_256x256@2x.png" >/dev/null 2>&1 || true
+    sips -z 512 512 "$base_png" --out "$iconset/icon_512x512.png" >/dev/null 2>&1 || true
+    sips -z 1024 1024 "$base_png" --out "$iconset/icon_512x512@2x.png" >/dev/null 2>&1 || true
+  elif command -v magick >/dev/null 2>&1; then
+    magick "$base_png" -resize 16x16 "$iconset/icon_16x16.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 32x32 "$iconset/icon_16x16@2x.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 32x32 "$iconset/icon_32x32.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 64x64 "$iconset/icon_32x32@2x.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 128x128 "$iconset/icon_128x128.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 256x256 "$iconset/icon_128x128@2x.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 256x256 "$iconset/icon_256x256.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 512x512 "$iconset/icon_256x256@2x.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 512x512 "$iconset/icon_512x512.png" >/dev/null 2>&1 || true
+    magick "$base_png" -resize 1024x1024 "$iconset/icon_512x512@2x.png" >/dev/null 2>&1 || true
+  else
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  if [[ ! -f "$iconset/icon_512x512@2x.png" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  if ! iconutil -c icns "$iconset" -o "$out_icns" >/dev/null 2>&1; then
+    rm -rf "$tmp"
+    return 1
+  fi
+  if [[ ! -s "$out_icns" ]]; then
+    rm -rf "$tmp"
+    return 1
+  fi
+
+  rm -rf "$tmp"
+  return 0
+}
+
+ensure_macos_run_bundle() {
+  local project_dir="$1"
+  local app_name="$2"
+  local target="$3"
+  if [[ -z "$target" ]]; then
+    target="apple-macos"
+  fi
+  local bundle_root="$ROOT_DIR/.artifacts/run-bundles/$target/$app_name.app"
+  local contents="$bundle_root/Contents"
+  local macos="$contents/MacOS"
+  local resources="$contents/Resources"
+  local plist="$contents/Info.plist"
+  local bundle_exec="airun"
+  local embedded_airun="$macos/$bundle_exec"
+  local icon_svg="$project_dir/Assets/icons/app.svg"
+  local icon_icns_src="$project_dir/Assets/icons/app.icns"
+  local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
+  local icon_icns="$resources/AppIcon.icns"
+
+  rm -rf "$bundle_root"
+  mkdir -p "$macos" "$resources"
+  cp "$AIRUN_BIN" "$embedded_airun"
+  chmod +x "$embedded_airun"
+
+  if [[ -f "$icon_icns_src" ]]; then
+    cp "$icon_icns_src" "$icon_icns"
+  elif [[ -f "$icon_svg" ]]; then
+    build_macos_icns_from_svg "$icon_svg" "$icon_icns" || true
+  elif [[ -f "$icon_default" ]]; then
+    build_macos_icns_from_svg "$icon_default" "$icon_icns" || true
+  fi
+
+  cat > "$plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>$app_name</string>
+  <key>CFBundleDisplayName</key><string>$app_name</string>
+  <key>CFBundleIdentifier</key><string>com.aivectra.$app_name</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleExecutable</key><string>$bundle_exec</string>
+  <key>NSHighResolutionCapable</key><true/>
+EOF
+  if [[ -f "$icon_icns" ]]; then
+    cat >> "$plist" <<EOF
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+EOF
+  fi
+  cat >> "$plist" <<EOF
+</dict>
+</plist>
+EOF
+
+  printf "%s" "$bundle_root"
+}
+
+resolve_host_target() {
+  if [[ -n "${AIVECTRA_RUN_TARGET:-}" ]]; then
+    printf "%s" "$AIVECTRA_RUN_TARGET"
+    return 0
+  fi
+  local os
+  os="$(uname -s)"
+  case "$os" in
+    Darwin)
+      printf "%s" "apple-macos"
+      ;;
+    Linux)
+      printf "%s" "linux"
+      ;;
+    MINGW*|MSYS*|CYGWIN*)
+      printf "%s" "windows"
+      ;;
+    *)
+      printf "%s" "unknown"
+      ;;
+  esac
+}
+
+is_apple_publish_target() {
+  local rid="$1"
+  if [[ -z "$rid" ]]; then
+    [[ "$(uname -s)" == "Darwin" ]]
+    return $?
+  fi
+  case "$rid" in
+    *osx*|*mac*|*darwin*|*apple*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+preflight_publish_tools() {
+  local app_path="$1"
+  local target_rid="$2"
+  if ! is_apple_publish_target "$target_rid"; then
+    return 0
+  fi
+
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    echo "publish error: apple target requires macOS host tools" >&2
+    return 1
+  fi
+
+  local project_dir
+  project_dir="$(project_dir_from_target "$app_path")"
+  if [[ -z "$project_dir" || ! -f "$project_dir/project.aiproj" ]]; then
+    echo "publish error: unable to resolve project directory for apple publish preflight" >&2
+    return 1
+  fi
+
+  local icon_icns_src="$project_dir/Assets/icons/app.icns"
+  local icon_svg="$project_dir/Assets/icons/app.svg"
+  local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
+  if [[ ! -f "$icon_icns_src" && ( -f "$icon_svg" || -f "$icon_default" ) ]]; then
+    if ! command -v iconutil >/dev/null 2>&1; then
+      echo "publish error: missing required tool 'iconutil' for apple icon packaging" >&2
+      return 1
+    fi
+    if ! command -v sips >/dev/null 2>&1 && ! command -v magick >/dev/null 2>&1 && ! command -v qlmanage >/dev/null 2>&1; then
+      echo "publish error: missing required image tooling (need one of: sips, magick, qlmanage) for apple icon packaging" >&2
+      return 1
+    fi
+  fi
+
+  if [[ "${AIVECTRA_MAC_REQUIRE_SIGN:-0}" == "1" ]]; then
+    if [[ -z "${AIVECTRA_MAC_SIGN_IDENTITY:-}" ]]; then
+      echo "publish error: AIVECTRA_MAC_REQUIRE_SIGN=1 but AIVECTRA_MAC_SIGN_IDENTITY is not set" >&2
+      return 1
+    fi
+    if ! command -v codesign >/dev/null 2>&1; then
+      echo "publish error: missing required tool 'codesign' for required signing" >&2
+      return 1
+    fi
+  fi
+  return 0
+}
+
+inject_icon_into_publish_bundle() {
+  local app_path="$1"
+  local out_dir="$2"
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    return 0
+  fi
+  local project_dir
+  project_dir="$(project_dir_from_target "$app_path")"
+  if [[ -z "$project_dir" ]]; then
+    return 0
+  fi
+  local icon_svg="$project_dir/Assets/icons/app.svg"
+  local icon_icns_src="$project_dir/Assets/icons/app.icns"
+  local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
+  local source_svg=""
+  if [[ -f "$icon_icns_src" ]]; then
+    while IFS= read -r app_bundle; do
+      local resources="$app_bundle/Contents/Resources"
+      mkdir -p "$resources"
+      cp "$icon_icns_src" "$resources/AppIcon.icns"
+    done < <(find "$out_dir" -type d -name "*.app" 2>/dev/null || true)
+    return 0
+  fi
+  if [[ -f "$icon_svg" ]]; then
+    source_svg="$icon_svg"
+  elif [[ -f "$icon_default" ]]; then
+    source_svg="$icon_default"
+  else
+    return 0
+  fi
+
+  while IFS= read -r app_bundle; do
+    local resources="$app_bundle/Contents/Resources"
+    mkdir -p "$resources"
+    build_macos_icns_from_svg "$source_svg" "$resources/AppIcon.icns" || true
+  done < <(find "$out_dir" -type d -name "*.app" 2>/dev/null || true)
+}
+
+run_via_macos_bundle_if_possible() {
+  local target="$1"
+  shift
+  local target_abs
+  target_abs="$(abs_path "$target")"
+  if [[ "$(uname -s)" != "Darwin" ]]; then
+    "$AIRUN_BIN" run "$target_abs" "$@"
+    return $?
+  fi
+  local project_dir
+  project_dir="$(project_dir_from_target "$target_abs")"
+  if [[ -z "$project_dir" || ! -f "$project_dir/project.aiproj" ]]; then
+    "$AIRUN_BIN" run "$target_abs" "$@"
+    return $?
+  fi
+  local app_name
+  app_name="$(project_name_from_dir "$project_dir")"
+  local host_target
+  host_target="$(resolve_host_target)"
+  local bundle_app
+  bundle_app="$(ensure_macos_run_bundle "$project_dir" "$app_name" "$host_target")"
+  if command -v open >/dev/null 2>&1; then
+    if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >/dev/null 2>&1); then
+      return 0
+    fi
+  fi
+  (cd "$project_dir" && "$bundle_app/Contents/MacOS/airun" run "$target_abs" "$@")
+}
+
+ensure_dir() {
+  local d="$1"
+  mkdir -p "$d"
+}
+
+normalize_debug_artifacts_to_toml() {
+  local out_dir="$1"
+  local f
+  for f in config diagnostics events state_snapshots syscalls vm_trace; do
+    if [[ -f "$out_dir/$f.aos" ]]; then
+      cp "$out_dir/$f.aos" "$out_dir/$f.toml"
+      rm -f "$out_dir/$f.aos"
+    fi
+  done
+}
+
+run_airun_debug_with_toml_artifacts() {
+  local app_path="$1"
+  shift
+  local out_dir=""
+  local wrapper_args=()
+  local app_args=()
+  local parsing_app_args="false"
+  while [[ $# -gt 0 ]]; do
+    if [[ "$parsing_app_args" == "true" ]]; then
+      app_args+=("$1")
+      shift
+      continue
+    fi
+    case "$1" in
+      --)
+        parsing_app_args="true"
+        shift
+        ;;
+      --out)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --out" >&2
+          exit 2
+        fi
+        out_dir="$(normalize_path_arg "$2")"
+        wrapper_args+=("$1" "$out_dir")
+        shift 2
+        ;;
+      *)
+        wrapper_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+  if [[ -z "$out_dir" ]]; then
+    out_dir="$ROOT_DIR/.artifacts/debug/$(basename "$app_path" .aos)-$(date +%s)"
+    wrapper_args+=("--out" "$out_dir")
+  fi
+
+  local debug_mode="off"
+  local arg
+  for arg in "${wrapper_args[@]}"; do
+    case "$arg" in
+      --debug-mode=*)
+        debug_mode="${arg#--debug-mode=}"
+        ;;
+    esac
+  done
+
+  if [[ "$debug_mode" == "live" ]]; then
+    local run_target="$app_path"
+    if ! is_native_c_runtime && [[ "$app_path" == */src/app.aos ]]; then
+      local candidate_dir
+      candidate_dir="$(dirname "$(dirname "$app_path")")"
+      if [[ -f "$candidate_dir/project.aiproj" ]]; then
+        run_target="$candidate_dir"
+      fi
+    fi
+    native_runtime_guard "$run_target"
+    run_via_macos_bundle_if_possible "$run_target" -- live "${app_args[@]:-}"
+    return $?
+  fi
+
+  native_runtime_guard "$app_path"
+  ensure_dir "$out_dir"
+  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
+  normalize_debug_artifacts_to_toml "$out_dir"
+}
+
+run_airun_debug_scenario_with_toml_artifacts() {
+  local fixture_path="$1"
+  shift
+  local run_fixture="$fixture_path"
+  local tmp_fixture=""
+  if [[ "$fixture_path" == *.toml ]]; then
+    tmp_fixture="$(mktemp /tmp/aivectra-scenario-XXXXXX)"
+    tmp_fixture="${tmp_fixture}.aos"
+    toml_scenario_to_aos "$fixture_path" "$tmp_fixture"
+    run_fixture="$tmp_fixture"
+  fi
+  "$AIRUN_BIN" debug scenario "$run_fixture" "$@"
+  local rc=$?
+  if [[ -n "$tmp_fixture" && -f "$tmp_fixture" ]]; then
+    rm -f "$tmp_fixture"
+  fi
+  if [[ $rc -ne 0 ]]; then
+    return $rc
+  fi
+  # best effort: convert all known debug bundles under .artifacts/debug
+  if [[ -d "$ROOT_DIR/.artifacts/debug" ]]; then
+    local d
+    while IFS= read -r d; do
+      normalize_debug_artifacts_to_toml "$d"
+    done < <(find "$ROOT_DIR/.artifacts/debug" -maxdepth 2 -type d)
+  fi
+}
+
+toml_get_string() {
+  local file="$1"
+  local key="$2"
+  local default_val="${3:-}"
+  local line
+  line="$(rg -n "^${key}\\s*=\\s*\\\"" "$file" | head -n1 | cut -d: -f2- || true)"
+  if [[ -z "$line" ]]; then
+    printf "%s" "$default_val"
+    return 0
+  fi
+  printf "%s" "$line" | sed -E 's/^[^"]*"//; s/"[[:space:]]*$//'
+}
+
+toml_get_bool() {
+  local file="$1"
+  local key="$2"
+  local default_val="${3:-false}"
+  local line
+  line="$(rg -n "^${key}\\s*=\\s*(true|false)" "$file" | head -n1 | cut -d: -f2- || true)"
+  if [[ -z "$line" ]]; then
+    printf "%s" "$default_val"
+    return 0
+  fi
+  printf "%s" "$line" | sed -E 's/^[^=]*=[[:space:]]*//; s/[[:space:]]*$//'
+}
+
+resolve_target_toml_path() {
+  local project_dir="$1"
+  local required_path="$2"
+  if [[ -f "$project_dir/$required_path" ]]; then
+    printf "%s" "$project_dir/$required_path"
+    return 0
+  fi
+  printf ""
+}
+
+write_macos_info_plist() {
+  local out_plist="$1"
+  local app_name="$2"
+  local bundle_id="$3"
+  local display_name="$4"
+  local version="$5"
+  local has_icon="$6"
+  cat > "$out_plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key><string>$app_name</string>
+  <key>CFBundleDisplayName</key><string>$display_name</string>
+  <key>CFBundleIdentifier</key><string>$bundle_id</string>
+  <key>CFBundleVersion</key><string>$version</string>
+  <key>CFBundleShortVersionString</key><string>$version</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>NSHighResolutionCapable</key><true/>
+EOF
+  if [[ "$has_icon" == "true" ]]; then
+    cat >> "$out_plist" <<'EOF'
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+EOF
+  fi
+  cat >> "$out_plist" <<'EOF'
+</dict>
+</plist>
+EOF
+}
+
+write_macos_entitlements_plist() {
+  local out_plist="$1"
+  local app_sandbox="$2"
+  cat > "$out_plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+EOF
+  if [[ "$app_sandbox" == "true" ]]; then
+    cat >> "$out_plist" <<'EOF'
+  <key>com.apple.security.app-sandbox</key><true/>
+EOF
+  fi
+  cat >> "$out_plist" <<'EOF'
+</dict>
+</plist>
+EOF
+}
+
+apply_macos_publish_metadata() {
+  local app_path="$1"
+  local out_dir="$2"
+  local project_dir
+  project_dir="$(project_dir_from_target "$app_path")"
+  if [[ -z "$project_dir" || ! -d "$project_dir" ]]; then
+    return 0
+  fi
+
+  local info_toml
+  info_toml="$(resolve_target_toml_path "$project_dir" "Targets/Apple/Mac/Info.plist.toml")"
+  local ent_toml
+  ent_toml="$(resolve_target_toml_path "$project_dir" "Targets/Apple/Mac/Entitlements.plist.toml")"
+
+  if [[ -z "$info_toml" ]]; then
+    echo "publish error: missing required file Targets/Apple/Mac/Info.plist.toml" >&2
+    return 1
+  fi
+  if [[ -z "$ent_toml" ]]; then
+    echo "publish error: missing required file Targets/Apple/Mac/Entitlements.plist.toml" >&2
+    return 1
+  fi
+
+  local app_name bundle_id display_name version app_sandbox
+  app_name="$(project_name_from_dir "$project_dir")"
+  bundle_id="org.aivectra.$(printf "%s" "$app_name" | tr '[:upper:]' '[:lower:]')"
+  display_name="$app_name"
+  version="0.0.1"
+  app_sandbox="false"
+
+  bundle_id="$(toml_get_string "$info_toml" "bundle_id" "$bundle_id")"
+  display_name="$(toml_get_string "$info_toml" "display_name" "$display_name")"
+  version="$(toml_get_string "$info_toml" "version" "$version")"
+  app_sandbox="$(toml_get_bool "$ent_toml" "app_sandbox" "$app_sandbox")"
+
+  local identity require_sign
+  local require_icon
+  identity="${AIVECTRA_MAC_SIGN_IDENTITY:-}"
+  require_sign="${AIVECTRA_MAC_REQUIRE_SIGN:-0}"
+  require_icon="${AIVECTRA_MAC_REQUIRE_ICON:-0}"
+
+  local had_error=0
+  while IFS= read -r app_bundle; do
+    local contents="$app_bundle/Contents"
+    local resources="$contents/Resources"
+    local info_plist="$contents/Info.plist"
+    local ent_plist="$contents/Entitlements.plist"
+    mkdir -p "$resources"
+    local has_icon="false"
+    if [[ -f "$resources/AppIcon.icns" ]]; then
+      has_icon="true"
+    elif [[ "$require_icon" == "1" ]]; then
+      echo "publish error: missing AppIcon.icns in $resources (set AIVECTRA_MAC_REQUIRE_ICON=0 to bypass)" >&2
+      had_error=1
+    else
+      echo "publish warn: AppIcon.icns missing in $resources (set AIVECTRA_MAC_REQUIRE_ICON=1 to enforce)" >&2
+    fi
+    write_macos_info_plist "$info_plist" "$app_name" "$bundle_id" "$display_name" "$version" "$has_icon"
+    write_macos_entitlements_plist "$ent_plist" "$app_sandbox"
+
+    if [[ -n "$identity" ]]; then
+      if [[ "$identity" == "-" ]]; then
+        codesign --force --deep --sign "$identity" --entitlements "$ent_plist" "$app_bundle" || had_error=1
+      else
+        codesign --force --deep --options runtime --timestamp --sign "$identity" --entitlements "$ent_plist" "$app_bundle" || had_error=1
+      fi
+      codesign --verify --deep --strict "$app_bundle" || had_error=1
+    elif [[ "$require_sign" == "1" ]]; then
+      echo "publish error: AIVECTRA_MAC_REQUIRE_SIGN=1 but AIVECTRA_MAC_SIGN_IDENTITY is not set" >&2
+      had_error=1
+    fi
+  done < <(find "$out_dir" -type d -name "*.app" 2>/dev/null || true)
+
+  return $had_error
+}
+
+ensure_macos_publish_bundle() {
+  local app_path="$1"
+  local out_dir="$2"
+  local project_dir
+  project_dir="$(project_dir_from_target "$app_path")"
+  if [[ -z "$project_dir" || ! -f "$project_dir/project.aiproj" ]]; then
+    return 1
+  fi
+  local app_name
+  app_name="$(project_name_from_dir "$project_dir")"
+  local app_slug
+  app_slug="$(printf "%s" "$app_name" | tr '[:upper:]' '[:lower:]')"
+  local target_dir="$out_dir/apple-macos"
+  local bundle_root="$target_dir/$app_name.app"
+  local contents="$bundle_root/Contents"
+  local macos="$contents/MacOS"
+  local resources="$contents/Resources"
+  local runner="$macos/$app_slug"
+  mkdir -p "$macos" "$resources"
+  cat > "$runner" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+PROJECT_DIR="$project_dir"
+if [[ -x "${AIRUN_BIN:-}" ]]; then
+  exec "${AIRUN_BIN}" run "\$PROJECT_DIR" "\$@"
+fi
+if [[ -x "./.tools/airun" ]]; then
+  exec "./.tools/airun" run "\$PROJECT_DIR" "\$@"
+fi
+exec airun run "\$PROJECT_DIR" "\$@"
+EOF
+  chmod +x "$runner"
+  return 0
+}
+
+toml_scenario_to_aos() {
+  local in_toml="$1"
+  local out_aos="$2"
+  local name app_path vm debug_mode events_path compare_path out_dir args
+  name="$(toml_get_string "$in_toml" "name" "minimal")"
+  app_path="$(toml_get_string "$in_toml" "appPath" "")"
+  vm="$(toml_get_string "$in_toml" "vm" "bytecode")"
+  debug_mode="$(toml_get_string "$in_toml" "debugMode" "live")"
+  events_path="$(toml_get_string "$in_toml" "eventsPath" "")"
+  compare_path="$(toml_get_string "$in_toml" "comparePath" "")"
+  out_dir="$(toml_get_string "$in_toml" "outDir" ".artifacts/debug/${name}")"
+  args="$(toml_get_string "$in_toml" "args" "")"
+  if [[ -n "$app_path" && "$app_path" != /* ]]; then
+    app_path="$ROOT_DIR/$app_path"
+  fi
+  if [[ -n "$events_path" && "$events_path" != /* ]]; then
+    events_path="$ROOT_DIR/$events_path"
+  fi
+  if [[ -n "$compare_path" && "$compare_path" != /* ]]; then
+    compare_path="$ROOT_DIR/$compare_path"
+  fi
+  if [[ -n "$out_dir" && "$out_dir" != /* ]]; then
+    out_dir="$ROOT_DIR/$out_dir"
+  fi
+  cat > "$out_aos" <<EOF
+Program#p1 {
+  Scenario#s1(
+    name="$name"
+    appPath="$app_path"
+    vm="$vm"
+    debugMode="$debug_mode"
+    eventsPath="$events_path"
+    comparePath="$compare_path"
+    outDir="$out_dir"
+    args="$args"
+  )
+}
+EOF
+}
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" || $# -eq 0 ]]; then
+  cat <<'EOF'
+AiVectra airun wrapper
+usage:
+  ./scripts/aivectra [--airun /path/to/airun] <airun-args>
+  ./scripts/aivectra init <AppName|path> [--force] [--target <name>] [--targets <expr>]
+  ./scripts/aivectra targets add [project-path] --target <name> [--target <name> ...]
+  ./scripts/aivectra targets add [project-path] --targets <expr>
+  ./scripts/aivectra doctor
+  ./scripts/aivectra test
+  ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra publish <app|project-dir|.aibc1> [airun publish flags]
+  ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
+  ./scripts/aivectra icon <project-path> [label]
+  ./scripts/aivectra input --window "<title>" --events "<tokens>" [--delay-ms N] [--dry-run]
+
+example:
+  ./scripts/aivectra doctor
+  ./scripts/aivectra test
+  ./scripts/aivectra init MyApp
+  ./scripts/aivectra init ./samples/MyApp --force
+  ./scripts/aivectra init MyNativeApp --targets apple-macos,windows,linux
+  ./scripts/aivectra init MyFocusedApp --targets default,wasm-spa
+  ./scripts/aivectra init MyFocusedApp --targets +wasm-spa
+  ./scripts/aivectra targets add ./samples/MyApp --targets +wasm-fullstack
+  ./scripts/aivectra run ./samples/HelloWorld/
+  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/src/app.aos -- todd
+  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/cwd -- todd
+  ./scripts/aivectra debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal
+  AIVECTRA_MAC_REQUIRE_ICON=1 ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
+  AIVECTRA_MAC_SIGN_IDENTITY="Developer ID Application: YOUR TEAM" ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
+  ./scripts/aivectra icon ./samples/HelloWorld/ HW
+  ./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"
+EOF
+  exit 0
+fi
+
+if [[ "${1:-}" == "doctor" ]]; then
+  exec "$ROOT_DIR/scripts/doctor.sh"
+fi
+
+if [[ "${1:-}" == "test" ]]; then
+  exec "$ROOT_DIR/scripts/test-all.sh"
+fi
+
+if [[ "${1:-}" == "targets" ]]; then
+  shift
+  if [[ "${1:-}" != "add" ]]; then
+    echo "usage: ./scripts/aivectra targets add [project-path] --target <name> [--target <name> ...]" >&2
+    echo "   or: ./scripts/aivectra targets add [project-path] --targets <expr>" >&2
+    exit 2
+  fi
+  shift
+
+  APP_DIR=""
+  TARGET_SPECS=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --target)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --target" >&2
+          exit 2
+        fi
+        if [[ "$2" == *,* ]]; then
+          echo "--target accepts one value; use --targets for comma-separated values" >&2
+          exit 2
+        fi
+        TARGET_SPECS+=("$2")
+        shift 2
+        ;;
+      --targets)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --targets" >&2
+          exit 2
+        fi
+        IFS=',' read -r -a __targets_csv <<< "$2"
+        for __t in "${__targets_csv[@]}"; do
+          __t="$(printf "%s" "$__t" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+          [[ -n "$__t" ]] && TARGET_SPECS+=("$__t")
+        done
+        shift 2
+        ;;
+      *)
+        if [[ -z "$APP_DIR" ]]; then
+          APP_DIR="$(normalize_path_arg "$1")"
+          shift
+        else
+          echo "unknown targets option: $1" >&2
+          exit 2
+        fi
+        ;;
+    esac
+  done
+
+  if [[ -z "$APP_DIR" ]]; then
+    APP_DIR="$(pwd)"
+  fi
+  APP_DIR="${APP_DIR%/}"
+  if [[ ! -f "$APP_DIR/project.aiproj" ]]; then
+    echo "project file not found: $APP_DIR/project.aiproj" >&2
+    exit 2
+  fi
+  if [[ ${#TARGET_SPECS[@]} -eq 0 ]]; then
+    echo "no targets requested; use --target or --targets" >&2
+    exit 2
+  fi
+
+  detect_project_target_flags "$APP_DIR"
+  APP_NAME="$(project_name_from_dir "$APP_DIR")"
+  APP_SLUG="$(printf "%s" "$APP_NAME" | tr '[:upper:]' '[:lower:]')"
+
+  for spec in "${TARGET_SPECS[@]}"; do
+    token="$(printf "%s" "$spec" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+    [[ -z "$token" ]] && continue
+    if [[ "$token" == -* ]]; then
+      echo "target removal is not supported in this command: $token" >&2
+      exit 2
+    fi
+    token="${token#+}"
+    canonical="$(normalize_target_name "$token" || true)"
+    if [[ -z "$canonical" ]]; then
+      echo "unknown target: $token" >&2
+      exit 2
+    fi
+    add_target_flag "$canonical"
+  done
+
+  [[ "$T_APPLE_MAC" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "apple-macos"
+  [[ "$T_WINDOWS" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "windows"
+  [[ "$T_LINUX" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "linux"
+  [[ "$T_WASM_SPA" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "wasm-spa"
+  [[ "$T_WASM_FULLSTACK" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "wasm-fullstack"
+
+  echo "updated targets for: $APP_DIR"
+  echo "targets: apple-macos=$T_APPLE_MAC windows=$T_WINDOWS linux=$T_LINUX wasm-spa=$T_WASM_SPA wasm-fullstack=$T_WASM_FULLSTACK"
+  exit 0
+fi
+
+if [[ "${1:-}" == "init" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    echo "usage: ./scripts/aivectra init <AppName|path> [--force] [--target <name>] [--targets <expr>]" >&2
+    exit 2
+  fi
+
+  FORCE="false"
+  TARGET_SPECS=()
+  HAS_PLUS_SPEC="false"
+  HAS_DEFAULT_SPEC="false"
+  TARGET_RAW="$1"
+  shift || true
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force)
+        FORCE="true"
+        shift
+        ;;
+      --target)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --target" >&2
+          exit 2
+        fi
+        if [[ "$2" == *,* ]]; then
+          echo "--target accepts one value; use --targets for comma-separated values" >&2
+          exit 2
+        fi
+        TARGET_SPECS+=("$2")
+        [[ "$2" == +* ]] && HAS_PLUS_SPEC="true"
+        __canon="$(normalize_target_name "${2#+}" || true)"
+        [[ "$__canon" == "default" ]] && HAS_DEFAULT_SPEC="true"
+        shift 2
+        ;;
+      --targets)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --targets" >&2
+          exit 2
+        fi
+        IFS=',' read -r -a __targets_csv <<< "$2"
+        for __t in "${__targets_csv[@]}"; do
+          __t="$(printf "%s" "$__t" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+          if [[ -n "$__t" ]]; then
+            TARGET_SPECS+=("$__t")
+            [[ "$__t" == +* ]] && HAS_PLUS_SPEC="true"
+            __canon="$(normalize_target_name "${__t#+}" || true)"
+            [[ "$__canon" == "default" ]] && HAS_DEFAULT_SPEC="true"
+          fi
+        done
+        shift 2
+        ;;
+      *)
+        echo "unknown init option: $1" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  if [[ "$TARGET_RAW" == */* || "$TARGET_RAW" == .* || "$TARGET_RAW" == /* ]]; then
+    APP_DIR="$(normalize_path_arg "$TARGET_RAW")"
+  else
+    APP_DIR="$ROOT_DIR/samples/$TARGET_RAW"
+  fi
+  APP_DIR="${APP_DIR%/}"
+  APP_NAME="$(basename "$APP_DIR")"
+  APP_TITLE="$APP_NAME"
+  APP_SLUG="$(printf "%s" "$APP_NAME" | tr '[:upper:]' '[:lower:]')"
+  if [[ ${#TARGET_SPECS[@]} -eq 0 ]]; then
+    set_default_target_flags
+  else
+    if [[ "$HAS_PLUS_SPEC" == "true" || "$HAS_DEFAULT_SPEC" == "true" ]]; then
+      set_default_target_flags
+    else
+      set_empty_target_flags
+    fi
+    for __spec in "${TARGET_SPECS[@]}"; do
+      __token="$(printf "%s" "$__spec" | sed -E 's/^[[:space:]]+//; s/[[:space:]]+$//')"
+      [[ -z "$__token" ]] && continue
+      __op=""
+      if [[ "$__token" == +* || "$__token" == -* ]]; then
+        __op="${__token:0:1}"
+        __token="${__token:1}"
+      fi
+      __canonical="$(normalize_target_name "$__token" || true)"
+      if [[ -z "$__canonical" ]]; then
+        echo "unknown target for init: $__token" >&2
+        exit 2
+      fi
+      if [[ "$__op" == "-" ]]; then
+        remove_target_flag "$__canonical"
+      else
+        add_target_flag "$__canonical"
+      fi
+    done
+  fi
+  LIB_PROJECT_ABS="$ROOT_DIR/src/AiVectra"
+  LIB_IMPORT_ABS="$ROOT_DIR/src/AiVectra/src/lib.aos"
+  if command -v python3 >/dev/null 2>&1; then
+    LIB_PROJECT_PATH="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$LIB_PROJECT_ABS" "$APP_DIR")"
+    LIB_IMPORT_PATH="$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$LIB_IMPORT_ABS" "$APP_DIR/src")"
+  else
+    LIB_PROJECT_PATH="../../src/AiVectra"
+    LIB_IMPORT_PATH="../../../src/AiVectra/src/lib.aos"
+  fi
+
+  if [[ -e "$APP_DIR" && "$FORCE" != "true" ]]; then
+    echo "target already exists: $APP_DIR (use --force to overwrite files in place)" >&2
+    exit 2
+  fi
+
+  mkdir -p "$APP_DIR/src"
+  mkdir -p "$APP_DIR/Assets/icons"
+  mkdir -p "$APP_DIR/Assets/images"
+  mkdir -p "$APP_DIR/Assets/fonts"
+  mkdir -p "$APP_DIR/Assets/styles"
+  mkdir -p "$APP_DIR/Assets/locale"
+  mkdir -p "$APP_DIR/examples/debug/scenarios"
+  mkdir -p "$APP_DIR/examples/debug/events"
+
+  cat > "$APP_DIR/project.aiproj" <<EOF
+Program {
+  Project(
+    name="$APP_NAME"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include(name="AiVectra" path="$LIB_PROJECT_PATH" version="0.0.1")
+  }
+}
+EOF
+
+  cat > "$APP_DIR/.gitignore" <<'EOF'
+.toolchain/
+.artifacts/
+EOF
+
+  cat > "$APP_DIR/AGENTS.md" <<'EOF'
+AiVectra app rules
+
+- Default template is multithreaded:
+  - one semantic/UI thread
+  - worker thread(s) for long-running operations
+- UI thread never blocks on IO.
+- All state mutation stays on semantic/UI thread.
+- Debug data is TOML artifacts under `.artifacts/debug`.
+EOF
+
+  cat > "$APP_DIR/src/app.aos" <<EOF
+Program {
+  Import(path="$LIB_IMPORT_PATH")
+  Export(name=start)
+
+  Let(name=statusLabel) {
+    Fn(params=workerHandle,workerState) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=workerHandle) Lit(value=0) }
+          Block { Return { Lit(value="Idle") } }
+          Block {
+            If {
+              Eq { Var(name=workerState) Lit(value="running") }
+              Block { Return { Lit(value="Running background task...") } }
+              Block {
+                If {
+                  Eq { Var(name=workerState) Lit(value="done") }
+                  Block { Return { Lit(value="Task complete") } }
+                  Block {
+                    If {
+                      Eq { Var(name=workerState) Lit(value="failed") }
+                      Block { Return { Lit(value="Task failed") } }
+                      Block { Return { Lit(value="Idle") } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=render) {
+    Fn(params=handle,w,h,buttonFlash,workerHandle,workerState) {
+      Block {
+        Let(name=buttonState) {
+          If {
+            Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) }
+            Block { Lit(value="pressed") }
+            Block { Lit(value="normal") }
+          }
+        }
+        Let(name=title) { Lit(value="$APP_TITLE") }
+        Let(name=taskButtonX) { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=180) } Lit(value=0) } }
+        Let(name=taskButtonY) { Add { Var(name=h) Lit(value=-120) } }
+
+        Call(target=sys.ui.beginFrame) { Var(name=handle) }
+        Call(target=drawPanel) { Var(name=handle) Var(name=w) Var(name=h) }
+        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=64) Lit(value=72) Var(name=title) Lit(value="#ffffff") Lit(value=30) }
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Lit(value=116)
+          Lit(value="Multithreaded app template")
+          Lit(value="#cbd5e1")
+          Lit(value=18)
+        }
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Lit(value=152)
+          StrConcat { Lit(value="Status: ") Call(target=statusLabel) { Var(name=workerHandle) Var(name=workerState) } }
+          Lit(value="#e2e8f0")
+          Lit(value=18)
+        }
+
+        Call(target=interactiveVectorState) {
+          Var(name=handle)
+          Var(name=taskButtonX)
+          Var(name=taskButtonY)
+          Lit(value=180)
+          Lit(value=52)
+          Var(name=buttonState)
+          Lit(value="rect")
+          Lit(value="")
+          Lit(value="#2563eb")
+          Lit(value="#93c5fd")
+          Lit(value="#3b82f6")
+          Lit(value="#1d4ed8")
+          Lit(value="#64748b")
+        }
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Add { Var(name=taskButtonX) Lit(value=34) }
+          Add { Var(name=taskButtonY) Lit(value=15) }
+          Lit(value="Start Task")
+          Lit(value="#ffffff")
+          Lit(value=22)
+        }
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Lit(value=64)
+          Add { Var(name=h) Lit(value=-36) }
+          Lit(value="Click Start Task. Close window to cancel in-flight work.")
+          Lit(value="#94a3b8")
+          Lit(value=14)
+        }
+
+        Call(target=sys.ui.endFrame) { Var(name=handle) }
+        Call(target=sys.ui.present) { Var(name=handle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=loop) {
+    Fn(params=handle,lastW,lastH,buttonFlash,workerHandle,workerState) {
+      Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=960) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=640) } }
+        Let(name=nextFlash) {
+          If {
+            Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) }
+            Block { Add { Var(name=buttonFlash) Lit(value=-1) } }
+            Block { Lit(value=0) }
+          }
+        }
+
+        Let(name=polledState) {
+          If {
+            Call(target=intLt) { Var(name=workerHandle) Lit(value=0) }
+            Block { Var(name=workerState) }
+            Block {
+              Let(name=ws) { Call(target=sys.worker.poll) { Var(name=workerHandle) } }
+              If {
+                Eq { Var(name=ws) Lit(value=1) }
+                Block { Lit(value="done") }
+                Block {
+                  If {
+                    Eq { Var(name=ws) Lit(value=2) }
+                    Block { Lit(value="failed") }
+                    Block { Lit(value="running") }
+                  }
+                }
+              }
+            }
+          }
+        }
+        Let(name=polledHandle) {
+          If {
+            Eq { Var(name=polledState) Lit(value="running") }
+            Block { Var(name=workerHandle) }
+            Block { Lit(value=-1) }
+          }
+        }
+
+        Call(target=render) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) }
+
+        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
+        Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+        Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+        Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="closed") }
+          Block {
+            If {
+              Call(target=intLt) { Lit(value=-1) Var(name=polledHandle) }
+              Block { Call(target=sys.worker.cancel) { Var(name=polledHandle) } Lit(value=0) }
+              Block { Lit(value=0) }
+            }
+            Return { Lit(value=0) }
+          }
+          Block {
+            If {
+              Eq { Var(name=eventType) Lit(value="click") }
+              Block {
+                Let(name=taskButtonX) { Call(target=halfFloor) { Call(target=sub) { Var(name=w) Lit(value=180) } Lit(value=0) } }
+                Let(name=taskButtonY) { Add { Var(name=h) Lit(value=-120) } }
+                Let(name=buttonHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=taskButtonX) Var(name=taskButtonY) Lit(value=180) Lit(value=52) } }
+                If {
+                  Var(name=buttonHit)
+                  Block {
+                    If {
+                      Call(target=intLt) { Lit(value=-1) Var(name=polledHandle) }
+                      Block {
+                        Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Var(name=polledHandle) Var(name=polledState) } }
+                      }
+                      Block {
+                        Let(name=newHandle) { Call(target=sys.worker.start) { Lit(value="echo") Lit(value="$APP_SLUG background task") } }
+                        If {
+                          Call(target=intLt) { Var(name=newHandle) Lit(value=0) }
+                          Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Lit(value=-1) Lit(value="failed") } } }
+                          Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Lit(value=6) Var(name=newHandle) Lit(value="running") } } }
+                        }
+                      }
+                    }
+                  }
+                  Block { Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) } } }
+                }
+              }
+              Block {
+                Return { Call(target=loop) { Var(name=handle) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=polledHandle) Var(name=polledState) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Let(name=mode) {
+          If {
+            Eq { ChildCount { Var(name=args) } Lit(value=0) }
+            Block { Lit(value="") }
+            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
+          }
+        }
+        If {
+          Eq { Var(name=mode) Lit(value="snapshot") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Let(name=handle) { Call(target=window) { Lit(value="$APP_TITLE") } }
+            Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
+            Let(name=w0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+            Let(name=h0Raw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+            Let(name=w0) { Call(target=stabilizeSize) { Var(name=w0Raw) Lit(value=960) Lit(value=960) } }
+            Let(name=h0) { Call(target=stabilizeSize) { Var(name=h0Raw) Lit(value=640) Lit(value=640) } }
+            Call(target=loop) { Var(name=handle) Var(name=w0) Var(name=h0) Lit(value=0) Lit(value=-1) Lit(value="idle") }
+            Return { Lit(value=0) }
+          }
+        }
+      }
+    }
+  }
+}
+EOF
+
+  # Use the known-good multithreaded scaffold as template source.
+  cp "$ROOT_DIR/samples/WorkerDemo/src/app.aos" "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QImport(path="../../../src/AiVectra/src/lib.aos")\E|Import(path="'"$LIB_IMPORT_PATH"'")|g' "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QLit(value="AiVectra WorkerDemo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
+  perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
+
+  if [[ -f "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" ]]; then
+    cp "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" "$APP_DIR/Assets/icons/app.svg"
+  else
+    cat > "$APP_DIR/Assets/icons/app.svg" <<'EOF'
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <path d="M110 392L228 120h56l118 272h-56l-23-56H188l-23 56h-55zm98-103h95l-47-117-48 117z" fill="#60a5fa"/>
+</svg>
+EOF
+  fi
+
+  cat > "$APP_DIR/Assets/locale/en.toml" <<'EOF'
+title = "My AiVectra App"
+start_task = "Start Task"
+EOF
+
+  [[ "$T_APPLE_MAC" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "apple-macos"
+  [[ "$T_WINDOWS" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "windows"
+  [[ "$T_LINUX" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "linux"
+  [[ "$T_WASM_SPA" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "wasm-spa"
+  [[ "$T_WASM_FULLSTACK" == "true" ]] && scaffold_target_files "$APP_DIR" "$APP_NAME" "$APP_SLUG" "wasm-fullstack"
+
+  cat > "$APP_DIR/examples/debug/scenarios/minimal.scenario.toml" <<EOF
+[[scenario]]
+name = "minimal"
+appPath = "$APP_DIR/src/app.aos"
+vm = "bytecode"
+debugMode = "live"
+eventsPath = ""
+comparePath = ""
+outDir = "$APP_DIR/.artifacts/debug/minimal"
+args = ""
+EOF
+
+  cat > "$APP_DIR/examples/debug/events/minimal.events.toml" <<'EOF'
+events = []
+EOF
+
+  echo "created AiVectra multithreaded app: $APP_DIR"
+  echo "targets: apple-macos=$T_APPLE_MAC windows=$T_WINDOWS linux=$T_LINUX wasm-spa=$T_WASM_SPA wasm-fullstack=$T_WASM_FULLSTACK"
+  echo "next:"
+  echo "  ./scripts/aivectra run $APP_DIR/"
+  echo "  ./scripts/aivectra debug $APP_DIR/src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
+  exit 0
+fi
+
+if [[ "${1:-}" == "icon" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    echo "usage: ./scripts/aivectra icon <project-path> [label]" >&2
+    exit 2
+  fi
+  PROJECT="$(normalize_path_arg "$1")"
+  shift || true
+  LABEL="${1:-}"
+  ICON_DIR="$PROJECT/Assets/icons"
+  ICON_OUT="$ICON_DIR/app.svg"
+  MANIFEST_OUT="$ICON_DIR/manifest.txt"
+  DEFAULT_ICON="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
+
+  if [[ ! -d "$PROJECT" ]]; then
+    echo "project path not found: $PROJECT" >&2
+    exit 2
+  fi
+  if [[ ! -f "$DEFAULT_ICON" ]]; then
+    echo "default icon asset missing: $DEFAULT_ICON" >&2
+    exit 2
+  fi
+
+  mkdir -p "$ICON_DIR"
+  cp "$DEFAULT_ICON" "$ICON_OUT"
+
+  if [[ -n "$LABEL" ]]; then
+    cat > "$MANIFEST_OUT" <<EOF
+style=label_monogram
+label=$LABEL
+source=$DEFAULT_ICON
+output=$ICON_OUT
+note=label override requested; default logo SVG copied until label renderer lands
+EOF
+  else
+    cat > "$MANIFEST_OUT" <<EOF
+style=ailang_logo
+source=$DEFAULT_ICON
+output=$ICON_OUT
+EOF
+  fi
+
+  echo "icon generated: $ICON_OUT"
+  echo "manifest: $MANIFEST_OUT"
+  exit 0
+fi
+
+if [[ "${1:-}" == "run" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    if APP_PATH="$(resolve_cwd_app_path_if_project)"; then
+      set -- "$APP_PATH"
+    else
+      echo "missing app path for run command (or run from a folder containing project.aiproj)" >&2
+      exit 2
+    fi
+  fi
+  RUN_TARGET="$(resolve_app_path "$1")"
+  shift || true
+  native_runtime_guard "$RUN_TARGET"
+  run_via_macos_bundle_if_possible "$RUN_TARGET" "$@"
+  exit $?
+fi
+
+if [[ "${1:-}" == "publish" ]]; then
+  APP_PATH_RAW="${2:-}"
+  OUT_DIR=""
+  TARGET_RID=""
+  i=1
+  while [[ $i -le $# ]]; do
+    eval "arg=\${$i}"
+    if [[ "$arg" == "--out" ]]; then
+      j=$((i + 1))
+      if [[ $j -le $# ]]; then
+        eval "OUT_DIR=\${$j}"
+        OUT_DIR="$(normalize_path_arg "$OUT_DIR")"
+      fi
+    elif [[ "$arg" == "--target" ]]; then
+      j=$((i + 1))
+      if [[ $j -le $# ]]; then
+        eval "TARGET_RID=\${$j}"
+      fi
+      i=$((i + 1))
+    elif [[ "$arg" == --target=* ]]; then
+      TARGET_RID="${arg#--target=}"
+    fi
+    i=$((i + 1))
+  done
+  if ! preflight_publish_tools "$APP_PATH_RAW" "$TARGET_RID"; then
+    exit 2
+  fi
+  "$AIRUN_BIN" "$@"
+  rc=$?
+  if [[ $rc -eq 0 && -n "$APP_PATH_RAW" && -n "$OUT_DIR" && -d "$OUT_DIR" ]]; then
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      if ! find "$OUT_DIR" -type d -name "*.app" -print -quit | grep -q .; then
+        ensure_macos_publish_bundle "$APP_PATH_RAW" "$OUT_DIR" || true
+      fi
+    fi
+    inject_icon_into_publish_bundle "$APP_PATH_RAW" "$OUT_DIR"
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      if ! apply_macos_publish_metadata "$APP_PATH_RAW" "$OUT_DIR"; then
+        exit 1
+      fi
+    fi
+  fi
+  exit $rc
+fi
+
+if [[ "${1:-}" == "input" ]]; then
+  shift
+  export SWIFT_MODULECACHE_PATH="${SWIFT_MODULECACHE_PATH:-/tmp/swift-module-cache}"
+  export CLANG_MODULE_CACHE_PATH="${CLANG_MODULE_CACHE_PATH:-/tmp/clang-module-cache}"
+  mkdir -p "$SWIFT_MODULECACHE_PATH"
+  mkdir -p "$CLANG_MODULE_CACHE_PATH"
+  exec swift "$ROOT_DIR/scripts/inject-ui-events.swift" "$@"
+fi
+
+if [[ "${1:-}" == "debug" ]]; then
+  shift
+  if [[ "${1:-}" == "run" ]]; then
+    shift
+  fi
+
+  if [[ "${1:-}" == "scenario" ]]; then
+    if [[ $# -lt 2 ]]; then
+      echo "usage: ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]" >&2
+      exit 2
+    fi
+    FIXTURE="$(normalize_path_arg "$2")"
+    shift 2
+    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    exit $?
+  fi
+
+  APP_PATH=""
+  WRAPPER_ARGS=()
+  APP_ARGS=()
+
+  while [[ $# -gt 0 ]]; do
+    if [[ -z "$APP_PATH" ]]; then
+      case "$1" in
+        --out|--events|--compare)
+          if [[ $# -lt 2 ]]; then
+            echo "missing value for $1" >&2
+            exit 2
+          fi
+          VAL="$2"
+          if [[ "$1" == "--out" || "$1" == "--events" || "$1" == "--compare" ]]; then
+            VAL="$(normalize_path_arg "$VAL")"
+          fi
+          WRAPPER_ARGS+=("$1" "$VAL")
+          shift 2
+          ;;
+        --debug-mode|--vm)
+          if [[ $# -lt 2 ]]; then
+            echo "missing value for $1" >&2
+            exit 2
+          fi
+          WRAPPER_ARGS+=("$1=$2")
+          shift 2
+          ;;
+        --trace)
+          WRAPPER_ARGS+=("$1")
+          shift
+          ;;
+        --)
+          shift
+          while [[ $# -gt 0 ]]; do
+            APP_ARGS+=("$1")
+            shift
+          done
+          ;;
+        \|)
+          # Legacy separator support. Prefer --.
+          shift
+          while [[ $# -gt 0 ]]; do
+            APP_ARGS+=("$1")
+            shift
+          done
+          ;;
+        -*)
+          echo "unknown debug option: $1" >&2
+          exit 2
+          ;;
+        *)
+          APP_PATH="$(resolve_app_path "$1")"
+          shift
+          ;;
+      esac
+    else
+      APP_ARGS+=("$1")
+      shift
+    fi
+  done
+
+  if [[ -z "$APP_PATH" ]]; then
+    if APP_PATH="$(resolve_cwd_app_path_if_project)"; then
+      :
+    else
+      echo "missing app path for debug command (or run from a folder containing project.aiproj)" >&2
+      exit 2
+    fi
+  fi
+
+  set +u
+  run_airun_debug_with_toml_artifacts "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
+  RC=$?
+  set -u
+  exit $RC
+fi
+
+# Compatibility shim for wrapper-style debug commands:
+#   ./scripts/aivectra run debug snapshot /samples/HelloWorld/
+if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
+  shift 2
+  if [[ "${1:-}" == "scenario" ]]; then
+    FIXTURE="$(normalize_path_arg "${2:-}")"
+    shift 2 || true
+    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    exit $?
+  fi
+  APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/samples/HelloName/src/app.aos}")"
+  shift || true
+  run_airun_debug_with_toml_artifacts "$APP_PATH" -- "$@"
+  exit $?
+fi
+
+if [[ "${1:-}" == "run" && "${2:-}" == ".debug" ]]; then
+  echo "'.debug' is no longer supported. Use: ./scripts/aivectra debug <app.aos|project-dir> [--out <dir>]" >&2
+  exit 2
+fi
+
+exec "$AIRUN_BIN" "$@"
