@@ -1,4 +1,5 @@
 Program {
+  Import(path="../../../.tools/std/core.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
@@ -875,6 +876,245 @@ Program {
     }
   }
 
+  Let(name=helloState) {
+    Fn(params=name,submittedName,inputFocused,buttonFlash,caret,blinkTick) {
+      Block {
+        Let(name=base) { Map { } }
+        Let(name=withName) { Call(target=mapSet) { Var(name=base) Lit(value="name") Var(name=name) } }
+        Let(name=withSubmitted) { Call(target=mapSet) { Var(name=withName) Lit(value="submittedName") Var(name=submittedName) } }
+        Let(name=withFocus) { Call(target=mapSet) { Var(name=withSubmitted) Lit(value="inputFocused") Var(name=inputFocused) } }
+        Let(name=withFlash) { Call(target=mapSet) { Var(name=withFocus) Lit(value="buttonFlash") Var(name=buttonFlash) } }
+        Let(name=withCaret) { Call(target=mapSet) { Var(name=withFlash) Lit(value="caret") Var(name=caret) } }
+        Return { Call(target=mapSet) { Var(name=withCaret) Lit(value="blinkTick") Var(name=blinkTick) } }
+      }
+    }
+  }
+
+  Let(name=stateName) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="name") Lit(value="") } } }
+    }
+  }
+
+  Let(name=stateSubmittedName) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="submittedName") Lit(value="") } } }
+    }
+  }
+
+  Let(name=stateInputFocused) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="inputFocused") Lit(value=true) } } }
+    }
+  }
+
+  Let(name=stateButtonFlash) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="buttonFlash") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=stateCaret) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="caret") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=stateBlinkTick) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="blinkTick") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=appInit) {
+    Fn(params=args) {
+      Block { Return { Call(target=helloState) { Lit(value="") Lit(value="") Lit(value=true) Lit(value=0) Lit(value=0) Lit(value=0) } } }
+    }
+  }
+
+  Let(name=appRender) {
+    Fn(params=handle,state) {
+      Block {
+        Let(name=name) { Call(target=stateName) { Var(name=state) } }
+        Let(name=submittedName) { Call(target=stateSubmittedName) { Var(name=state) } }
+        Let(name=inputFocused) { Call(target=stateInputFocused) { Var(name=state) } }
+        Let(name=buttonFlash) { Call(target=stateButtonFlash) { Var(name=state) } }
+        Let(name=caret) { Call(target=stateCaret) { Var(name=state) } }
+        Let(name=blinkTick) { Call(target=stateBlinkTick) { Var(name=state) } }
+        Let(name=windowWidthRaw) { Call(target=uiWidth) { Var(name=handle) } }
+        Let(name=windowHeightRaw) { Call(target=uiHeight) { Var(name=handle) } }
+        Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=buttonActive) { Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) } }
+        Let(name=safeCaret) { Call(target=caretClamp) { Var(name=caret) Call(target=textLen) { Var(name=name) } } }
+        Let(name=caretVisible) { Call(target=intLt) { Var(name=blinkTick) Lit(value=30) } }
+        Call(target=renderForm) {
+          Var(name=handle)
+          Var(name=name)
+          Var(name=submittedName)
+          Var(name=windowWidth)
+          Var(name=windowHeight)
+          Var(name=inputFocused)
+          Var(name=buttonActive)
+          Var(name=safeCaret)
+          Var(name=caretVisible)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=appUpdate) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY,windowWidth,windowHeight) {
+      Block {
+        Let(name=name) { Call(target=stateName) { Var(name=state) } }
+        Let(name=submittedName) { Call(target=stateSubmittedName) { Var(name=state) } }
+        Let(name=inputFocused) { Call(target=stateInputFocused) { Var(name=state) } }
+        Let(name=buttonFlash) { Call(target=stateButtonFlash) { Var(name=state) } }
+        Let(name=caret) { Call(target=stateCaret) { Var(name=state) } }
+        Let(name=blinkTick) { Call(target=stateBlinkTick) { Var(name=state) } }
+        Let(name=nextFlash) { Call(target=decIfPositive) { Var(name=buttonFlash) } }
+        Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
+        Let(name=safeCaret) { Call(target=caretClamp) { Var(name=caret) Var(name=nameLen) } }
+        Let(name=nextBlinkTick) {
+          If {
+            Call(target=intGte) { Var(name=blinkTick) Lit(value=59) }
+            Block { Lit(value=0) }
+            Block { Add { Var(name=blinkTick) Lit(value=1) } }
+          }
+        }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="click") }
+          Block {
+            Let(name=entryWidth) { Call(target=inputWidth) { Var(name=windowWidth) } }
+            Let(name=submitX) { Call(target=buttonX) { Var(name=windowWidth) } }
+            Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
+            Let(name=inputHit) {
+              Call(target=pointInRect) {
+                Var(name=eventX)
+                Var(name=eventY)
+                Lit(value=72)
+                Lit(value=112)
+                Var(name=entryWidth)
+                Lit(value=52)
+              }
+            }
+            Let(name=buttonHit) {
+              Call(target=pointInRect) {
+                Var(name=eventX)
+                Var(name=eventY)
+                Var(name=submitX)
+                Var(name=submitY)
+                Lit(value=140)
+                Lit(value=52)
+              }
+            }
+            Let(name=nextCaretFromClick) { Call(target=inputCaretFromClick) { Var(name=eventX) Var(name=name) Var(name=entryWidth) } }
+            If {
+              Var(name=buttonHit)
+              Block { Return { Call(target=helloState) { Var(name=name) Call(target=normalizeName) { Var(name=name) } Lit(value=true) Lit(value=6) Var(name=safeCaret) Lit(value=0) } } }
+              Block {
+                If {
+                  Var(name=inputHit)
+                  Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Lit(value=true) Var(name=nextFlash) Var(name=nextCaretFromClick) Lit(value=0) } } }
+                  Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Lit(value=false) Var(name=nextFlash) Var(name=safeCaret) Lit(value=0) } } }
+                }
+              }
+            }
+          }
+          Block {
+            If {
+              Call(target=isKeyboardLikeEvent) { Var(name=eventType) }
+              Block {
+                If {
+                  Var(name=inputFocused)
+                  Block {
+                    Let(name=backPressed) {
+                      If {
+                        Call(target=isBackKey) { Var(name=eventKey) }
+                        Block { Lit(value=true) }
+                        Block {
+                          If {
+                            Call(target=isBackKey) { Var(name=eventText) }
+                            Block { Lit(value=true) }
+                            Block { Lit(value=false) }
+                          }
+                        }
+                      }
+                    }
+                    If {
+                      Var(name=backPressed)
+                      Block {
+                        Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=safeCaret) } }
+                        Return { Call(target=helloState) { Var(name=nextName) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Call(target=caretLeft) { Var(name=safeCaret) } Lit(value=0) } }
+                      }
+                      Block {
+                        If {
+                          Call(target=isDeleteKey) { Var(name=eventKey) }
+                          Block {
+                            Let(name=deleteIndex) { Call(target=caretRight) { Var(name=safeCaret) Var(name=nameLen) } }
+                            Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=deleteIndex) } }
+                            Return { Call(target=helloState) { Var(name=nextName) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=safeCaret) Lit(value=0) } }
+                          }
+                          Block {
+                            If {
+                              Call(target=isLeftKey) { Var(name=eventKey) }
+                              Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Call(target=caretLeft) { Var(name=safeCaret) } Lit(value=0) } } }
+                              Block {
+                                If {
+                                  Call(target=isRightKey) { Var(name=eventKey) }
+                                  Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Call(target=caretRight) { Var(name=safeCaret) Var(name=nameLen) } Lit(value=0) } } }
+                                  Block {
+                                    If {
+                                      Call(target=isEnterKey) { Var(name=eventKey) }
+                                      Block { Return { Call(target=helloState) { Var(name=name) Call(target=normalizeName) { Var(name=name) } Var(name=inputFocused) Lit(value=6) Var(name=safeCaret) Lit(value=0) } } }
+                                      Block {
+                                        If {
+                                          Call(target=isEnterKey) { Var(name=eventText) }
+                                          Block { Return { Call(target=helloState) { Var(name=name) Call(target=normalizeName) { Var(name=name) } Var(name=inputFocused) Lit(value=6) Var(name=safeCaret) Lit(value=0) } } }
+                                          Block {
+                                            Let(name=fallbackText) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
+                                            If {
+                                              Eq { Var(name=fallbackText) Lit(value="") }
+                                              Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=safeCaret) Lit(value=0) } } }
+                                              Block {
+                                                If {
+                                                  Call(target=isInsertableText) { Var(name=fallbackText) }
+                                                  Block {
+                                                    Let(name=nextName) { Call(target=textInsertAt) { Var(name=name) Var(name=safeCaret) Var(name=fallbackText) } }
+                                                    Let(name=nextCaretRaw) { Add { Var(name=safeCaret) Call(target=textLen) { Var(name=fallbackText) } } }
+                                                    Let(name=nextCaret) { Call(target=caretClamp) { Var(name=nextCaretRaw) Call(target=textLen) { Var(name=nextName) } } }
+                                                    Return { Call(target=helloState) { Var(name=nextName) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=nextCaret) Lit(value=0) } }
+                                                  }
+                                                  Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=safeCaret) Lit(value=0) } } }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                  Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=safeCaret) Var(name=blinkTick) } } }
+                }
+              }
+              Block { Return { Call(target=helloState) { Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=nextFlash) Var(name=safeCaret) Var(name=nextBlinkTick) } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=loop) {
     Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,buttonFlash,caret,blinkTick,debugLive,prevSceneSig) {
       Block {
@@ -1428,25 +1668,16 @@ Program {
   }
 
   Let(name=start) {
-    Fn(params=_) {
+    Fn(params=args) {
       Block {
-        Let(name=debugLive) { Lit(value=false) }
-        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello Name") } }
-        Let(name=initialWidth) { Lit(value=640) }
-        Let(name=initialHeight) { Lit(value=360) }
-        Call(target=loop) {
-          Var(name=handle)
-          Lit(value="")
-          Lit(value="")
-          Var(name=initialWidth)
-          Var(name=initialHeight)
-          Lit(value=true)
-          Lit(value=0)
-          Lit(value=0)
-          Lit(value=0)
-          Var(name=debugLive)
-          Lit(value=-1)
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="snapshot") }
+          Block { Return { Lit(value=0) } }
+          Block { Lit(value=0) }
         }
+        Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Hello Name") Lit(value=640) Lit(value=360) } }
+        Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } }
         Return { Lit(value=0) }
       }
     }

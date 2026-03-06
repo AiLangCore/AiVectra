@@ -18,22 +18,28 @@ Apps provide declarative behavior hooks. Apps do not own low-level loop mechanic
 ## Required App Hooks
 - `appInit(args) -> state`
 - `appRender(windowHandle, state) -> void`
-- `appUpdate(state, event) -> state`
+- `appUpdate(state, eventType, eventKey, eventText, eventX, eventY, windowWidth, windowHeight) -> state`
 
 Optional:
 - `appHandleWorker(state, workerMessage) -> state`
 - `appOnShutdown(state) -> void`
 
 ## Event Contract
-Runtime passes canonical UI events only:
-- `type`
-- `targetId`
-- `x`
-- `y`
-- `key`
-- `text`
-- `modifiers`
-- `repeat`
+Current runtime passes flattened canonical event fields plus current window metrics:
+- `eventType`
+- `eventKey`
+- `eventText`
+- `eventX`
+- `eventY`
+- `windowWidth`
+- `windowHeight`
+
+Current event conventions:
+- `eventType="none"` indicates a frame tick with no host event.
+- `eventType="closed"` indicates window close.
+
+Planned direction after current convergence:
+- move from flattened event args to a single canonical event value once the runtime contract is ready to freeze.
 
 ## Determinism Rules
 - All state mutation occurs on the single semantic thread.

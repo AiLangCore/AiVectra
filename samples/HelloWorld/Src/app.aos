@@ -23,7 +23,7 @@ Program {
   }
 
   Let(name=appUpdate) {
-    Fn(params=state,eventType,eventKey,eventText,eventX,eventY) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY,windowWidth,windowHeight) {
       Block { Return { Var(name=state) } }
     }
   }

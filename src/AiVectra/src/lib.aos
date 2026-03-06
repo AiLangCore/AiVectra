@@ -165,17 +165,47 @@ Program {
           Block {
             Call(target=appRender) { Var(name=windowHandle) Var(name=currentModel) }
             Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
+            Let(name=eventWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+            Let(name=eventHeightRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+            Let(name=eventWidth) { Call(target=stabilizeSize) { Var(name=eventWidthRaw) Lit(value=640) Lit(value=640) } }
+            Let(name=eventHeight) { Call(target=stabilizeSize) { Var(name=eventHeightRaw) Lit(value=360) Lit(value=360) } }
             Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
-            If {
-              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
-              Block { Continue { } }
-              Block { Lit(value=0) }
+            Let(name=eventType) {
+              If {
+                Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+                Block { Lit(value="none") }
+                Block { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
+              }
             }
-            Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
-            Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
-            Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
-            Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
-            Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+            Let(name=eventKey) {
+              If {
+                Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+                Block { Lit(value="") }
+                Block { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
+              }
+            }
+            Let(name=eventText) {
+              If {
+                Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+                Block { Lit(value="") }
+                Block { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
+              }
+            }
+            Let(name=eventX) {
+              If {
+                Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+                Block { Lit(value=0) }
+                Block { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
+              }
+            }
+            Let(name=eventY) {
+              If {
+                Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+                Block { Lit(value=0) }
+                Block { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+              }
+            }
             If {
               Eq { Var(name=eventType) Lit(value="closed") }
               Block { Break { } }
@@ -189,6 +219,8 @@ Program {
                 Var(name=eventText)
                 Var(name=eventX)
                 Var(name=eventY)
+                Var(name=eventWidth)
+                Var(name=eventHeight)
               }
             }
             Let(name=currentModel) { Var(name=nextModel) }
