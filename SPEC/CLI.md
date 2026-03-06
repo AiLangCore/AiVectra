@@ -30,7 +30,7 @@ Legacy compatibility form remains valid:
 
 ## Path And CWD Inference
 - If `target` is a directory and contains `app.aibc1`, target resolves to `app.aibc1`.
-- Else, if `target` contains `Src/app.aos` or `src/app.aos`, target resolves to that app entry file.
+- Else, if `target` contains `Src/app.aos`, target resolves to that app entry file.
 - If `debug` is invoked without explicit target, and cwd contains `project.aiproj`, cwd project is used.
 - Absolute and relative paths are accepted.
 

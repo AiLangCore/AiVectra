@@ -18,7 +18,7 @@ case "$MODE" in
   live)
     echo "[ui-debug] running live app debug capture"
     if [[ -z "$APP_PATH" ]]; then
-      APP_PATH="$ROOT_DIR/samples/HelloName/src/app.aos"
+      APP_PATH="$ROOT_DIR/samples/HelloName/Src/app.aos"
     fi
     exec "$AIVECTRA_CLI" debug "$APP_PATH" --out "$ROOT_DIR/.artifacts/debug/ui-live"
     ;;
