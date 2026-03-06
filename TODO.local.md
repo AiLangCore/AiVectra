@@ -6,7 +6,7 @@
   - `AGENTS.md`
   - `README.md`
   - `Src/`
-  - `Assets/Bundle`, `Assets/Icons`, `Assets/Splash`, `Assets/Fonts`, `Assets/Images`, `Assets/Locale`
+  - `Assets/Bundle`, `Assets/icons`, `Assets/Splash`, `Assets/Fonts`, `Assets/Images`, `Assets/Locale`
   - `Targets/Apple/Mac`, `Targets/Microsoft/Windows`, `Targets/Linux`, `Targets/Web/www`, `Targets/Web/WasmSpa/www`, `Targets/Web/WasmFullStack/www`
   - `.toolchain/` (generated, gitignored)
 

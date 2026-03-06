@@ -153,6 +153,24 @@ The spec is authoritative.
 
 ---
 
+## Style Guides
+
+AiLang and AiVectra are AI-first tools.
+
+Authoring style must optimize for:
+
+- determinism
+- explicit structure
+- stable naming
+- safe AI-driven modification
+
+See:
+
+- `SPEC/STYLE_AILANG.md`
+- `SPEC/STYLE_AIVECTRA.md`
+
+---
+
 ## Status
 
 Early architecture phase.
@@ -181,12 +199,13 @@ Canonical AiVectra app structure:
 
 - `project.aiproj`
 - `AGENTS.md` (required)
-- `src/app.aos`
+- `Src/app.aos`
 - `Assets/icons/app.svg` (single canonical icon source)
 - `Assets/images/` (optional)
 - `Assets/fonts/` (optional)
 - `Assets/styles/` (future)
 - `Assets/locale/en.toml` (optional)
+- See `SPEC/APP_STRUCTURE.md` for the normative layout.
 - `Targets/macos/*` (optional platform overrides)
 - `Targets/windows/*` (optional platform overrides)
 - `Targets/linux/*` (optional platform overrides)

@@ -14,12 +14,23 @@ Program {
   Let(name=rect) {
     Fn(params=windowHandle) {
       Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=panelX) { Lit(value=20) }
+        Let(name=panelY) { Lit(value=20) }
+        Let(name=panelWRaw) { Call(target=sub) { Var(name=w) Lit(value=40) } }
+        Let(name=panelHRaw) { Call(target=sub) { Var(name=h) Lit(value=40) } }
+        Let(name=panelW) { Call(target=stabilizeSize) { Var(name=panelWRaw) Lit(value=600) Lit(value=1) } }
+        Let(name=panelH) { Call(target=stabilizeSize) { Var(name=panelHRaw) Lit(value=320) Lit(value=1) } }
         Call(target=sys.ui.drawRect) {
           Var(name=windowHandle)
-          Lit(value=20)
-          Lit(value=20)
-          Lit(value=600)
-          Lit(value=320)
+          Var(name=panelX)
+          Var(name=panelY)
+          Var(name=panelW)
+          Var(name=panelH)
           Lit(value="#1e293b")
         }
         Return { Lit(value=0) }
@@ -43,13 +54,50 @@ Program {
   Let(name=text) {
     Fn(params=windowHandle,value) {
       Block {
+        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
+        Let(name=wRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=hRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=panelX) { Lit(value=20) }
+        Let(name=panelY) { Lit(value=20) }
+        Let(name=panelWRaw) { Call(target=sub) { Var(name=w) Lit(value=40) } }
+        Let(name=panelHRaw) { Call(target=sub) { Var(name=h) Lit(value=40) } }
+        Let(name=panelW) { Call(target=stabilizeSize) { Var(name=panelWRaw) Lit(value=600) Lit(value=1) } }
+        Let(name=panelH) { Call(target=stabilizeSize) { Var(name=panelHRaw) Lit(value=320) Lit(value=1) } }
+        Let(name=fontCandidate) { Call(target=divFloor) { Var(name=panelH) Lit(value=9) Lit(value=0) } }
+        Let(name=fontSize) {
+          If {
+            Call(target=intLt) { Var(name=fontCandidate) Lit(value=18) }
+            Block { Lit(value=18) }
+            Block {
+              If {
+                Call(target=intLt) { Lit(value=34) Var(name=fontCandidate) }
+                Block { Lit(value=34) }
+                Block { Var(name=fontCandidate) }
+              }
+            }
+          }
+        }
+        Let(name=charWidth) { Add { Call(target=halfFloor) { Var(name=fontSize) Lit(value=0) } Lit(value=1) } }
+        Let(name=textWidth) { Call(target=mul) { Var(name=charWidth) Call(target=textLen) { Var(name=value) } Lit(value=0) } }
+        Let(name=xOffsetRaw) { Call(target=sub) { Var(name=panelW) Var(name=textWidth) } }
+        Let(name=xOffset) {
+          If {
+            Call(target=intLt) { Var(name=xOffsetRaw) Lit(value=0) }
+            Block { Lit(value=0) }
+            Block { Call(target=halfFloor) { Var(name=xOffsetRaw) Lit(value=0) } }
+          }
+        }
+        Let(name=textX) { Add { Var(name=panelX) Var(name=xOffset) } }
+        Let(name=textY) { Add { Var(name=panelY) Call(target=halfFloor) { Add { Var(name=panelH) Var(name=fontSize) } Lit(value=0) } } }
         Call(target=sys.ui.drawText) {
           Var(name=windowHandle)
-          Lit(value=208)
-          Lit(value=180)
+          Var(name=textX)
+          Var(name=textY)
           Var(name=value)
           Lit(value="#ffffff")
-          Lit(value=28)
+          Var(name=fontSize)
         }
         Return { Lit(value=0) }
       }

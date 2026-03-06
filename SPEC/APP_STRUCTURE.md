@@ -21,12 +21,12 @@ MyApp/
     app.aos
 
   Assets/
-    Bundle/
-    Icons/
-    Splash/
-    Fonts/
-    Images/
-    Locale/
+    bundle/
+    icons/
+    splash/
+    fonts/
+    images/
+    locale/
 
   Targets/
     Apple/
@@ -46,8 +46,9 @@ MyApp/
 
 ## Naming Rules
 - Use `Src` (not `src`) for app source root.
+- Use lowercase names for concrete asset buckets: `bundle`, `icons`, `splash`, `fonts`, `images`, `locale`.
 - Use lowercase `www` for web roots.
-- `Assets/Bundle` contains generic files copied directly into target bundles.
+- `Assets/bundle` contains generic files copied directly into target bundles.
 - Derived assets are generated into build staging/`dist`, not committed under source assets.
 
 ## Target Metadata
