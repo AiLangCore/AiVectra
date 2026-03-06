@@ -988,13 +988,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) {
-          If {
-            Eq { ChildCount { Var(name=args) } Lit(value=0) }
-            Block { Lit(value="") }
-            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
-          }
-        }
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block { Return { Lit(value=0) } }

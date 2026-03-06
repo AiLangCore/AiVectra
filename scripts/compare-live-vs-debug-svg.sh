@@ -12,12 +12,12 @@ APP_LOG="$OUT_DIR/live_frame.log"
 SHOT_PATH_FILE="$OUT_DIR/live_window_shot.path"
 
 : > "$APP_LOG"
-"$AIVECTRA" debug live "$ROOT_DIR/samples/HelloName/" >"$APP_LOG" 2>&1 &
+"$AIVECTRA" debug --debug-mode live "$ROOT_DIR/samples/HelloName/" >"$APP_LOG" 2>&1 &
 APP_PID=$!
 sleep 1
 
 WIN_LINE="$(python3 "$SHOT_TOOL" --window-name "AiVectra Hello Name" --list-windows | head -n1)"
-if [[ -z "$WIN_LINE" ]]; then
+if [[ -z "$WIN_LINE" || "$WIN_LINE" == no\ matching\ windows\ found* ]]; then
   kill "$APP_PID" >/dev/null 2>&1 || true
   wait "$APP_PID" 2>/dev/null || true
   echo "no matching window found" >&2

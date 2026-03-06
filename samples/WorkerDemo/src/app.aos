@@ -4,7 +4,7 @@ Program {
 
   Let(name=emptyList) {
     Fn(params=_) {
-      Block { Return { MakeBlock { Lit(value="list") } } }
+      Block { Return { Map { } } }
     }
   }
 
@@ -333,52 +333,9 @@ Program {
   Let(name=render) {
     Fn(params=handle,w,h,logs,activeCount,buttonFlash) {
       Block {
-        Let(name=logX) { Lit(value=40) }
-        Let(name=logY) { Lit(value=100) }
-        Let(name=logW) { Call(target=sub) { Var(name=w) Lit(value=80) } }
-        Let(name=logH) { Call(target=sub) { Var(name=h) Lit(value=140) } }
-        Let(name=buttonState) {
-          If {
-            Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) }
-            Block { Lit(value="pressed") }
-            Block { Lit(value="normal") }
-          }
-        }
-        Let(name=logText) { Call(target=visibleLogText) { Var(name=logs) Lit(value=14) } }
-
         Call(target=sys.ui.beginFrame) { Var(name=handle) }
         Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#0f172a") }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=20) Lit(value=20) Call(target=sub) { Var(name=w) Lit(value=40) } Call(target=sub) { Var(name=h) Lit(value=40) } Lit(value="#1e293b") }
-
         Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Lit(value=36) Lit(value="Worker Demo") Lit(value="#ffffff") Lit(value=26) }
-        Call(target=sys.ui.drawText) {
-          Var(name=handle)
-          Lit(value=40)
-          Lit(value=62)
-          StrConcat { Lit(value="Active tasks: ") ToString { Var(name=activeCount) } }
-          Lit(value="#cbd5e1")
-          Lit(value=14)
-        }
-
-        Call(target=sys.ui.drawRect) {
-          Var(name=handle) Lit(value=40) Lit(value=40) Lit(value=140) Lit(value=44)
-          If { Eq { Var(name=buttonState) Lit(value="pressed") } Block { Lit(value="#1d4ed8") } Block { Lit(value="#2563eb") } }
-        }
-        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=62) Lit(value=53) Lit(value="Start Task") Lit(value="#ffffff") Lit(value=18) }
-
-        Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=logX) Var(name=logY) Var(name=logW) Var(name=logH) Lit(value="#0b1120") }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=logX) Var(name=logY) Var(name=logW) Lit(value=1) Lit(value="#334155") }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=logX) Call(target=sub) { Add { Var(name=logY) Var(name=logH) } Lit(value=1) } Var(name=logW) Lit(value=1) Lit(value="#334155") }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=logX) Var(name=logY) Lit(value=1) Var(name=logH) Lit(value="#334155") }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Add { Var(name=logX) Var(name=logW) } Lit(value=1) } Var(name=logY) Lit(value=1) Var(name=logH) Lit(value="#334155") }
-        Call(target=sys.ui.drawText) {
-          Var(name=handle)
-          Add { Var(name=logX) Lit(value=12) }
-          Add { Var(name=logY) Lit(value=10) }
-          Var(name=logText)
-          Lit(value="#e2e8f0")
-          Lit(value=16)
-        }
 
         Call(target=sys.ui.endFrame) { Var(name=handle) }
         Call(target=sys.ui.present) { Var(name=handle) }
@@ -445,24 +402,20 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) {
-          If {
-            Eq { ChildCount { Var(name=args) } Lit(value=0) }
-            Block { Lit(value="") }
-            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
-          }
-        }
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block { Return { Lit(value=0) } }
           Block { Lit(value=0) }
         }
         Let(name=handle) { Call(target=sys.ui.createWindow) { Lit(value="AiVectra WorkerDemo") Lit(value=900) Lit(value=620) } }
-        Call(target=render) {
+        Call(target=loop) {
           Var(name=handle)
+          Lit(value=1)
+          Call(target=emptyList) { Lit(value=0) }
+          Call(target=emptyList) { Lit(value=0) }
           Lit(value=900)
           Lit(value=620)
-          Call(target=emptyList) { Lit(value=0) }
           Lit(value=0)
           Lit(value=0)
         }

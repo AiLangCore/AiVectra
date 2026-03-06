@@ -1,5 +1,0 @@
-AiVectra AppIcon
-format=svg
-file=appicon.svg
-style=label_monogram
-label=HW

@@ -33,7 +33,7 @@ Program {
         Return {
           StrConcat {
             Lit(value="Circle(")
-            StrConcat { Var(name=spec) Lit(value=")") }
+            StrConcat { ToString { Var(name=spec) } Lit(value=")") }
           }
         }
       }
@@ -93,13 +93,17 @@ Program {
   Let(name=appLoop) {
     Fn(params=windowHandle,model) {
       Block {
-        Call(target=appRender) { Var(name=windowHandle) Var(name=model) }
-        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
-        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
-        If {
-          Eq { AttrCount { Var(name=evt) } Lit(value=0) }
-          Block { Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) } } }
+        Let(name=currentModel) { Var(name=model) }
+        Loop {
           Block {
+            Call(target=appRender) { Var(name=windowHandle) Var(name=currentModel) }
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
             Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
             Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
             Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
@@ -107,23 +111,24 @@ Program {
             Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
             If {
               Eq { Var(name=eventType) Lit(value="closed") }
-              Block { Return { Var(name=model) } }
-              Block {
-                Let(name=nextModel) {
-                  Call(target=appUpdate) {
-                    Var(name=model)
-                    Var(name=eventType)
-                    Var(name=eventKey)
-                    Var(name=eventText)
-                    Var(name=eventX)
-                    Var(name=eventY)
-                  }
-                }
-                Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=nextModel) } }
+              Block { Break { } }
+              Block { Lit(value=0) }
+            }
+            Let(name=nextModel) {
+              Call(target=appUpdate) {
+                Var(name=currentModel)
+                Var(name=eventType)
+                Var(name=eventKey)
+                Var(name=eventText)
+                Var(name=eventX)
+                Var(name=eventY)
               }
             }
+            Let(name=currentModel) { Var(name=nextModel) }
+            Continue { }
           }
         }
+        Return { Var(name=currentModel) }
       }
     }
   }
@@ -143,12 +148,75 @@ Program {
         Let(name=greeting) {
           StrConcat {
             Lit(value="Hello ")
-            StrConcat { Var(name=name) Lit(value="!") }
+            StrConcat { ToString { Var(name=name) } Lit(value="!") }
           }
         }
-        Call(target=drawHelloFrame) { Var(name=handle) Var(name=greeting) }
-        Call(target=waitForClose) { Var(name=handle) }
+        Call(target=debugEmitSceneNode) {
+          Lit(value=1)
+          Lit(value=1)
+          Lit(value="hello_panel")
+          Lit(value="root")
+          Lit(value="Rect")
+          Lit(value="#1e293b")
+          Lit(value="")
+          Lit(value=0)
+          Lit(value="")
+          Lit(value="")
+          Lit(value=0)
+          Lit(value=20)
+          Lit(value=20)
+          Lit(value=600)
+          Lit(value=320)
+          Lit(value="matrix(1,0,0,1,0,0)")
+        }
+        Call(target=debugEmitSceneNode) {
+          Lit(value=1)
+          Lit(value=2)
+          Lit(value="hello_text")
+          Lit(value="root")
+          Lit(value="Text")
+          Lit(value="#ffffff")
+          Lit(value="")
+          Lit(value=0)
+          Var(name=greeting)
+          Lit(value="")
+          Lit(value=28)
+          Lit(value=208)
+          Lit(value=180)
+          Lit(value=0)
+          Lit(value=0)
+          Lit(value="matrix(1,0,0,1,0,0)")
+        }
+        Call(target=waitForCloseHello) { Var(name=handle) Var(name=greeting) }
         Return { Var(name=handle) }
+      }
+    }
+  }
+
+  Let(name=waitForCloseHello) {
+    Fn(params=windowHandle,greeting) {
+      Block {
+        Loop {
+          Block {
+            Call(target=drawHelloFrame) { Var(name=windowHandle) Var(name=greeting) }
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq {
+                Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
+                Lit(value="closed")
+              }
+              Block { Break { } }
+              Block { Continue { } }
+            }
+          }
+        }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -169,22 +237,26 @@ Program {
   Let(name=waitForClose) {
     Fn(params=windowHandle) {
       Block {
-        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
-        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
-        If {
-          Eq { AttrCount { Var(name=evt) } Lit(value=0) }
-          Block { Return { Call(target=waitForClose) { Var(name=windowHandle) } } }
+        Loop {
           Block {
+            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+            If {
+              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
             If {
               Eq {
                 Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) }
                 Lit(value="closed")
               }
-              Block { Return { Lit(value=0) } }
-              Block { Return { Call(target=waitForClose) { Var(name=windowHandle) } } }
+              Block { Break { } }
+              Block { Continue { } }
             }
           }
         }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -1058,7 +1130,7 @@ Program {
         Let(name=prefix) { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
         Let(name=suffixLen) { Call(target=sub) { Var(name=len) Var(name=idx) } }
         Let(name=suffix) { Call(target=sys.str.substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
-        Return { StrConcat { Var(name=prefix) StrConcat { Var(name=chunk) Var(name=suffix) } } }
+        Return { StrConcat { ToString { Var(name=prefix) } StrConcat { ToString { Var(name=chunk) } ToString { Var(name=suffix) } } } }
       }
     }
   }
@@ -1383,9 +1455,9 @@ Program {
         Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
         Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
         Call(target=sys.stdout.writeLine) { Lit(value="[[aivectra.event]]") }
-        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="type=\"") StrConcat { Var(name=eventType) Lit(value="\"") } } }
-        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="key=\"") StrConcat { Var(name=keyToken) Lit(value="\"") } } }
-        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="text=\"") StrConcat { Var(name=textToken) Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="type=\"") StrConcat { ToString { Var(name=eventType) } Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="key=\"") StrConcat { ToString { Var(name=keyToken) } Lit(value="\"") } } }
+        Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="text=\"") StrConcat { ToString { Var(name=textToken) } Lit(value="\"") } } }
         Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="x=") ToString { Var(name=clickX) } } }
         Call(target=sys.stdout.writeLine) { StrConcat { Lit(value="y=") ToString { Var(name=clickY) } } }
         Return { Lit(value=0) }
@@ -1503,7 +1575,7 @@ Program {
                     Return {
                       StrConcat {
                         Lit(value="'")
-                        StrConcat { Var(name=mapped) Lit(value="'") }
+                        StrConcat { ToString { Var(name=mapped) } Lit(value="'") }
                       }
                     }
                   }
@@ -1513,7 +1585,7 @@ Program {
                 Return {
                   StrConcat {
                     Lit(value="<")
-                    StrConcat { Var(name=controlName) Lit(value=">") }
+                    StrConcat { ToString { Var(name=controlName) } Lit(value=">") }
                   }
                 }
               }
@@ -1542,15 +1614,15 @@ Program {
           StrConcat {
             Lit(value="aivectra.event = { type=\"")
             StrConcat {
-              Var(name=eventType)
+              ToString { Var(name=eventType) }
               StrConcat {
                 Lit(value="\", key=\"")
                 StrConcat {
-                  Var(name=keyToken)
+                  ToString { Var(name=keyToken) }
                   StrConcat {
                     Lit(value="\", text=\"")
                     StrConcat {
-                      Var(name=textToken)
+                      ToString { Var(name=textToken) }
                       StrConcat {
                         Lit(value="\", x=")
                         StrConcat {
@@ -1583,11 +1655,11 @@ Program {
           StrConcat {
             Lit(value="aivectra.ui = { action=\"")
             StrConcat {
-              Var(name=action)
+              ToString { Var(name=action) }
               StrConcat {
                 Lit(value="\", target=\"")
                 StrConcat {
-                  Var(name=target)
+                  ToString { Var(name=target) }
                   StrConcat {
                     Lit(value="\", focus=")
                     StrConcat {
@@ -1603,11 +1675,11 @@ Program {
                               StrConcat {
                                 Lit(value=", input_rect=\"")
                                 StrConcat {
-                                  Var(name=inputRect)
+                                  ToString { Var(name=inputRect) }
                                   StrConcat {
                                     Lit(value="\", button_rect=\"")
                                     StrConcat {
-                                      Var(name=buttonRect)
+                                      ToString { Var(name=buttonRect) }
                                       Lit(value="\" }")
                                     }
                                   }
@@ -1644,23 +1716,23 @@ Program {
                   StrConcat {
                     Lit(value=", id=\"")
                     StrConcat {
-                      Var(name=id)
+                      ToString { Var(name=id) }
                       StrConcat {
                         Lit(value="\", parent=\"")
                         StrConcat {
-                          Var(name=parent)
+                          ToString { Var(name=parent) }
                           StrConcat {
                             Lit(value="\", kind=\"")
                             StrConcat {
-                              Var(name=kind)
+                              ToString { Var(name=kind) }
                               StrConcat {
                                 Lit(value="\", fill=\"")
                                 StrConcat {
-                                  Var(name=fill)
+                                  ToString { Var(name=fill) }
                                   StrConcat {
                                     Lit(value="\", stroke=\"")
                                     StrConcat {
-                                      Var(name=stroke)
+                                      ToString { Var(name=stroke) }
                                       StrConcat {
                                         Lit(value="\", stroke_w=")
                                         StrConcat {
@@ -1668,11 +1740,11 @@ Program {
                                           StrConcat {
                                             Lit(value=", text=\"")
                                             StrConcat {
-                                              Var(name=textValue)
+                                              ToString { Var(name=textValue) }
                                               StrConcat {
                                                 Lit(value="\", path=\"")
                                                 StrConcat {
-                                                  Var(name=pathValue)
+                                                  ToString { Var(name=pathValue) }
                                                   StrConcat {
                                                     Lit(value="\", font_size=")
                                                     StrConcat {
@@ -1696,7 +1768,7 @@ Program {
                                                                       StrConcat {
                                                                         Lit(value=", transform=\"")
                                                                         StrConcat {
-                                                                          Var(name=transform)
+                                                                          ToString { Var(name=transform) }
                                                                           Lit(value="\" }")
                                                                         }
                                                                       }
@@ -1781,6 +1853,68 @@ Program {
           Block { Return { Lit(value=false) } }
         }
       }
+    }
+  }
+
+  Let(name=argStringAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block { Return { AttrValueString { ChildAt { Var(name=args) Var(name=index) } Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=appModeFromArgsAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=candidate) { Call(target=argStringAt) { Var(name=args) Var(name=index) } }
+            If {
+              Eq { Var(name=candidate) Lit(value="live") }
+              Block { Return { Lit(value="live") } }
+              Block {
+                If {
+                  Eq { Var(name=candidate) Lit(value="snapshot") }
+                  Block { Return { Lit(value="snapshot") } }
+                  Block {
+                    If {
+                      Eq { Var(name=candidate) Lit(value="replay") }
+                      Block { Return { Lit(value="replay") } }
+                      Block {
+                        If {
+                          Eq { Var(name=candidate) Lit(value="scene") }
+                          Block { Return { Lit(value="scene") } }
+                          Block {
+                            Return {
+                              Call(target=appModeFromArgsAt) {
+                                Var(name=args)
+                                Add { Var(name=index) Lit(value=1) }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appModeFromArgs) {
+    Fn(params=args) {
+      Block { Return { Call(target=appModeFromArgsAt) { Var(name=args) Lit(value=0) } } }
     }
   }
 
@@ -1900,5 +2034,7 @@ Program {
   Export(name=debugEmitUiIf)
   Export(name=debugEmitSceneNodeIf)
   Export(name=debugModeLive)
+  Export(name=argStringAt)
+  Export(name=appModeFromArgs)
   Export(name=layoutSignature)
 }

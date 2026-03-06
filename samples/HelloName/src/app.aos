@@ -24,7 +24,7 @@ Program {
             Return {
               StrConcat {
                 Lit(value="Greeting: Hello, ")
-                StrConcat { Var(name=submittedName) Lit(value="!") }
+                StrConcat { ToString { Var(name=submittedName) } Lit(value="!") }
               }
             }
           }
@@ -247,39 +247,7 @@ Program {
   Let(name=sceneSignature) {
     Fn(params=windowWidth,windowHeight,name,submittedName,inputFocused,buttonActive) {
       Block {
-        Return {
-          StrConcat {
-            ToString { Var(name=windowWidth) }
-            StrConcat {
-              Lit(value="x")
-              StrConcat {
-                ToString { Var(name=windowHeight) }
-                StrConcat {
-                  Lit(value="|n=")
-                  StrConcat {
-                    Var(name=name)
-                    StrConcat {
-                      Lit(value="|s=")
-                      StrConcat {
-                        Var(name=submittedName)
-                        StrConcat {
-                          Lit(value="|f=")
-                          StrConcat {
-                            Call(target=boolToml) { Var(name=inputFocused) }
-                            StrConcat {
-                              Lit(value="|b=")
-                              Call(target=boolToml) { Var(name=buttonActive) }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        Return { Lit(value=0) }
       }
     }
   }
@@ -910,11 +878,8 @@ Program {
   Let(name=loop) {
     Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,buttonFlash,caret,blinkTick,debugLive,prevSceneSig) {
       Block {
-        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
-        Let(name=windowWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=windowHeightRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
-        Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastWidth) Lit(value=640) } }
-        Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastHeight) Lit(value=360) } }
+        Let(name=windowWidth) { Var(name=lastWidth) }
+        Let(name=windowHeight) { Var(name=lastHeight) }
         Let(name=nextFlash) { Call(target=decIfPositive) { Var(name=buttonFlash) } }
         Let(name=buttonActive) { Call(target=intLt) { Lit(value=0) Var(name=buttonFlash) } }
         Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
@@ -936,7 +901,7 @@ Program {
               Block { Lit(value=0) }
               Block {
                 Call(target=emitSceneFrame) {
-                  Call(target=sceneFrameId) { Var(name=windowWidth) Var(name=windowHeight) Var(name=name) Var(name=submittedName) }
+                  Lit(value=1)
                   Var(name=windowWidth)
                   Var(name=windowHeight)
                   Var(name=name)
@@ -1463,27 +1428,12 @@ Program {
   }
 
   Let(name=start) {
-    Fn(params=args) {
+    Fn(params=_) {
       Block {
-        Let(name=mode) {
-          If {
-            Eq { ChildCount { Var(name=args) } Lit(value=0) }
-            Block { Lit(value="") }
-            Block { AttrValueString { ChildAt { Var(name=args) Lit(value=0) } Lit(value=0) } }
-          }
-        }
-        If {
-          Eq { Var(name=mode) Lit(value="snapshot") }
-          Block { Return { Lit(value=0) } }
-          Block { Lit(value=0) }
-        }
-        Let(name=debugLive) { Call(target=debugModeLive) { Var(name=mode) } }
+        Let(name=debugLive) { Lit(value=false) }
         Let(name=handle) { Call(target=window) { Lit(value="AiVectra Hello Name") } }
-        Let(name=initialSizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
-        Let(name=initialWidthRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=initialHeightRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="height") Lit(value=0) } }
-        Let(name=initialWidth) { Call(target=stabilizeSize) { Var(name=initialWidthRaw) Lit(value=640) Lit(value=640) } }
-        Let(name=initialHeight) { Call(target=stabilizeSize) { Var(name=initialHeightRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=initialWidth) { Lit(value=640) }
+        Let(name=initialHeight) { Lit(value=360) }
         Call(target=loop) {
           Var(name=handle)
           Lit(value="")
@@ -1495,7 +1445,7 @@ Program {
           Lit(value=0)
           Lit(value=0)
           Var(name=debugLive)
-          Lit(value="")
+          Lit(value=-1)
         }
         Return { Lit(value=0) }
       }

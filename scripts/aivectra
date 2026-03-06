@@ -182,13 +182,13 @@ run_airun_debug_with_toml_artifacts() {
       fi
     fi
     native_runtime_guard "$run_target"
-    "$AIRUN_BIN" run "$run_target" -- live "${app_args[@]}"
+    "$AIRUN_BIN" run "$run_target" -- live "${app_args[@]:-}"
     return $?
   fi
 
   native_runtime_guard "$app_path"
   ensure_dir "$out_dir"
-  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]}" "${app_args[@]}"
+  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
   normalize_debug_artifacts_to_toml "$out_dir"
 }
 

@@ -12,6 +12,9 @@ NODE_RE = re.compile(
     r'aivectra\.node = \{ frame=(\d+), order=(\d+), id="([^"]*)", parent="([^"]*)", kind="([^"]*)", transform="([^"]*)", fill="([^"]*)", stroke="([^"]*)", stroke_width=(\d+), text="([^"]*)", path="([^"]*)", font_size=(\d+), x=(-?\d+), y=(-?\d+), w=(-?\d+), h=(-?\d+) \}'
 )
 END_RE = re.compile(r'aivectra\.frame_end = \{ id=(\d+), node_count=(\d+) \}')
+SCENE_RE = re.compile(
+    r'aivectra\.scene = \{ frame=(\d+), order=(\d+), id="([^"]*)", parent="([^"]*)", kind="([^"]*)", fill="([^"]*)", stroke="([^"]*)", stroke_w=(\d+), text="([^"]*)", path="([^"]*)", font_size=(\d+), x=(-?\d+), y=(-?\d+), w=(-?\d+), h=(-?\d+), transform="([^"]*)" \}'
+)
 
 
 def run_scene(repo: Path) -> str:
@@ -28,6 +31,7 @@ def parse(debug_text: str, frame_id: Optional[int]):
     frames = {}
     nodes_by_frame = defaultdict(list)
     frame_ends = {}
+    max_extent = defaultdict(lambda: {"w": 0, "h": 0})
     for line in debug_text.splitlines():
         line = line.strip()
         if not line:
@@ -69,9 +73,47 @@ def parse(debug_text: str, frame_id: Optional[int]):
         m = END_RE.match(line)
         if m:
             frame_ends[int(m.group(1))] = {"id": int(m.group(1)), "node_count": int(m.group(2))}
+            continue
+        m = SCENE_RE.match(line)
+        if m:
+            fid = int(m.group(1))
+            x = int(m.group(12))
+            y = int(m.group(13))
+            w = int(m.group(14))
+            h = int(m.group(15))
+            nodes_by_frame[fid].append(
+                {
+                    "frame": fid,
+                    "order": int(m.group(2)),
+                    "id": m.group(3),
+                    "parent": m.group(4),
+                    "kind": m.group(5),
+                    "fill": m.group(6),
+                    "stroke": m.group(7),
+                    "stroke_width": int(m.group(8)),
+                    "text": m.group(9),
+                    "path": m.group(10),
+                    "font_size": int(m.group(11)),
+                    "x": x,
+                    "y": y,
+                    "w": w,
+                    "h": h,
+                    "transform": m.group(16),
+                }
+            )
+            max_extent[fid]["w"] = max(max_extent[fid]["w"], x + max(0, w))
+            max_extent[fid]["h"] = max(max_extent[fid]["h"], y + max(0, h))
+            continue
 
     if not frames:
-        raise SystemExit("MISSING DEBUG DATA REPORT\n- Missing: frame header")
+        if nodes_by_frame:
+            for fid, dims in max_extent.items():
+                width = max(1, dims["w"])
+                height = max(1, dims["h"])
+                frames[fid] = {"id": fid, "width": width, "height": height, "hash": "scene-legacy"}
+                frame_ends[fid] = {"id": fid, "node_count": len(nodes_by_frame[fid])}
+        else:
+            raise SystemExit("MISSING DEBUG DATA REPORT\n- Missing: frame header")
 
     if frame_id is None:
         chosen = sorted(frames.keys())[0]
