@@ -54,12 +54,20 @@ resolve_app_path() {
   n="$(normalize_path_arg "$p")"
   if [[ -d "$n" ]]; then
     if [[ "$runtime_supports_source" == "true" ]]; then
+      if [[ -f "$n/Src/app.aos" ]]; then
+        printf "%s" "$n/Src/app.aos"
+        return 0
+      fi
       if [[ -f "$n/src/app.aos" ]]; then
         printf "%s" "$n/src/app.aos"
         return 0
       fi
       if [[ "$prefer_prebuilt" == "1" && -f "$n/app.aibc1" ]]; then
         printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ "$prefer_prebuilt" == "1" && -f "$n/Src/app.aibc1" ]]; then
+        printf "%s" "$n/Src/app.aibc1"
         return 0
       fi
       if [[ "$prefer_prebuilt" == "1" && -f "$n/src/app.aibc1" ]]; then
@@ -76,6 +84,10 @@ resolve_app_path() {
           printf "%s" "$n/app.aibc1"
           return 0
         fi
+        if [[ -f "$n/Src/app.aibc1" ]]; then
+          printf "%s" "$n/Src/app.aibc1"
+          return 0
+        fi
         if [[ -f "$n/src/app.aibc1" ]]; then
           printf "%s" "$n/src/app.aibc1"
           return 0
@@ -85,8 +97,16 @@ resolve_app_path() {
         printf "%s" "$n/app.aibc1"
         return 0
       fi
+      if [[ -f "$n/Src/app.aibc1" ]]; then
+        printf "%s" "$n/Src/app.aibc1"
+        return 0
+      fi
       if [[ -f "$n/src/app.aibc1" ]]; then
         printf "%s" "$n/src/app.aibc1"
+        return 0
+      fi
+      if [[ -f "$n/Src/app.aos" ]]; then
+        printf "%s" "$n/Src/app.aos"
         return 0
       fi
       if [[ -f "$n/src/app.aos" ]]; then
@@ -140,6 +160,10 @@ project_dir_from_target() {
   fi
   if [[ -f "$n" ]]; then
     case "$n" in
+      */Src/app.aos|*/Src/app.aibc1)
+        printf "%s" "$(dirname "$(dirname "$n")")"
+        return 0
+        ;;
       */src/app.aos|*/src/app.aibc1)
         printf "%s" "$(dirname "$(dirname "$n")")"
         return 0
@@ -647,7 +671,7 @@ run_airun_debug_with_toml_artifacts() {
 
   if [[ "$debug_mode" == "live" ]]; then
     local run_target="$app_path"
-    if ! is_native_c_runtime && [[ "$app_path" == */src/app.aos ]]; then
+    if ! is_native_c_runtime && [[ "$app_path" == */src/app.aos || "$app_path" == */Src/app.aos ]]; then
       local candidate_dir
       candidate_dir="$(dirname "$(dirname "$app_path")")"
       if [[ -f "$candidate_dir/project.aiproj" ]]; then
@@ -1192,7 +1216,7 @@ if [[ "${1:-}" == "init" ]]; then
 Program {
   Project(
     name="$APP_NAME"
-    entryFile="src/app.aos"
+    entryFile="Src/app.aos"
     entryExport="start"
   ) {
     Include(name="AiVectra" path="$LIB_PROJECT_PATH" version="0.0.1")
@@ -1216,7 +1240,7 @@ AiVectra app rules
 - Debug data is TOML artifacts under `.artifacts/debug`.
 EOF
 
-  cat > "$APP_DIR/src/app.aos" <<EOF
+  cat > "$APP_DIR/Src/app.aos" <<EOF
 Program {
   Import(path="$LIB_IMPORT_PATH")
   Export(name=start)
@@ -1454,10 +1478,10 @@ Program {
 EOF
 
   # Use the known-good multithreaded scaffold as template source.
-  cp "$ROOT_DIR/samples/WorkerDemo/src/app.aos" "$APP_DIR/src/app.aos"
-  perl -0pi -e 's|\QImport(path="../../../src/AiVectra/src/lib.aos")\E|Import(path="'"$LIB_IMPORT_PATH"'")|g' "$APP_DIR/src/app.aos"
-  perl -0pi -e 's|\QLit(value="AiVectra WorkerDemo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
-  perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
+  cp "$ROOT_DIR/samples/WorkerDemo/src/app.aos" "$APP_DIR/Src/app.aos"
+  perl -0pi -e 's|\QImport(path="../../../src/AiVectra/src/lib.aos")\E|Import(path="'"$LIB_IMPORT_PATH"'")|g' "$APP_DIR/Src/app.aos"
+  perl -0pi -e 's|\QLit(value="AiVectra WorkerDemo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/Src/app.aos"
+  perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/Src/app.aos"
 
   if [[ -f "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" ]]; then
     cp "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" "$APP_DIR/Assets/icons/app.svg"
@@ -1490,7 +1514,7 @@ EOF
   cat > "$APP_DIR/examples/debug/scenarios/minimal.scenario.toml" <<EOF
 [[scenario]]
 name = "minimal"
-appPath = "$APP_DIR/src/app.aos"
+appPath = "$APP_DIR/Src/app.aos"
 vm = "bytecode"
 debugMode = "live"
 eventsPath = ""
@@ -1507,7 +1531,7 @@ EOF
   echo "targets: apple-macos=$T_APPLE_MAC windows=$T_WINDOWS linux=$T_LINUX wasm-spa=$T_WASM_SPA wasm-fullstack=$T_WASM_FULLSTACK"
   echo "next:"
   echo "  ./scripts/aivectra run $APP_DIR/"
-  echo "  ./scripts/aivectra debug $APP_DIR/src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
+  echo "  ./scripts/aivectra debug $APP_DIR/Src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
   exit 0
 fi
 

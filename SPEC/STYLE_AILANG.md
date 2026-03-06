@@ -79,6 +79,12 @@
 - Do not scatter direct syscall usage across app code.
 - If a capability is missing, stop and define it in the responsible layer rather than faking it locally.
 
+## Diagnostics And Failure
+- Stubs and placeholders must fail explicitly at runtime.
+- Target-unavailable behavior should emit a compiler or build warning when it can be detected ahead of time.
+- If execution still reaches an unavailable path, raise an explicit not-supported runtime exception.
+- Non-working code must never silently fail, silently no-op, or pretend success.
+
 ## Debugging
 - Keep debug output generic, structured, and reusable.
 - Do not create sample-specific debug formats inside engine code.

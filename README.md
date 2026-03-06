@@ -315,7 +315,7 @@ Native runtime note:
 
 Windowed hello world baseline:
 
-- `samples/HelloWorld/src/app.aos` demonstrates direct syscall-backed rendering through AiVectra library primitives.
+- `samples/HelloWorld/Src/app.aos` demonstrates the canonical hook-based AiVectra sample runtime path.
 
 ---
 

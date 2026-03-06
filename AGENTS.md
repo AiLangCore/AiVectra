@@ -303,6 +303,16 @@ The agent must NOT:
 • Duplicate functionality
 • Bypass architectural boundaries
 
+If code is a stub, placeholder, or unimplemented path:
+• It must fail explicitly at runtime
+• It must never silently succeed or silently no-op
+
+If a feature is unavailable on a particular target:
+• Emit a compiler/build warning when that can be determined ahead of time
+• Raise an explicit runtime not-supported exception if execution still reaches that path
+
+Non-working code must never silently fail.
+
 ⸻
 
 	12.	Cross-Platform Constraint

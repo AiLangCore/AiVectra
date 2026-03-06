@@ -83,6 +83,12 @@
 - Keep debug outputs generic and reusable across apps.
 - Samples may invoke debug APIs but must not define bespoke debug protocols.
 
+## Diagnostics And Failure
+- Stubs, placeholders, and unimplemented runtime paths must fail explicitly at runtime.
+- Target-specific unavailable features should emit a compiler or build warning when detectable before execution.
+- If an unavailable path is still executed, runtime must raise an explicit not-supported exception.
+- AiVectra must never silently ignore unsupported behavior or silently pretend a feature worked.
+
 ## Forbidden Style
 - Independent UI event loops outside canonical runtime ownership.
 - Hidden timers or animation loops.

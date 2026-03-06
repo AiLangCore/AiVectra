@@ -2,6 +2,32 @@ Program {
   Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
+  Let(name=appInit) {
+    Fn(params=args) {
+      Block {
+        Return { Lit(value="Hello World!") }
+      }
+    }
+  }
+
+  Let(name=appRender) {
+    Fn(params=windowHandle,state) {
+      Block {
+        Call(target=frameBegin) { Var(name=windowHandle) }
+        Call(target=rect) { Var(name=windowHandle) }
+        Call(target=label) { Var(name=windowHandle) Var(name=state) }
+        Call(target=framePresent) { Var(name=windowHandle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=appUpdate) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY) {
+      Block { Return { Var(name=state) } }
+    }
+  }
+
   Let(name=start) {
     Fn(params=args) {
       Block {
@@ -11,7 +37,9 @@ Program {
           Block { Return { Lit(value=0) } }
           Block { Lit(value=0) }
         }
-        Call(target=helloNamedWindow) { Lit(value="World") }
+        Let(name=windowHandle) { Call(target=appBuild) { Lit(value="AiVectra Hello") Lit(value=640) Lit(value=360) } }
+        Let(name=state) { Call(target=appInit) { Var(name=args) } }
+        Call(target=appRun) { Var(name=windowHandle) Var(name=state) }
         Return { Lit(value=0) }
       }
     }

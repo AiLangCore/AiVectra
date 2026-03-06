@@ -130,6 +130,25 @@ Program {
     }
   }
 
+  Let(name=frameBegin) {
+    Fn(params=windowHandle) {
+      Block {
+        Call(target=sys.ui.beginFrame) { Var(name=windowHandle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=framePresent) {
+    Fn(params=windowHandle) {
+      Block {
+        Call(target=sys.ui.endFrame) { Var(name=windowHandle) }
+        Call(target=sys.ui.present) { Var(name=windowHandle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
   Let(name=appRun) {
     Fn(params=windowHandle,model) {
       Block {
@@ -2026,6 +2045,10 @@ Program {
   Export(name=text)
   Export(name=label)
   Export(name=window)
+  Export(name=appBuild)
+  Export(name=appRun)
+  Export(name=frameBegin)
+  Export(name=framePresent)
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=uiWidth)
