@@ -1,4 +1,5 @@
 Program {
+  Import(path="../../../.tools/std/core.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
@@ -620,15 +621,123 @@ Program {
     }
   }
 
-  Let(name=loop) {
-    Fn(params=handle,name,submittedName,lastWidth,lastHeight,inputFocused,caret,buttonFlash,lastHit,debugLive,prevSceneSig) {
+  Let(name=svgState) {
+    Fn(params=name,submittedName,lastWidth,lastHeight,inputFocused,caret,buttonFlash,lastHit,debugLive,prevSceneSig) {
       Block {
-        Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
-        Let(name=windowWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=windowHeightRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=base) { Map { } }
+        Let(name=withName) { Call(target=mapSet) { Var(name=base) Lit(value="name") Var(name=name) } }
+        Let(name=withSubmitted) { Call(target=mapSet) { Var(name=withName) Lit(value="submittedName") Var(name=submittedName) } }
+        Let(name=withWidth) { Call(target=mapSet) { Var(name=withSubmitted) Lit(value="lastWidth") Var(name=lastWidth) } }
+        Let(name=withHeight) { Call(target=mapSet) { Var(name=withWidth) Lit(value="lastHeight") Var(name=lastHeight) } }
+        Let(name=withFocus) { Call(target=mapSet) { Var(name=withHeight) Lit(value="inputFocused") Var(name=inputFocused) } }
+        Let(name=withCaret) { Call(target=mapSet) { Var(name=withFocus) Lit(value="caret") Var(name=caret) } }
+        Let(name=withFlash) { Call(target=mapSet) { Var(name=withCaret) Lit(value="buttonFlash") Var(name=buttonFlash) } }
+        Let(name=withHit) { Call(target=mapSet) { Var(name=withFlash) Lit(value="lastHit") Var(name=lastHit) } }
+        Let(name=withDebug) { Call(target=mapSet) { Var(name=withHit) Lit(value="debugLive") Var(name=debugLive) } }
+        Return { Call(target=mapSet) { Var(name=withDebug) Lit(value="prevSceneSig") Var(name=prevSceneSig) } }
+      }
+    }
+  }
+
+  Let(name=stateName) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="name") Lit(value="") } } }
+    }
+  }
+
+  Let(name=stateSubmittedName) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="submittedName") Lit(value="") } } }
+    }
+  }
+
+  Let(name=stateLastWidth) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastWidth") Lit(value=960) } } }
+    }
+  }
+
+  Let(name=stateLastHeight) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastHeight") Lit(value=640) } } }
+    }
+  }
+
+  Let(name=stateInputFocused) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="inputFocused") Lit(value=true) } } }
+    }
+  }
+
+  Let(name=stateCaret) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="caret") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=stateButtonFlash) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="buttonFlash") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=stateLastHit) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="lastHit") Lit(value="") } } }
+    }
+  }
+
+  Let(name=stateDebugLive) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="debugLive") Lit(value=false) } } }
+    }
+  }
+
+  Let(name=statePrevSceneSig) {
+    Fn(params=state) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="prevSceneSig") Lit(value="") } } }
+    }
+  }
+
+  Let(name=appInit) {
+    Fn(params=args) {
+      Block {
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Return {
+          Call(target=svgState) {
+            Lit(value="")
+            Lit(value="")
+            Lit(value=960)
+            Lit(value=640)
+            Lit(value=true)
+            Lit(value=0)
+            Lit(value=0)
+            Lit(value="")
+            Call(target=debugModeLive) { Var(name=mode) }
+            Lit(value="")
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appRender) {
+    Fn(params=handle,state) {
+      Block {
+        Let(name=name) { Call(target=stateName) { Var(name=state) } }
+        Let(name=submittedName) { Call(target=stateSubmittedName) { Var(name=state) } }
+        Let(name=lastWidth) { Call(target=stateLastWidth) { Var(name=state) } }
+        Let(name=lastHeight) { Call(target=stateLastHeight) { Var(name=state) } }
+        Let(name=inputFocused) { Call(target=stateInputFocused) { Var(name=state) } }
+        Let(name=caret) { Call(target=stateCaret) { Var(name=state) } }
+        Let(name=buttonFlash) { Call(target=stateButtonFlash) { Var(name=state) } }
+        Let(name=lastHit) { Call(target=stateLastHit) { Var(name=state) } }
+        Let(name=debugLive) { Call(target=stateDebugLive) { Var(name=state) } }
+        Let(name=prevSceneSig) { Call(target=statePrevSceneSig) { Var(name=state) } }
+        Let(name=windowWidthRaw) { Call(target=uiWidth) { Var(name=handle) } }
+        Let(name=windowHeightRaw) { Call(target=uiHeight) { Var(name=handle) } }
         Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastWidth) Lit(value=960) } }
         Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastHeight) Lit(value=640) } }
-        Let(name=nextFlash) { Call(target=decIfPositive) { Var(name=buttonFlash) } }
         Let(name=sceneSig) { Call(target=sceneSignature) { Var(name=windowWidth) Var(name=windowHeight) Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=caret) Var(name=buttonFlash) Var(name=lastHit) } }
         If {
           Eq { Var(name=sceneSig) Var(name=prevSceneSig) }
@@ -647,7 +756,6 @@ Program {
             Lit(value=0)
           }
         }
-
         Call(target=renderScene) {
           Var(name=handle)
           Var(name=name)
@@ -659,13 +767,27 @@ Program {
           Var(name=buttonFlash)
           Var(name=lastHit)
         }
+        Return { Lit(value=0) }
+      }
+    }
+  }
 
-        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
-        Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
-        Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
-        Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
-        Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
-        Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
+  Let(name=appUpdate) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY,windowWidthRaw,windowHeightRaw) {
+      Block {
+        Let(name=name) { Call(target=stateName) { Var(name=state) } }
+        Let(name=submittedName) { Call(target=stateSubmittedName) { Var(name=state) } }
+        Let(name=lastWidth) { Call(target=stateLastWidth) { Var(name=state) } }
+        Let(name=lastHeight) { Call(target=stateLastHeight) { Var(name=state) } }
+        Let(name=inputFocused) { Call(target=stateInputFocused) { Var(name=state) } }
+        Let(name=caret) { Call(target=stateCaret) { Var(name=state) } }
+        Let(name=buttonFlash) { Call(target=stateButtonFlash) { Var(name=state) } }
+        Let(name=lastHit) { Call(target=stateLastHit) { Var(name=state) } }
+        Let(name=debugLive) { Call(target=stateDebugLive) { Var(name=state) } }
+        Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastWidth) Lit(value=960) } }
+        Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastHeight) Lit(value=640) } }
+        Let(name=nextFlash) { Call(target=decIfPositive) { Var(name=buttonFlash) } }
+        Let(name=sceneSig) { Call(target=sceneSignature) { Var(name=windowWidth) Var(name=windowHeight) Var(name=name) Var(name=submittedName) Var(name=inputFocused) Var(name=caret) Var(name=buttonFlash) Var(name=lastHit) } }
         If {
           Var(name=debugLive)
           Block {
@@ -680,256 +802,100 @@ Program {
         }
 
         If {
-          Eq { Var(name=eventType) Lit(value="closed") }
-          Block { Return { Lit(value=0) } }
+          Eq { Var(name=eventType) Lit(value="click") }
           Block {
+            Let(name=hitShape) { Call(target=resolveShapeHit) { Var(name=eventX) Var(name=eventY) } }
+            Let(name=iY) { Call(target=inputY) { Var(name=windowHeight) } }
+            Let(name=iW) { Call(target=inputWidth) { Var(name=windowWidth) } }
+            Let(name=iH) { Call(target=inputH) { Lit(value=0) } }
+            Let(name=bX) { Call(target=buttonXLive) { Var(name=windowWidth) } }
+            Let(name=bY) { Call(target=buttonYLive) { Var(name=windowHeight) } }
+            Let(name=inputHit) {
+              Call(target=pointInRect) {
+                Var(name=eventX)
+                Var(name=eventY)
+                Lit(value=72)
+                Var(name=iY)
+                Var(name=iW)
+                Var(name=iH)
+              }
+            }
+            Let(name=buttonHit) {
+              Call(target=pointInRect) {
+                Var(name=eventX)
+                Var(name=eventY)
+                Var(name=bX)
+                Var(name=bY)
+                Call(target=buttonW) { Lit(value=0) }
+                Call(target=buttonH) { Lit(value=0) }
+              }
+            }
             If {
-              Eq { Var(name=eventType) Lit(value="click") }
+              Var(name=buttonHit)
               Block {
-                Let(name=hitShape) { Call(target=resolveShapeHit) { Var(name=eventX) Var(name=eventY) } }
-                Let(name=iY) { Call(target=inputY) { Var(name=windowHeight) } }
-                Let(name=iW) { Call(target=inputWidth) { Var(name=windowWidth) } }
-                Let(name=iH) { Call(target=inputH) { Lit(value=0) } }
-                Let(name=bX) { Call(target=buttonXLive) { Var(name=windowWidth) } }
-                Let(name=bY) { Call(target=buttonYLive) { Var(name=windowHeight) } }
-                Let(name=inputHit) {
-                  Call(target=pointInRect) {
-                    Var(name=eventX)
-                    Var(name=eventY)
-                    Lit(value=72)
-                    Var(name=iY)
-                    Var(name=iW)
-                    Var(name=iH)
-                  }
-                }
-                Let(name=buttonHit) {
-                  Call(target=pointInRect) {
-                    Var(name=eventX)
-                    Var(name=eventY)
-                    Var(name=bX)
-                    Var(name=bY)
-                    Call(target=buttonW) { Lit(value=0) }
-                    Call(target=buttonH) { Lit(value=0) }
-                  }
-                }
-
-                If {
-                  Eq { Var(name=hitShape) Lit(value="") }
-                  Block { Lit(value=0) }
-                  Block { Lit(value=0) }
-                }
-
-                If {
-                  Var(name=buttonHit)
-                  Block {
-                    Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
-                    Return {
-                      Call(target=loop) {
-                        Var(name=handle)
-                        Var(name=name)
-                        Var(name=nextSubmitted)
-                        Var(name=windowWidth)
-                        Var(name=windowHeight)
-                        Lit(value=true)
-                        Call(target=textLen) { Var(name=name) }
-                        Lit(value=6)
-                        Var(name=hitShape)
-                        Var(name=debugLive)
-                        Var(name=sceneSig)
-                      }
-                    }
-                  }
-                  Block {
-                    If {
-                      Var(name=inputHit)
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle)
-                            Var(name=name)
-                            Var(name=submittedName)
-                            Var(name=windowWidth)
-                            Var(name=windowHeight)
-                            Lit(value=true)
-                            Call(target=textLen) { Var(name=name) }
-                            Var(name=nextFlash)
-                            Var(name=hitShape)
-                            Var(name=debugLive)
-                            Var(name=sceneSig)
-                          }
-                        }
-                      }
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle)
-                            Var(name=name)
-                            Var(name=submittedName)
-                            Var(name=windowWidth)
-                            Var(name=windowHeight)
-                            Lit(value=false)
-                            Var(name=caret)
-                            Var(name=nextFlash)
-                            Var(name=hitShape)
-                            Var(name=debugLive)
-                            Var(name=sceneSig)
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
+                Return { Call(target=svgState) { Var(name=name) Var(name=nextSubmitted) Var(name=windowWidth) Var(name=windowHeight) Lit(value=true) Call(target=textLen) { Var(name=name) } Lit(value=6) Var(name=hitShape) Var(name=debugLive) Var(name=sceneSig) } }
               }
               Block {
                 If {
-                  Eq { Var(name=eventType) Lit(value="key") }
+                  Var(name=inputHit)
+                  Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Lit(value=true) Call(target=textLen) { Var(name=name) } Var(name=nextFlash) Var(name=hitShape) Var(name=debugLive) Var(name=sceneSig) } } }
+                  Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Lit(value=false) Var(name=caret) Var(name=nextFlash) Var(name=hitShape) Var(name=debugLive) Var(name=sceneSig) } } }
+                }
+              }
+            }
+          }
+          Block {
+            If {
+              Eq { Var(name=eventType) Lit(value="key") }
+              Block {
+                If {
+                  Var(name=inputFocused)
                   Block {
+                    Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
+                    Let(name=safeCaret) { Call(target=caretClamp) { Var(name=caret) Var(name=nameLen) } }
                     If {
-                      Var(name=inputFocused)
+                      Call(target=isBackKey) { Var(name=eventKey) }
                       Block {
-                        Let(name=nameLen) { Call(target=textLen) { Var(name=name) } }
-                        Let(name=safeCaret) { Call(target=caretClamp) { Var(name=caret) Var(name=nameLen) } }
+                        Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=safeCaret) } }
+                        Return { Call(target=svgState) { Var(name=nextName) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Call(target=caretLeft) { Var(name=safeCaret) } Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } }
+                      }
+                      Block {
                         If {
-                          Call(target=isBackKey) { Var(name=eventKey) }
+                          Call(target=isDeleteKey) { Var(name=eventKey) }
                           Block {
-                            Let(name=nextName) { Call(target=textDeleteAt) { Var(name=name) Var(name=safeCaret) } }
-                            Return {
-                              Call(target=loop) {
-                                Var(name=handle)
-                                Var(name=nextName)
-                                Var(name=submittedName)
-                                Var(name=windowWidth)
-                                Var(name=windowHeight)
-                                Var(name=inputFocused)
-                                Call(target=caretLeft) { Var(name=safeCaret) }
-                                Var(name=nextFlash)
-                                Var(name=lastHit)
-                              Var(name=sceneSig)
-                              }
-                            }
+                            Let(name=nextName) { Call(target=sys.str.remove) { Var(name=name) Var(name=safeCaret) Lit(value=1) } }
+                            Return { Call(target=svgState) { Var(name=nextName) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Var(name=safeCaret) Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } }
                           }
                           Block {
                             If {
-                              Call(target=isDeleteKey) { Var(name=eventKey) }
-                              Block {
-                                Let(name=nextName) { Call(target=sys.str.remove) { Var(name=name) Var(name=safeCaret) Lit(value=1) } }
-                                Return {
-                                  Call(target=loop) {
-                                    Var(name=handle)
-                                    Var(name=nextName)
-                                    Var(name=submittedName)
-                                    Var(name=windowWidth)
-                                    Var(name=windowHeight)
-                                    Var(name=inputFocused)
-                                    Var(name=safeCaret)
-                                    Var(name=nextFlash)
-                                    Var(name=lastHit)
-                                  Var(name=sceneSig)
-                                  }
-                                }
-                              }
+                              Call(target=isLeftKey) { Var(name=eventKey) }
+                              Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Call(target=caretLeft) { Var(name=safeCaret) } Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } } }
                               Block {
                                 If {
-                                  Call(target=isLeftKey) { Var(name=eventKey) }
-                                  Block {
-                                    Return {
-                                      Call(target=loop) {
-                                        Var(name=handle)
-                                        Var(name=name)
-                                        Var(name=submittedName)
-                                        Var(name=windowWidth)
-                                        Var(name=windowHeight)
-                                        Var(name=inputFocused)
-                                        Call(target=caretLeft) { Var(name=safeCaret) }
-                                        Var(name=nextFlash)
-                                        Var(name=lastHit)
-                                      Var(name=sceneSig)
-                                      }
-                                    }
-                                  }
+                                  Call(target=isRightKey) { Var(name=eventKey) }
+                                  Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=name) } } Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } } }
                                   Block {
                                     If {
-                                      Call(target=isRightKey) { Var(name=eventKey) }
+                                      Call(target=isEnterKey) { Var(name=eventKey) }
                                       Block {
-                                        Return {
-                                          Call(target=loop) {
-                                            Var(name=handle)
-                                            Var(name=name)
-                                            Var(name=submittedName)
-                                            Var(name=windowWidth)
-                                            Var(name=windowHeight)
-                                            Var(name=inputFocused)
-                                            Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=name) } }
-                                            Var(name=nextFlash)
-                                            Var(name=lastHit)
-                                          Var(name=sceneSig)
-                                          }
-                                        }
+                                        Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
+                                        Return { Call(target=svgState) { Var(name=name) Var(name=nextSubmitted) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Var(name=safeCaret) Lit(value=6) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } }
                                       }
                                       Block {
-                                        If {
-                                          Call(target=isEnterKey) { Var(name=eventKey) }
-                                          Block {
-                                            Let(name=nextSubmitted) { Call(target=normalizeName) { Var(name=name) } }
-                                            Return {
-                                              Call(target=loop) {
-                                                Var(name=handle)
-                                                Var(name=name)
-                                                Var(name=nextSubmitted)
-                                                Var(name=windowWidth)
-                                                Var(name=windowHeight)
-                                                Var(name=inputFocused)
-                                                Var(name=safeCaret)
-                                                Lit(value=6)
-                                                Var(name=lastHit)
-                                              Var(name=sceneSig)
-                                              }
-                                            }
+                                        Let(name=insertText) {
+                                          If {
+                                            Eq { Var(name=eventText) Lit(value="") }
+                                            Block { Call(target=keyToText) { Var(name=eventKey) } }
+                                            Block { Var(name=eventText) }
                                           }
+                                        }
+                                        If {
+                                          Eq { Var(name=insertText) Lit(value="") }
+                                          Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Var(name=safeCaret) Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } } }
                                           Block {
-                                            Let(name=insertText) {
-                                              If {
-                                                Eq { Var(name=eventText) Lit(value="") }
-                                                Block { Call(target=keyToText) { Var(name=eventKey) } }
-                                                Block { Var(name=eventText) }
-                                              }
-                                            }
-                                            If {
-                                              Eq { Var(name=insertText) Lit(value="") }
-                                              Block {
-                                                Return {
-                                                  Call(target=loop) {
-                                                    Var(name=handle)
-                                                    Var(name=name)
-                                                    Var(name=submittedName)
-                                                    Var(name=windowWidth)
-                                                    Var(name=windowHeight)
-                                                    Var(name=inputFocused)
-                                                    Var(name=safeCaret)
-                                                    Var(name=nextFlash)
-                                                    Var(name=lastHit)
-                                                  Var(name=sceneSig)
-                                                  }
-                                                }
-                                              }
-                                              Block {
-                                                Let(name=nextName) { Call(target=textInsertAt) { Var(name=name) Var(name=safeCaret) Var(name=insertText) } }
-                                                Return {
-                                                  Call(target=loop) {
-                                                    Var(name=handle)
-                                                    Var(name=nextName)
-                                                    Var(name=submittedName)
-                                                    Var(name=windowWidth)
-                                                    Var(name=windowHeight)
-                                                    Var(name=inputFocused)
-                                                    Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=nextName) } }
-                                                    Var(name=nextFlash)
-                                                    Var(name=lastHit)
-                                                  Var(name=sceneSig)
-                                                  }
-                                                }
-                                              }
-                                            }
+                                            Let(name=nextName) { Call(target=textInsertAt) { Var(name=name) Var(name=safeCaret) Var(name=insertText) } }
+                                            Return { Call(target=svgState) { Var(name=nextName) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=nextName) } } Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } }
                                           }
                                         }
                                       }
@@ -941,43 +907,12 @@ Program {
                           }
                         }
                       }
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle)
-                            Var(name=name)
-                            Var(name=submittedName)
-                            Var(name=windowWidth)
-                            Var(name=windowHeight)
-                            Var(name=inputFocused)
-                            Var(name=caret)
-                            Var(name=nextFlash)
-                            Var(name=lastHit)
-                          Var(name=sceneSig)
-                          }
-                        }
-                      }
                     }
                   }
-                  Block {
-                    Return {
-                      Call(target=loop) {
-                        Var(name=handle)
-                        Var(name=name)
-                        Var(name=submittedName)
-                        Var(name=windowWidth)
-                        Var(name=windowHeight)
-                        Var(name=inputFocused)
-                        Var(name=caret)
-                        Var(name=nextFlash)
-                        Var(name=lastHit)
-                        Var(name=debugLive)
-                        Var(name=sceneSig)
-                      }
-                    }
-                  }
+                  Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Var(name=caret) Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } } }
                 }
               }
+              Block { Return { Call(target=svgState) { Var(name=name) Var(name=submittedName) Var(name=windowWidth) Var(name=windowHeight) Var(name=inputFocused) Var(name=caret) Var(name=nextFlash) Var(name=lastHit) Var(name=debugLive) Var(name=sceneSig) } } }
             }
           }
         }
@@ -994,26 +929,8 @@ Program {
           Block { Return { Lit(value=0) } }
           Block { Lit(value=0) }
         }
-        Let(name=debugLive) { Call(target=debugModeLive) { Var(name=mode) } }
-        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Interactive SVG MVP") } }
-        Let(name=initialSizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
-        Let(name=initialWidthRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="width") Lit(value=0) } }
-        Let(name=initialHeightRaw) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="height") Lit(value=0) } }
-        Let(name=initialWidth) { Call(target=stabilizeSize) { Var(name=initialWidthRaw) Lit(value=960) Lit(value=960) } }
-        Let(name=initialHeight) { Call(target=stabilizeSize) { Var(name=initialHeightRaw) Lit(value=640) Lit(value=640) } }
-        Call(target=loop) {
-          Var(name=handle)
-          Lit(value="")
-          Lit(value="")
-          Var(name=initialWidth)
-          Var(name=initialHeight)
-          Lit(value=true)
-          Lit(value=0)
-          Lit(value=0)
-          Lit(value="")
-          Var(name=debugLive)
-          Lit(value="")
-        }
+        Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Interactive SVG MVP") Lit(value=960) Lit(value=640) } }
+        Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } }
         Return { Lit(value=0) }
       }
     }
