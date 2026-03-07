@@ -167,6 +167,41 @@ Program {
     }
   }
 
+  Let(name=frameLine) {
+    Fn(params=windowHandle,x1,y1,x2,y2,fill,strokeWidth) {
+      Block {
+        Call(target=sys.ui.drawLine) { Var(name=windowHandle) Var(name=x1) Var(name=y1) Var(name=x2) Var(name=y2) Var(name=fill) Var(name=strokeWidth) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=frameEllipse) {
+    Fn(params=windowHandle,x,y,w,h,fill) {
+      Block {
+        Call(target=sys.ui.drawEllipse) { Var(name=windowHandle) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=fill) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=framePath) {
+    Fn(params=windowHandle,path,fill,strokeWidth) {
+      Block {
+        Call(target=sys.ui.drawPath) { Var(name=windowHandle) Var(name=path) Var(name=fill) Var(name=strokeWidth) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=uiPollEvent) {
+    Fn(params=windowHandle) {
+      Block {
+        Return { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+      }
+    }
+  }
+
   Let(name=appRun) {
     Fn(params=windowHandle,model) {
       Block {
@@ -2099,6 +2134,10 @@ Program {
   Export(name=framePresent)
   Export(name=frameRect)
   Export(name=frameText)
+  Export(name=frameLine)
+  Export(name=frameEllipse)
+  Export(name=framePath)
+  Export(name=uiPollEvent)
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=uiWidth)

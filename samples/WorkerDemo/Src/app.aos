@@ -391,12 +391,10 @@ Program {
   Let(name=render) {
     Fn(params=handle,w,h,logs,activeCount,buttonFlash) {
       Block {
-        Call(target=sys.ui.beginFrame) { Var(name=handle) }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#0f172a") }
-        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Lit(value=36) Lit(value="Worker Demo") Lit(value="#ffffff") Lit(value=26) }
-
-        Call(target=sys.ui.endFrame) { Var(name=handle) }
-        Call(target=sys.ui.present) { Var(name=handle) }
+        Call(target=frameBegin) { Var(name=handle) }
+        Call(target=frameRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#0f172a") }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=36) Lit(value="Worker Demo") Lit(value="#ffffff") Lit(value=26) }
+        Call(target=framePresent) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }

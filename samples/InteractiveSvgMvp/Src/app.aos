@@ -488,10 +488,10 @@ Program {
         Let(name=clampedCaret) { Call(target=caretClamp) { Var(name=caret) Call(target=textLen) { Var(name=name) } } }
         Let(name=caretOffset) { Call(target=mul) { Lit(value=12) Var(name=clampedCaret) Lit(value=0) } }
 
-        Call(target=sys.ui.beginFrame) { Var(name=handle) }
+        Call(target=frameBegin) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=windowWidth) Var(name=windowHeight) }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=64)
@@ -500,7 +500,7 @@ Program {
           Lit(value=26)
         }
 
-        Call(target=sys.ui.drawRect) {
+        Call(target=frameRect) {
           Var(name=handle)
           Call(target=shapeBottomX) { Lit(value=0) }
           Call(target=shapeBottomY) { Lit(value=0) }
@@ -509,7 +509,7 @@ Program {
           Lit(value="#0f766e")
         }
 
-        Call(target=sys.ui.drawEllipse) {
+        Call(target=frameEllipse) {
           Var(name=handle)
           Call(target=shapeTopX) { Lit(value=0) }
           Call(target=shapeTopY) { Lit(value=0) }
@@ -518,14 +518,14 @@ Program {
           Lit(value="#ea580c")
         }
 
-        Call(target=sys.ui.drawPath) {
+        Call(target=framePath) {
           Var(name=handle)
           Lit(value="520,84;560,124;520,164;480,124;520,84")
           Lit(value="#93c5fd")
           Lit(value=2)
         }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=286)
@@ -555,7 +555,7 @@ Program {
           Lit(value="#172554")
           Lit(value="#0f172a")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=88)
           Var(name=inputTextY)
@@ -567,7 +567,7 @@ Program {
         If {
           Var(name=inputFocused)
           Block {
-            Call(target=sys.ui.drawLine) {
+            Call(target=frameLine) {
               Var(name=handle)
               Add { Lit(value=88) Var(name=caretOffset) }
               Add { Var(name=iY) Lit(value=10) }
@@ -596,7 +596,7 @@ Program {
           Lit(value="#1d4ed8")
           Lit(value="#64748b")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Add { Var(name=bX) Lit(value=44) }
           Add { Var(name=bY) Lit(value=16) }
@@ -605,7 +605,7 @@ Program {
           Lit(value=22)
         }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Add { Var(name=iY) Lit(value=84) }
@@ -613,9 +613,7 @@ Program {
           Lit(value="#ffffff")
           Lit(value=18)
         }
-
-        Call(target=sys.ui.endFrame) { Var(name=handle) }
-        Call(target=sys.ui.present) { Var(name=handle) }
+        Call(target=framePresent) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }

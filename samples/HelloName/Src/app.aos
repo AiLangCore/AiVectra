@@ -92,10 +92,10 @@ Program {
         Let(name=caretX) { Add { Lit(value=88) Call(target=mul) { Lit(value=12) Var(name=caretInVisible) Lit(value=0) } } }
         Let(name=caretY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
 
-        Call(target=sys.ui.beginFrame) { Var(name=handle) }
+        Call(target=frameBegin) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=windowWidth) Var(name=windowHeight) }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=72)
@@ -151,7 +151,7 @@ Program {
           Lit(value="#172554")
           Lit(value="#0f172a")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=88)
           Var(name=inputTextY)
@@ -166,7 +166,7 @@ Program {
             If {
               Var(name=caretVisible)
               Block {
-                Call(target=sys.ui.drawRect) {
+                Call(target=frameRect) {
                   Var(name=handle)
                   Var(name=caretX)
                   Var(name=caretY)
@@ -202,7 +202,7 @@ Program {
           Lit(value="#1d4ed8")
           Lit(value="#64748b")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Var(name=submitLabelX)
           Var(name=submitLabelY)
@@ -211,7 +211,7 @@ Program {
           Lit(value=22)
         }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Var(name=hintTextY)
@@ -220,7 +220,7 @@ Program {
           Lit(value=15)
         }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Add { Var(name=hintTextY) Lit(value=22) }
@@ -229,7 +229,7 @@ Program {
           Lit(value=15)
         }
 
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Var(name=statusTextY)
@@ -237,9 +237,7 @@ Program {
           Lit(value="#ffffff")
           Lit(value=18)
         }
-
-        Call(target=sys.ui.endFrame) { Var(name=handle) }
-        Call(target=sys.ui.present) { Var(name=handle) }
+        Call(target=framePresent) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }
@@ -1169,7 +1167,7 @@ Program {
           Var(name=caretVisible)
         }
 
-        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
+        Let(name=evt) { Call(target=uiPollEvent) { Var(name=handle) } }
         Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
         Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
         Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }

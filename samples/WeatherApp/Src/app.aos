@@ -566,18 +566,18 @@ Program {
           }
         }
 
-        Call(target=sys.ui.beginFrame) { Var(name=handle) }
-        Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=20) Lit(value=20) Add { Var(name=w) Lit(value=-40) } Add { Var(name=h) Lit(value=-40) } Lit(value="#0f172a") }
+        Call(target=frameBegin) { Var(name=handle) }
+        Call(target=frameRect) { Var(name=handle) Lit(value=20) Lit(value=20) Add { Var(name=w) Lit(value=-40) } Add { Var(name=h) Lit(value=-40) } Lit(value="#0f172a") }
 
-        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Lit(value=40) Lit(value="Weather App") Lit(value="#ffffff") Lit(value=26) }
-        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Lit(value=68) Lit(value="ZIP, city, or city,state") Lit(value="#cbd5e1") Lit(value=14) }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=40) Lit(value="Weather App") Lit(value="#ffffff") Lit(value=26) }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=68) Lit(value="ZIP, city, or city,state") Lit(value="#cbd5e1") Lit(value=14) }
 
         Call(target=interactiveVectorState) {
           Var(name=handle) Lit(value=40) Lit(value=92) Var(name=entryW) Lit(value=44)
           If { Eq { Var(name=focused) Lit(value=true) } Block { Lit(value="focused") } Block { Lit(value="normal") } }
           Lit(value="rect") Lit(value="") Lit(value="#0f172a") Lit(value="#0f172a") Lit(value="#0f172a") Lit(value="#172554") Lit(value="#0f172a")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle) Lit(value=56) Lit(value=103)
           If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="e.g. Springfield or 10001") } Block { Var(name=query) } }
           If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="#94a3b8") } Block { Lit(value="#ffffff") } }
@@ -589,7 +589,7 @@ Program {
             If {
               Eq { Var(name=caretVisible) Lit(value=true) }
               Block {
-                Call(target=sys.ui.drawRect) {
+                Call(target=frameRect) {
                   Var(name=handle)
                   Add { Lit(value=56) Call(target=mul) { Lit(value=11) Call(target=strLen) { Var(name=query) } Lit(value=0) } }
                   Lit(value=103) Lit(value=2) Lit(value=20) Lit(value="#e2e8f0")
@@ -612,15 +612,15 @@ Program {
               Lit(value="normal")
               Lit(value="rect") Lit(value="") Lit(value="#334155") Lit(value="#64748b") Lit(value="#475569") Lit(value="#1e293b") Lit(value="#475569")
             }
-            Call(target=sys.ui.drawRect) {
+            Call(target=frameRect) {
               Var(name=handle) Add { Var(name=submitX) Lit(value=54) } Lit(value=110) Lit(value=8) Lit(value=8)
               If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#93c5fd") } Block { Lit(value="#475569") } }
             }
-            Call(target=sys.ui.drawRect) {
+            Call(target=frameRect) {
               Var(name=handle) Add { Var(name=submitX) Lit(value=68) } Lit(value=110) Lit(value=8) Lit(value=8)
               If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#475569") } Block { Lit(value="#93c5fd") } }
             }
-            Call(target=sys.ui.drawRect) {
+            Call(target=frameRect) {
               Var(name=handle) Add { Var(name=submitX) Lit(value=82) } Lit(value=110) Lit(value=8) Lit(value=8)
               Lit(value="#475569")
             }
@@ -632,7 +632,7 @@ Program {
               If { Call(target=intLt) { Lit(value=0) Var(name=submitFlash) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
               Lit(value="rect") Lit(value="") Lit(value="#2563eb") Lit(value="#93c5fd") Lit(value="#3b82f6") Lit(value="#1d4ed8") Lit(value="#64748b")
             }
-            Call(target=sys.ui.drawText) { Var(name=handle) Add { Var(name=submitX) Lit(value=36) } Lit(value=103) Lit(value="Submit") Lit(value="#ffffff") Lit(value=18) }
+            Call(target=frameText) { Var(name=handle) Add { Var(name=submitX) Lit(value=36) } Lit(value=103) Lit(value="Submit") Lit(value="#ffffff") Lit(value=18) }
             Lit(value=0)
           }
         }
@@ -645,9 +645,9 @@ Program {
               Add { Lit(value=8) Call(target=mul) { Lit(value=32) Var(name=dropdownCount) Lit(value=0) } }
               Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#1e293b") Lit(value="#1e293b") Lit(value="#334155") Lit(value="#1e293b") Lit(value="#0f172a")
             }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=1) } Block { Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=148) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=2) } Block { Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=180) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=3) } Block { Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=212) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=1) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=148) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=2) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=180) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=3) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=212) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
             Lit(value=0)
           }
           Block { Lit(value=0) }
@@ -657,12 +657,12 @@ Program {
           Var(name=handle) Lit(value=40) Lit(value=250) Add { Var(name=w) Lit(value=-80) } Lit(value=120)
           Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#1e293b") Lit(value="#1e293b") Lit(value="#334155") Lit(value="#1e293b") Lit(value="#0f172a")
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle) Lit(value=56) Lit(value=262)
           If { Eq { Var(name=selectedLabel) Lit(value="") } Block { Lit(value="Current: (no location loaded)") } Block { StrConcat { Lit(value="Current: ") Var(name=selectedLabel) } } }
           Lit(value="#ffffff") Lit(value=18)
         }
-        Call(target=sys.ui.drawText) {
+        Call(target=frameText) {
           Var(name=handle) Lit(value=56) Lit(value=292)
           If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="Submit a location to fetch weather.") } Block { Call(target=currentLineFromForecast) { Var(name=forecastBody) } } }
           Lit(value="#cbd5e1") Lit(value=16)
@@ -672,11 +672,11 @@ Program {
           Eq { Var(name=forecastBody) Lit(value="") }
           Block { Lit(value=0) }
           Block {
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=338) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=358) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=378) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=398) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=4) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=418) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=5) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=338) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=358) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=378) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=398) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=4) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=418) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=5) } Lit(value="#e2e8f0") Lit(value=14) }
             Lit(value=0)
           }
         }
@@ -687,7 +687,7 @@ Program {
           If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
           Lit(value="rect") Lit(value="") Lit(value="#0891b2") Lit(value="#67e8f9") Lit(value="#06b6d4") Lit(value="#155e75") Lit(value="#64748b")
         }
-        Call(target=sys.ui.drawText) { Var(name=handle) Add { Var(name=w) Lit(value=-164) } Lit(value=264) Lit(value="Radar") Lit(value="#ecfeff") Lit(value=17) }
+        Call(target=frameText) { Var(name=handle) Add { Var(name=w) Lit(value=-164) } Lit(value=264) Lit(value="Radar") Lit(value="#ecfeff") Lit(value=17) }
         If {
           Eq { Var(name=radarOpen) Lit(value=true) }
           Block {
@@ -697,17 +697,15 @@ Program {
               Add { Var(name=h) Lit(value=-468) }
               Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0b1120") Lit(value="#0b1120") Lit(value="#1e293b") Lit(value="#0b1120") Lit(value="#020617")
             }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=112) Lit(value=452) Lit(value="Radar loop panel (image syscall pending)") Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=112) Lit(value=474) StrConcat { Lit(value="Frame: ") ToString { Var(name=radarTick) } } Lit(value="#93c5fd") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=112) Lit(value=452) Lit(value="Radar loop panel (image syscall pending)") Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=112) Lit(value=474) StrConcat { Lit(value="Frame: ") ToString { Var(name=radarTick) } } Lit(value="#93c5fd") Lit(value=14) }
             Lit(value=0)
           }
           Block { Lit(value=0) }
         }
 
-        Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=40) Add { Var(name=h) Lit(value=-28) } Var(name=statusLine) Lit(value="#e2e8f0") Lit(value=14) }
-
-        Call(target=sys.ui.endFrame) { Var(name=handle) }
-        Call(target=sys.ui.present) { Var(name=handle) }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Add { Var(name=h) Lit(value=-28) } Var(name=statusLine) Lit(value="#e2e8f0") Lit(value=14) }
+        Call(target=framePresent) { Var(name=handle) }
         Return { Lit(value=0) }
       }
     }
