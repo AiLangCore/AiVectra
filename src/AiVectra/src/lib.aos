@@ -186,8 +186,6 @@ Program {
             Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=windowHandle) } }
             Let(name=eventWidthRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
             Let(name=eventHeightRaw) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
-            Let(name=eventWidth) { Call(target=stabilizeSize) { Var(name=eventWidthRaw) Lit(value=640) Lit(value=640) } }
-            Let(name=eventHeight) { Call(target=stabilizeSize) { Var(name=eventHeightRaw) Lit(value=360) Lit(value=360) } }
             Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
             Let(name=eventType) {
               If {
@@ -237,8 +235,8 @@ Program {
                 Var(name=eventText)
                 Var(name=eventX)
                 Var(name=eventY)
-                Var(name=eventWidth)
-                Var(name=eventHeight)
+                Var(name=eventWidthRaw)
+                Var(name=eventHeightRaw)
               }
             }
             Let(name=currentModel) { Var(name=nextModel) }
