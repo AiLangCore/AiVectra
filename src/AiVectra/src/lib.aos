@@ -1,4 +1,6 @@
 Program {
+  Import(path="../../../.tools/std/core.aos")
+
   Let(name=version) {
     Fn(params=_) {
       Block { Return { Lit(value="0.0.1") } }
@@ -198,6 +200,157 @@ Program {
     Fn(params=windowHandle) {
       Block {
         Return { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+      }
+    }
+  }
+
+  Let(name=sceneDefs) {
+    Fn(params=_) {
+      Block { Return { Call(target=nodeEmpty) { Lit(value="defs") } } }
+    }
+  }
+
+  Let(name=sceneSymbolInteractiveButton) {
+    Fn(params=symbolId) {
+      Block {
+        Let(name=base) { Call(target=nodeEmpty) { Lit(value="symbol") } }
+        Let(name=withId) { Call(target=mapSet) { Var(name=base) Lit(value="id") Var(name=symbolId) } }
+        Return { Call(target=mapSet) { Var(name=withId) Lit(value="kind") Lit(value="interactive-button") } }
+      }
+    }
+  }
+
+  Let(name=sceneDefsAdd) {
+    Fn(params=defsNode,symbolNode) {
+      Block { Return { AppendChild { Var(name=defsNode) Var(name=symbolNode) } } }
+    }
+  }
+
+  Let(name=sceneSymbolId) {
+    Fn(params=symbolNode) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=symbolNode) Lit(value="id") Lit(value="") } } }
+    }
+  }
+
+  Let(name=sceneSymbolKind) {
+    Fn(params=symbolNode) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=symbolNode) Lit(value="kind") Lit(value="") } } }
+    }
+  }
+
+  Let(name=sceneDefsFindAt) {
+    Fn(params=defsNode,symbolId,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=defsNode) } }
+          Block { Return { Call(target=nodeEmpty) { Lit(value="missing-symbol") } } }
+          Block {
+            Let(name=symbolNode) { ChildAt { Var(name=defsNode) Var(name=index) } }
+            If {
+              Eq { Call(target=sceneSymbolId) { Var(name=symbolNode) } Var(name=symbolId) }
+              Block { Return { Var(name=symbolNode) } }
+              Block { Return { Call(target=sceneDefsFindAt) { Var(name=defsNode) Var(name=symbolId) Add { Var(name=index) Lit(value=1) } } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=sceneDefsFind) {
+    Fn(params=defsNode,symbolId) {
+      Block { Return { Call(target=sceneDefsFindAt) { Var(name=defsNode) Var(name=symbolId) Lit(value=0) } } }
+    }
+  }
+
+  Let(name=sceneUsePropString) {
+    Fn(params=props,key,fallback) {
+      Block { Return { Call(target=mapGetStringOr) { Var(name=props) Var(name=key) Var(name=fallback) } } }
+    }
+  }
+
+  Let(name=sceneUsePropInt) {
+    Fn(params=props,key,fallback) {
+      Block { Return { Call(target=mapGetIntOr) { Var(name=props) Var(name=key) Var(name=fallback) } } }
+    }
+  }
+
+  Let(name=drawSymbolSearchIcon) {
+    Fn(params=handle,x,y,fill) {
+      Block {
+        Call(target=frameRect) { Var(name=handle) Add { Var(name=x) Lit(value=10) } Add { Var(name=y) Lit(value=9) } Lit(value=12) Lit(value=12) Var(name=fill) }
+        Call(target=frameLine) { Var(name=handle) Add { Var(name=x) Lit(value=20) } Add { Var(name=y) Lit(value=20) } Add { Var(name=x) Lit(value=28) } Add { Var(name=y) Lit(value=28) } Var(name=fill) Lit(value=2) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawSymbolDotsIcon) {
+    Fn(params=handle,x,y,fill) {
+      Block {
+        Call(target=frameRect) { Var(name=handle) Add { Var(name=x) Lit(value=14) } Add { Var(name=y) Lit(value=16) } Lit(value=6) Lit(value=6) Var(name=fill) }
+        Call(target=frameRect) { Var(name=handle) Add { Var(name=x) Lit(value=24) } Add { Var(name=y) Lit(value=16) } Lit(value=6) Lit(value=6) Var(name=fill) }
+        Call(target=frameRect) { Var(name=handle) Add { Var(name=x) Lit(value=34) } Add { Var(name=y) Lit(value=16) } Lit(value=6) Lit(value=6) Var(name=fill) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=sceneRenderInteractiveButtonUse) {
+    Fn(params=handle,instanceId,x,y,props) {
+      Block {
+        Let(name=w) { Call(target=sceneUsePropInt) { Var(name=props) Lit(value="w") Lit(value=120) } }
+        Let(name=h) { Call(target=sceneUsePropInt) { Var(name=props) Lit(value="h") Lit(value=40) } }
+        Let(name=state) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="state") Lit(value="normal") } }
+        Let(name=label) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="label") Lit(value="") } }
+        Let(name=labelFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="labelFill") Lit(value="#ffffff") } }
+        Let(name=labelSize) { Call(target=sceneUsePropInt) { Var(name=props) Lit(value="labelSize") Lit(value=16) } }
+        Let(name=labelOffsetX) { Call(target=sceneUsePropInt) { Var(name=props) Lit(value="labelOffsetX") Lit(value=16) } }
+        Let(name=labelOffsetY) { Call(target=sceneUsePropInt) { Var(name=props) Lit(value="labelOffsetY") Lit(value=24) } }
+        Let(name=iconKind) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="iconKind") Lit(value="") } }
+        Let(name=iconFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="iconFill") Lit(value="#ffffff") } }
+        Let(name=normalFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="normalFill") Lit(value="#1f2937") } }
+        Let(name=pressedFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="pressedFill") Lit(value="#374151") } }
+        Let(name=hoverFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="hoverFill") Lit(value="#334155") } }
+        Let(name=focusedFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="focusedFill") Lit(value="#1d4ed8") } }
+        Let(name=disabledFill) { Call(target=sceneUsePropString) { Var(name=props) Lit(value="disabledFill") Lit(value="#475569") } }
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Var(name=x) Var(name=y) Var(name=w) Var(name=h)
+          Var(name=state)
+          Lit(value="rect") Lit(value="")
+          Var(name=normalFill) Var(name=pressedFill) Var(name=hoverFill) Var(name=focusedFill) Var(name=disabledFill)
+        }
+        If {
+          Eq { Var(name=iconKind) Lit(value="search") }
+          Block { Call(target=drawSymbolSearchIcon) { Var(name=handle) Var(name=x) Var(name=y) Var(name=iconFill) } }
+          Block {
+            If {
+              Eq { Var(name=iconKind) Lit(value="dots") }
+              Block { Call(target=drawSymbolDotsIcon) { Var(name=handle) Var(name=x) Var(name=y) Var(name=iconFill) } }
+              Block { Lit(value=0) }
+            }
+          }
+        }
+        If {
+          Eq { Var(name=label) Lit(value="") }
+          Block { Lit(value=0) }
+          Block { Call(target=frameText) { Var(name=handle) Add { Var(name=x) Var(name=labelOffsetX) } Add { Var(name=y) Var(name=labelOffsetY) } Var(name=label) Var(name=labelFill) Var(name=labelSize) } }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=sceneUse) {
+    Fn(params=handle,defsNode,symbolId,instanceId,x,y,props) {
+      Block {
+        Let(name=symbolNode) { Call(target=sceneDefsFind) { Var(name=defsNode) Var(name=symbolId) } }
+        Let(name=symbolKind) { Call(target=sceneSymbolKind) { Var(name=symbolNode) } }
+        If {
+          Eq { Var(name=symbolKind) Lit(value="interactive-button") }
+          Block { Return { Call(target=sceneRenderInteractiveButtonUse) { Var(name=handle) Var(name=instanceId) Var(name=x) Var(name=y) Var(name=props) } } }
+          Block { Return { Lit(value=0) } }
+        }
       }
     }
   }
@@ -2138,6 +2291,10 @@ Program {
   Export(name=frameEllipse)
   Export(name=framePath)
   Export(name=uiPollEvent)
+  Export(name=sceneDefs)
+  Export(name=sceneSymbolInteractiveButton)
+  Export(name=sceneDefsAdd)
+  Export(name=sceneUse)
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=uiWidth)
