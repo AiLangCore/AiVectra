@@ -1,4 +1,5 @@
 Program {
+  Import(path="../../../.tools/std/core.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
   Import(path="../../../.tools/sys/http.aos")
   Export(name=start)
@@ -452,104 +453,88 @@ Program {
     }
   }
 
-  Let(name=selectGeoAndLoop) {
-    Fn(params=handle,query,geoBody,index,radarOpen,nextRadarTick,w,h,debugLive) {
+  Let(name=emptyNode) {
+    Fn(params=_) {
+      Block { Return { Map { } } }
+    }
+  }
+
+  Let(name=weatherState) {
+    Fn(params=query,focused,dropdownOpen,geoBody,selectedLabel,selectedLat,selectedLon,forecastBody,statusLine,radarOpen,radarTick,lastW,lastH,submitFlash,blinkTick,netKind,netState,netTicks,debugLive) {
+      Block {
+        Let(name=s0) { Map { } }
+        Let(name=s1) { Call(target=mapSet) { Var(name=s0) Lit(value="query") Var(name=query) } }
+        Let(name=s2) { Call(target=mapSet) { Var(name=s1) Lit(value="focused") Var(name=focused) } }
+        Let(name=s3) { Call(target=mapSet) { Var(name=s2) Lit(value="dropdownOpen") Var(name=dropdownOpen) } }
+        Let(name=s4) { Call(target=mapSet) { Var(name=s3) Lit(value="geoBody") Var(name=geoBody) } }
+        Let(name=s5) { Call(target=mapSet) { Var(name=s4) Lit(value="selectedLabel") Var(name=selectedLabel) } }
+        Let(name=s6) { Call(target=mapSet) { Var(name=s5) Lit(value="selectedLat") Var(name=selectedLat) } }
+        Let(name=s7) { Call(target=mapSet) { Var(name=s6) Lit(value="selectedLon") Var(name=selectedLon) } }
+        Let(name=s8) { Call(target=mapSet) { Var(name=s7) Lit(value="forecastBody") Var(name=forecastBody) } }
+        Let(name=s9) { Call(target=mapSet) { Var(name=s8) Lit(value="statusLine") Var(name=statusLine) } }
+        Let(name=s10) { Call(target=mapSet) { Var(name=s9) Lit(value="radarOpen") Var(name=radarOpen) } }
+        Let(name=s11) { Call(target=mapSet) { Var(name=s10) Lit(value="radarTick") Var(name=radarTick) } }
+        Let(name=s12) { Call(target=mapSet) { Var(name=s11) Lit(value="lastW") Var(name=lastW) } }
+        Let(name=s13) { Call(target=mapSet) { Var(name=s12) Lit(value="lastH") Var(name=lastH) } }
+        Let(name=s14) { Call(target=mapSet) { Var(name=s13) Lit(value="submitFlash") Var(name=submitFlash) } }
+        Let(name=s15) { Call(target=mapSet) { Var(name=s14) Lit(value="blinkTick") Var(name=blinkTick) } }
+        Let(name=s16) { Call(target=mapSet) { Var(name=s15) Lit(value="netKind") Var(name=netKind) } }
+        Let(name=s17) { Call(target=mapSet) { Var(name=s16) Lit(value="netState") Var(name=netState) } }
+        Let(name=s18) { Call(target=mapSet) { Var(name=s17) Lit(value="netTicks") Var(name=netTicks) } }
+        Return { Call(target=mapSet) { Var(name=s18) Lit(value="debugLive") Var(name=debugLive) } }
+      }
+    }
+  }
+
+  Let(name=stateQuery) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="query") Lit(value="") } } } } }
+  Let(name=stateFocused) { Fn(params=state) { Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="focused") Lit(value=true) } } } } }
+  Let(name=stateDropdownOpen) { Fn(params=state) { Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="dropdownOpen") Lit(value=false) } } } } }
+  Let(name=stateGeoBody) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="geoBody") Lit(value="") } } } } }
+  Let(name=stateSelectedLabel) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="selectedLabel") Lit(value="") } } } } }
+  Let(name=stateSelectedLat) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="selectedLat") Lit(value="") } } } } }
+  Let(name=stateSelectedLon) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="selectedLon") Lit(value="") } } } } }
+  Let(name=stateForecastBody) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="forecastBody") Lit(value="") } } } } }
+  Let(name=stateStatusLine) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="statusLine") Lit(value="Ready. Enter location, press Submit.") } } } } }
+  Let(name=stateRadarOpen) { Fn(params=state) { Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="radarOpen") Lit(value=false) } } } } }
+  Let(name=stateRadarTick) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="radarTick") Lit(value=0) } } } } }
+  Let(name=stateLastW) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastW") Lit(value=960) } } } } }
+  Let(name=stateLastH) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastH") Lit(value=640) } } } } }
+  Let(name=stateSubmitFlash) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="submitFlash") Lit(value=0) } } } } }
+  Let(name=stateBlinkTick) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="blinkTick") Lit(value=0) } } } } }
+  Let(name=stateNetKind) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="netKind") Lit(value="") } } } } }
+  Let(name=stateNetState) { Fn(params=state) { Block { Return { Call(target=mapGetNodeOr) { Var(name=state) Lit(value="netState") Call(target=emptyNode) { Lit(value=0) } } } } } }
+  Let(name=stateNetTicks) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="netTicks") Lit(value=0) } } } } }
+  Let(name=stateDebugLive) { Fn(params=state) { Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="debugLive") Lit(value=false) } } } } }
+
+  Let(name=selectGeoAndState) {
+    Fn(params=query,geoBody,index,radarOpen,nextRadarTick,w,h,debugLive) {
       Block {
         Let(name=lat) { Call(target=geoLatAt) { Var(name=geoBody) Var(name=index) } }
         Let(name=lon) { Call(target=geoLonAt) { Var(name=geoBody) Var(name=index) } }
         Let(name=label) { Call(target=geoLabelAt) { Var(name=geoBody) Var(name=index) } }
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="forecast.request") Var(name=lat) Var(name=lon) }
         Let(name=reqState) { Call(target=startForecastRequest) { Var(name=lat) Var(name=lon) } }
-        Return {
-          Call(target=loop) {
-            Var(name=handle)
-            Var(name=query)
-            Lit(value=true)
-            Lit(value=false)
-            Lit(value="")
-            Var(name=label)
-            Var(name=lat)
-            Var(name=lon)
-            Lit(value="")
-            Lit(value="Loading weather...")
-            Var(name=radarOpen)
-            Var(name=nextRadarTick)
-            Var(name=w)
-            Var(name=h)
-            Lit(value=0)
-            Lit(value=0)
-            Lit(value="forecast")
-            Var(name=reqState)
-            Lit(value=0)
-            Var(name=debugLive)
-          }
-        }
+        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=label) Var(name=lat) Var(name=lon) Lit(value="") Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="forecast") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
       }
     }
   }
 
-  Let(name=submitQueryAndLoop) {
-    Fn(params=handle,query,selectedLabel,selectedLat,selectedLon,forecastBody,radarOpen,nextRadarTick,w,h,debugLive) {
+  Let(name=submitQueryAndState) {
+    Fn(params=query,selectedLabel,selectedLat,selectedLon,forecastBody,radarOpen,nextRadarTick,w,h,debugLive) {
       Block {
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.begin") Var(name=query) ToString { Call(target=strLen) { Var(name=query) } } }
         If {
           Eq { Var(name=query) Lit(value="") }
           Block {
             Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.skip.empty") Lit(value="query") Lit(value="0") }
-            Return {
-              Call(target=loop) {
-                Var(name=handle)
-                Var(name=query)
-                Lit(value=true)
-                Lit(value=false)
-                Lit(value="")
-                Var(name=selectedLabel)
-                Var(name=selectedLat)
-                Var(name=selectedLon)
-                Var(name=forecastBody)
-                Lit(value="Enter a ZIP or city first.")
-                Var(name=radarOpen)
-                Var(name=nextRadarTick)
-                Var(name=w)
-                Var(name=h)
-                Lit(value=0)
-                Lit(value=0)
-                Lit(value="")
-                Lit(value="")
-                Lit(value=0)
-                Var(name=debugLive)
-              }
-            }
+            Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Enter a ZIP or city first.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
           }
           Block { Lit(value=0) }
         }
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.request") Var(name=query) Lit(value="open-meteo") }
         Let(name=reqState) { Call(target=startGeoRequest) { Var(name=query) } }
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.started") Call(target=httpRequestPhase) { Var(name=reqState) } Lit(value="") }
-        Return {
-          Call(target=loop) {
-            Var(name=handle)
-            Var(name=query)
-            Lit(value=true)
-            Lit(value=false)
-            Lit(value="")
-            Var(name=selectedLabel)
-            Var(name=selectedLat)
-            Var(name=selectedLon)
-            Var(name=forecastBody)
-            Lit(value="Loading weather...")
-            Var(name=radarOpen)
-            Var(name=nextRadarTick)
-            Var(name=w)
-            Var(name=h)
-            Lit(value=12)
-            Lit(value=0)
-            Lit(value="geo")
-            Var(name=reqState)
-            Lit(value=0)
-            Var(name=debugLive)
-          }
-        }
+        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=12) Lit(value=0) Lit(value="geo") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
       }
     }
   }
@@ -724,30 +709,6 @@ Program {
         Call(target=sys.ui.endFrame) { Var(name=handle) }
         Call(target=sys.ui.present) { Var(name=handle) }
         Return { Lit(value=0) }
-      }
-    }
-  }
-
-  Let(name=decIfPositive) {
-    Fn(params=value) {
-      Block {
-        If {
-          Call(target=intLt) { Lit(value=0) Var(name=value) }
-          Block { Return { Add { Var(name=value) Lit(value=-1) } } }
-          Block { Return { Lit(value=0) } }
-        }
-      }
-    }
-  }
-
-  Let(name=incWrap) {
-    Fn(params=value,maxValue) {
-      Block {
-        If {
-          Call(target=intGte) { Var(name=value) Var(name=maxValue) }
-          Block { Return { Lit(value=0) } }
-          Block { Return { Add { Var(name=value) Lit(value=1) } } }
-        }
       }
     }
   }
@@ -933,45 +894,77 @@ Program {
     }
   }
 
-  Let(name=loop) {
-    Fn(params=handle,query,focused,dropdownOpen,geoBody,selectedLabel,selectedLat,selectedLon,forecastBody,statusLine,radarOpen,radarTick,lastW,lastH,submitFlash,blinkTick,netKind,netState,netTicks,debugLive) {
+  Let(name=appInit) {
+    Fn(params=args) {
       Block {
-        Let(name=wRaw) { Var(name=lastW) }
-        Let(name=hRaw) { Var(name=lastH) }
-        Let(name=w) { Var(name=lastW) }
-        Let(name=h) { Var(name=lastH) }
-        Let(name=entryWDebug) { Add { Var(name=w) Lit(value=-220) } }
-        Let(name=submitXDebug) { Add { Var(name=w) Lit(value=-168) } }
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Return { Call(target=weatherState) { Lit(value="") Lit(value=true) Lit(value=false) Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="Ready. Enter location, press Submit.") Lit(value=false) Lit(value=0) Lit(value=960) Lit(value=640) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Call(target=debugModeLive) { Var(name=mode) } } }
+      }
+    }
+  }
+
+  Let(name=appRender) {
+    Fn(params=handle,state) {
+      Block {
+        Let(name=query) { Call(target=stateQuery) { Var(name=state) } }
+        Let(name=focused) { Call(target=stateFocused) { Var(name=state) } }
+        Let(name=dropdownOpen) { Call(target=stateDropdownOpen) { Var(name=state) } }
+        Let(name=geoBody) { Call(target=stateGeoBody) { Var(name=state) } }
+        Let(name=selectedLabel) { Call(target=stateSelectedLabel) { Var(name=state) } }
+        Let(name=forecastBody) { Call(target=stateForecastBody) { Var(name=state) } }
+        Let(name=statusLine) { Call(target=stateStatusLine) { Var(name=state) } }
+        Let(name=radarOpen) { Call(target=stateRadarOpen) { Var(name=state) } }
+        Let(name=radarTick) { Call(target=stateRadarTick) { Var(name=state) } }
+        Let(name=lastW) { Call(target=stateLastW) { Var(name=state) } }
+        Let(name=lastH) { Call(target=stateLastH) { Var(name=state) } }
+        Let(name=submitFlash) { Call(target=stateSubmitFlash) { Var(name=state) } }
+        Let(name=debugLive) { Call(target=stateDebugLive) { Var(name=state) } }
+        Let(name=wRaw) { Call(target=uiWidth) { Var(name=handle) } }
+        Let(name=hRaw) { Call(target=uiHeight) { Var(name=handle) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=960) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=640) } }
         If {
           Eq { Var(name=debugLive) Lit(value=true) }
           Block {
-            If {
-              Eq { Var(name=w) Var(name=lastW) }
-              Block {
-                If {
-                  Eq { Var(name=h) Var(name=lastH) }
-                  Block { Lit(value=0) }
-                  Block {
-                    Call(target=debugSizeLine) { Var(name=wRaw) Var(name=hRaw) Var(name=w) Var(name=h) }
-                    Call(target=debugLayoutLine) { Var(name=w) Var(name=h) }
-                    Call(target=traceSceneFrame) { Var(name=debugLive) Var(name=w) Var(name=h) Var(name=query) Var(name=statusLine) Var(name=focused) Var(name=dropdownOpen) Var(name=radarOpen) Var(name=submitFlash) }
-                    Lit(value=0)
-                  }
-                }
-              }
-              Block {
-                Call(target=debugSizeLine) { Var(name=wRaw) Var(name=hRaw) Var(name=w) Var(name=h) }
-                Call(target=debugLayoutLine) { Var(name=w) Var(name=h) }
-                Call(target=traceSceneFrame) { Var(name=debugLive) Var(name=w) Var(name=h) Var(name=query) Var(name=statusLine) Var(name=focused) Var(name=dropdownOpen) Var(name=radarOpen) Var(name=submitFlash) }
-                Lit(value=0)
-              }
-            }
+            Call(target=traceSceneFrame) { Var(name=debugLive) Var(name=w) Var(name=h) Var(name=query) Var(name=statusLine) Var(name=focused) Var(name=dropdownOpen) Var(name=radarOpen) Var(name=submitFlash) }
+            Lit(value=0)
           }
           Block { Lit(value=0) }
         }
+        Call(target=render) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=radarTick) Var(name=w) Var(name=h) Var(name=submitFlash) Lit(value=true) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=appUpdate) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY,windowWidthRaw,windowHeightRaw) {
+      Block {
+        Let(name=query) { Call(target=stateQuery) { Var(name=state) } }
+        Let(name=focused) { Call(target=stateFocused) { Var(name=state) } }
+        Let(name=dropdownOpen) { Call(target=stateDropdownOpen) { Var(name=state) } }
+        Let(name=geoBody) { Call(target=stateGeoBody) { Var(name=state) } }
+        Let(name=selectedLabel) { Call(target=stateSelectedLabel) { Var(name=state) } }
+        Let(name=selectedLat) { Call(target=stateSelectedLat) { Var(name=state) } }
+        Let(name=selectedLon) { Call(target=stateSelectedLon) { Var(name=state) } }
+        Let(name=forecastBody) { Call(target=stateForecastBody) { Var(name=state) } }
+        Let(name=statusLine) { Call(target=stateStatusLine) { Var(name=state) } }
+        Let(name=radarOpen) { Call(target=stateRadarOpen) { Var(name=state) } }
+        Let(name=radarTick) { Call(target=stateRadarTick) { Var(name=state) } }
+        Let(name=lastW) { Call(target=stateLastW) { Var(name=state) } }
+        Let(name=lastH) { Call(target=stateLastH) { Var(name=state) } }
+        Let(name=submitFlash) { Call(target=stateSubmitFlash) { Var(name=state) } }
+        Let(name=blinkTick) { Call(target=stateBlinkTick) { Var(name=state) } }
+        Let(name=netKind) { Call(target=stateNetKind) { Var(name=state) } }
+        Let(name=netState) { Call(target=stateNetState) { Var(name=state) } }
+        Let(name=netTicks) { Call(target=stateNetTicks) { Var(name=state) } }
+        Let(name=debugLive) { Call(target=stateDebugLive) { Var(name=state) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastW) Lit(value=960) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastH) Lit(value=640) } }
+        Let(name=entryWDebug) { Add { Var(name=w) Lit(value=-220) } }
+        Let(name=submitXDebug) { Add { Var(name=w) Lit(value=-168) } }
         Let(name=nextFlash) { Lit(value=0) }
         Let(name=nextBlink) { Lit(value=0) }
-        Let(name=caretVisible) { Lit(value=true) }
         Let(name=nextRadarTick) { Var(name=radarTick) }
         Let(name=netStateNow) {
           If {
@@ -987,6 +980,7 @@ Program {
             Block { Add { Var(name=netTicks) Lit(value=1) } }
           }
         }
+
         If {
           Call(target=intLt) { Lit(value=900) Var(name=netTicksNow) }
           Block {
@@ -995,114 +989,45 @@ Program {
               Block { Lit(value=0) }
               Block {
                 Call(target=sys.net.asyncCancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
-                Return {
-                  Call(target=loop) {
-                    Var(name=handle) Var(name=query) Var(name=focused) Lit(value=false) Lit(value="")
-                    Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                    Lit(value="Request timed out.")
-                    Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                    Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                  }
-                }
+                Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Request timed out.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
               }
             }
           }
           Block { Lit(value=0) }
         }
+
         If {
           Eq { Var(name=netKind) Lit(value="geo") }
           Block {
             If {
               Call(target=httpRequestFailed) { Var(name=netStateNow) }
-              Block {
-                Return {
-                  Call(target=loop) {
-                    Var(name=handle) Var(name=query) Var(name=focused) Lit(value=false) Lit(value="")
-                    Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                    StrConcat { Lit(value="Geocode failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } }
-                    Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick)
-                    Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                  }
-                }
-              }
+              Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Geocode failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
               Block {
                 If {
                   Call(target=httpRequestDone) { Var(name=netStateNow) }
                   Block {
                     Let(name=geo) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
-                    Call(target=traceNetLine) {
-                      Var(name=debugLive)
-                      Lit(value="geo.response")
-                      ToString { Call(target=strLen) { Var(name=geo) } }
-                      ToString { Call(target=contains) { Var(name=geo) Lit(value="\"results\":") } }
-                    }
+                    Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.response") ToString { Call(target=strLen) { Var(name=geo) } } ToString { Call(target=contains) { Var(name=geo) Lit(value="\"results\":") } } }
                     Let(name=label1) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=1) } }
                     Let(name=label2) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=2) } }
                     If {
                       Eq { Var(name=geo) Lit(value="") }
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle) Var(name=query) Lit(value=true) Lit(value=false) Lit(value="")
-                            Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                            Lit(value="Network request failed (empty response).")
-                            Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                            Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                          }
-                        }
-                      }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Network request failed (empty response).") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                       Block { Lit(value=0) }
                     }
                     If {
                       Call(target=contains) { Var(name=geo) Lit(value="\"results\":") }
                       Block { Lit(value=0) }
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle) Var(name=query) Lit(value=true) Lit(value=false) Lit(value="")
-                            Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                            Lit(value="Unexpected geocode response (possible HTTP redirect).")
-                            Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                            Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                          }
-                        }
-                      }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response (possible HTTP redirect).") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                     }
                     If {
                       Eq { Var(name=label1) Lit(value="") }
-                      Block {
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle) Var(name=query) Lit(value=true) Lit(value=false) Lit(value="")
-                            Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                            Lit(value="No geocode match found.")
-                            Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                            Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                          }
-                        }
-                      }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                       Block {
                         If {
                           Eq { Var(name=label2) Lit(value="") }
-                          Block {
-                            Return {
-                              Call(target=selectGeoAndLoop) {
-                                Var(name=handle) Var(name=query) Var(name=geo) Lit(value=1)
-                                Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive)
-                              }
-                            }
-                          }
-                          Block {
-                            Return {
-                              Call(target=loop) {
-                                Var(name=handle) Var(name=query) Lit(value=true) Lit(value=true) Var(name=geo)
-                                Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody)
-                                Lit(value="Multiple matches. Choose a city.")
-                                Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                                Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                              }
-                            }
-                          }
+                          Block { Return { Call(target=selectGeoAndState) { Var(name=query) Var(name=geo) Lit(value=1) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=true) Var(name=geo) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Multiple matches. Choose a city.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                         }
                       }
                     }
@@ -1118,28 +1043,13 @@ Program {
               Block {
                 If {
                   Call(target=httpRequestFailed) { Var(name=netStateNow) }
-                  Block {
-                    Return {
-                      Call(target=loop) {
-                        Var(name=handle) Var(name=query) Var(name=focused) Lit(value=false) Lit(value="")
-                        Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Lit(value="")
-                        StrConcat { Lit(value="Forecast failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } }
-                        Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick)
-                        Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                      }
-                    }
-                  }
+                  Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Lit(value="") StrConcat { Lit(value="Forecast failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                   Block {
                     If {
                       Call(target=httpRequestDone) { Var(name=netStateNow) }
                       Block {
                         Let(name=forecast) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
-                        Call(target=traceNetLine) {
-                          Var(name=debugLive)
-                          Lit(value="forecast.response")
-                          ToString { Call(target=strLen) { Var(name=forecast) } }
-                          ToString { Call(target=contains) { Var(name=forecast) Lit(value="\"current\":{") } }
-                        }
+                        Call(target=traceNetLine) { Var(name=debugLive) Lit(value="forecast.response") ToString { Call(target=strLen) { Var(name=forecast) } } ToString { Call(target=contains) { Var(name=forecast) Lit(value="\"current\":{") } } }
                         Let(name=statusOut) {
                           If {
                             Eq { Var(name=forecast) Lit(value="") }
@@ -1147,14 +1057,7 @@ Program {
                             Block { StrConcat { Lit(value="Loaded weather for ") Var(name=selectedLabel) } }
                           }
                         }
-                        Return {
-                          Call(target=loop) {
-                            Var(name=handle) Var(name=query) Lit(value=true) Lit(value=false) Lit(value="")
-                            Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecast) Var(name=statusOut)
-                            Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0)
-                            Lit(value="") Lit(value="") Lit(value=0) Var(name=debugLive)
-                          }
-                        }
+                        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecast) Var(name=statusOut) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
                       }
                       Block { Lit(value=0) }
                     }
@@ -1166,17 +1069,6 @@ Program {
           }
         }
 
-        Call(target=render) {
-          Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody)
-          Var(name=selectedLabel) Var(name=forecastBody) Var(name=statusLine)
-          Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=caretVisible)
-        }
-        Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=handle) } }
-        Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
-        Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
-        Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
-        Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
-        Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
         If {
           Eq { Var(name=debugLive) Lit(value=true) }
           Block {
@@ -1185,26 +1077,7 @@ Program {
               Block { Lit(value=0) }
               Block {
                 Call(target=traceEventToml) { Var(name=debugLive) Var(name=eventType) Var(name=eventKey) Var(name=eventText) Var(name=eventX) Var(name=eventY) }
-                If {
-                  Eq { Var(name=eventType) Lit(value="closed") }
-                  Block { Lit(value=0) }
-                  Block {
-                    Call(target=traceUiState) {
-                      Var(name=debugLive)
-                      Var(name=focused)
-                      Var(name=dropdownOpen)
-                      Var(name=radarOpen)
-                      Var(name=query)
-                      Var(name=selectedLabel)
-                      Var(name=statusLine)
-                      Var(name=entryWDebug)
-                      Var(name=submitXDebug)
-                      Var(name=w)
-                      Var(name=h)
-                      Var(name=submitFlash)
-                    }
-                  }
-                }
+                Call(target=traceUiState) { Var(name=debugLive) Var(name=focused) Var(name=dropdownOpen) Var(name=radarOpen) Var(name=query) Var(name=selectedLabel) Var(name=statusLine) Var(name=entryWDebug) Var(name=submitXDebug) Var(name=w) Var(name=h) Var(name=submitFlash) }
                 Lit(value=0)
               }
             }
@@ -1213,140 +1086,101 @@ Program {
         }
 
         If {
-          Eq { Var(name=eventType) Lit(value="closed") }
+          Eq { Var(name=eventType) Lit(value="click") }
           Block {
+            Let(name=entryW) { Add { Var(name=w) Lit(value=-220) } }
+            Let(name=submitX) { Add { Var(name=w) Lit(value=-168) } }
+            Let(name=radarX) { Add { Var(name=w) Lit(value=-188) } }
+            Let(name=inputHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=92) Var(name=entryW) Lit(value=44) } }
+            Let(name=submitHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=submitX) Lit(value=92) Lit(value=140) Lit(value=44) } }
+            Let(name=radarHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=radarX) Lit(value=254) Lit(value=132) Lit(value=40) } }
+            Let(name=row1Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=138) Var(name=entryW) Lit(value=32) } }
+            Let(name=row2Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=170) Var(name=entryW) Lit(value=32) } }
+            Let(name=row3Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=202) Var(name=entryW) Lit(value=32) } }
             If {
-              Eq { Var(name=netKind) Lit(value="") }
-              Block { Lit(value=0) }
+              Eq { Var(name=dropdownOpen) Lit(value=true) }
               Block {
-                Call(target=sys.net.asyncCancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
+                If { Eq { Var(name=row1Hit) Lit(value=true) } Block { Return { Call(target=selectGeoAndState) { Var(name=query) Var(name=geoBody) Lit(value=1) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } } Block { Lit(value=0) } }
+                If { Eq { Var(name=row2Hit) Lit(value=true) } Block { Return { Call(target=selectGeoAndState) { Var(name=query) Var(name=geoBody) Lit(value=2) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } } Block { Lit(value=0) } }
+                If { Eq { Var(name=row3Hit) Lit(value=true) } Block { Return { Call(target=selectGeoAndState) { Var(name=query) Var(name=geoBody) Lit(value=3) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } } Block { Lit(value=0) } }
                 Lit(value=0)
               }
+              Block { Lit(value=0) }
             }
-            Return { Lit(value=0) }
+            If {
+              Eq { Var(name=submitHit) Lit(value=true) }
+              Block {
+                Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.click") Var(name=query) ToString { Call(target=strLen) { Var(name=query) } } }
+                If {
+                  Eq { Var(name=netKind) Lit(value="") }
+                  Block { Return { Call(target=submitQueryAndState) { Var(name=query) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } }
+                  Block {
+                    Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.skip.loading") Var(name=netKind) ToString { Var(name=netTicksNow) } }
+                    Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } }
+                  }
+                }
+              }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq { Var(name=radarHit) Lit(value=true) }
+              Block {
+                If {
+                  Eq { Var(name=selectedLabel) Lit(value="") }
+                  Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Load weather first, then open radar.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                  Block {
+                    If {
+                      Eq { Var(name=radarOpen) Lit(value=true) }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar closed.") Lit(value=false) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar opened. (panel active)") Lit(value=true) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                    }
+                  }
+                }
+              }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq { Var(name=inputHit) Lit(value=true) }
+              Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+              Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+            }
           }
           Block {
             If {
-              Eq { Var(name=eventType) Lit(value="click") }
-              Block {
-                Let(name=entryW) { Add { Var(name=w) Lit(value=-220) } }
-                Let(name=submitX) { Add { Var(name=w) Lit(value=-168) } }
-                Let(name=radarX) { Add { Var(name=w) Lit(value=-188) } }
-
-                Let(name=inputHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=92) Var(name=entryW) Lit(value=44) } }
-                Let(name=submitHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=submitX) Lit(value=92) Lit(value=140) Lit(value=44) } }
-                Let(name=radarHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=radarX) Lit(value=254) Lit(value=132) Lit(value=40) } }
-                Let(name=row1Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=138) Var(name=entryW) Lit(value=32) } }
-                Let(name=row2Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=170) Var(name=entryW) Lit(value=32) } }
-                Let(name=row3Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=202) Var(name=entryW) Lit(value=32) } }
-
-                If {
-                  Eq { Var(name=dropdownOpen) Lit(value=true) }
-                  Block {
-                    If {
-                      Eq { Var(name=row1Hit) Lit(value=true) }
-                      Block {
-                        Return { Call(target=selectGeoAndLoop) { Var(name=handle) Var(name=query) Var(name=geoBody) Lit(value=1) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } }
-                      }
-                      Block { Lit(value=0) }
-                    }
-                    If {
-                      Eq { Var(name=row2Hit) Lit(value=true) }
-                      Block {
-                        Return { Call(target=selectGeoAndLoop) { Var(name=handle) Var(name=query) Var(name=geoBody) Lit(value=2) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } }
-                      }
-                      Block { Lit(value=0) }
-                    }
-                    If {
-                      Eq { Var(name=row3Hit) Lit(value=true) }
-                      Block {
-                        Return { Call(target=selectGeoAndLoop) { Var(name=handle) Var(name=query) Var(name=geoBody) Lit(value=3) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } }
-                      }
-                      Block { Lit(value=0) }
-                    }
-                    Lit(value=0)
-                  }
-                  Block { Lit(value=0) }
-                }
-
-                If {
-                  Eq { Var(name=submitHit) Lit(value=true) }
-                  Block {
-                    Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.click") Var(name=query) ToString { Call(target=strLen) { Var(name=query) } } }
-                    If {
-                      Eq { Var(name=netKind) Lit(value="") }
-                      Block {
-                        Return { Call(target=submitQueryAndLoop) { Var(name=handle) Var(name=query) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } }
-                      }
-                      Block {
-                        Call(target=traceNetLine) { Var(name=debugLive) Lit(value="submit.skip.loading") Var(name=netKind) ToString { Var(name=netTicksNow) } }
-                        Return { Call(target=loop) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } }
-                      }
-                    }
-                  }
-                  Block { Lit(value=0) }
-                }
-
-                If {
-                  Eq { Var(name=radarHit) Lit(value=true) }
-                  Block {
-                    If {
-                      Eq { Var(name=selectedLabel) Lit(value="") }
-                      Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Load weather first, then open radar.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                      Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="Radar closed.") } Block { Lit(value="Radar opened. (panel active)") } } If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value=false) } Block { Lit(value=true) } } Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                    }
-                  }
-                  Block { Lit(value=0) }
-                }
-
-                If {
-                  Eq { Var(name=inputHit) Lit(value=true) }
-                  Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Lit(value=true) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                  Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                }
-              }
+              Eq { Var(name=eventType) Lit(value="key") }
               Block {
                 If {
-                  Eq { Var(name=eventType) Lit(value="key") }
+                  Eq { Var(name=focused) Lit(value=true) }
                   Block {
                     If {
-                      Eq { Var(name=focused) Lit(value=true) }
+                      Call(target=isBackKey) { Var(name=eventKey) }
+                      Block { Return { Call(target=weatherState) { Call(target=weatherRemoveLastChar) { Var(name=query) } Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                       Block {
                         If {
-                          Call(target=isBackKey) { Var(name=eventKey) }
-                          Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                          Call(target=isEnterKey) { Var(name=eventKey) }
+                          Block { Return { Call(target=submitQueryAndState) { Var(name=query) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } }
                           Block {
+                            Let(name=typed) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
                             If {
-                              Call(target=isEnterKey) { Var(name=eventKey) }
+                              Eq { Var(name=typed) Lit(value="") }
+                              Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                               Block {
-                                Return { Call(target=submitQueryAndLoop) { Var(name=handle) Var(name=query) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } }
-                              }
-                              Block {
-                                Let(name=typed) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
                                 If {
-                                  Eq { Var(name=typed) Lit(value="") }
-                                  Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                                  Block {
-                                    If {
-                                      Call(target=isForbiddenInputChar) { Var(name=typed) }
-                                      Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                                      Block { Return { Call(target=loop) { Var(name=handle) StrConcat { Var(name=query) Var(name=typed) } Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                                    }
-                                  }
+                                  Call(target=isForbiddenInputChar) { Var(name=typed) }
+                                  Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                                  Block { Return { Call(target=weatherState) { StrConcat { Var(name=query) Var(name=typed) } Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                                 }
                               }
                             }
                           }
                         }
                       }
-                      Block { Return { Call(target=loop) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                     }
                   }
-                  Block {
-                    Return { Lit(value=0) }
-                  }
+                  Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                 }
               }
+              Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
             }
           }
         }
@@ -1363,39 +1197,8 @@ Program {
           Block { Return { Lit(value=0) } }
           Block { Lit(value=0) }
         }
-        Let(name=handle) { Call(target=window) { Lit(value="AiVectra Weather") } }
-        Let(name=w0) { Lit(value=960) }
-        Let(name=h0) { Lit(value=640) }
-        Let(name=debugLive) {
-          If {
-            Eq { Var(name=mode) Lit(value="live") }
-            Block { Lit(value=true) }
-            Block { Lit(value=false) }
-          }
-        }
-        Lit(value=0)
-        Call(target=loop) {
-          Var(name=handle)
-          Lit(value="")
-          Lit(value=true)
-          Lit(value=false)
-          Lit(value="")
-          Lit(value="")
-          Lit(value="")
-          Lit(value="")
-          Lit(value="")
-          Lit(value="Ready. Enter location, press Submit.")
-          Lit(value=false)
-          Lit(value=0)
-          Var(name=w0)
-          Var(name=h0)
-          Lit(value=0)
-          Lit(value=0)
-          Lit(value="")
-          Lit(value="")
-          Lit(value=0)
-          Var(name=debugLive)
-        }
+        Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Weather") Lit(value=960) Lit(value=640) } }
+        Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } }
         Return { Lit(value=0) }
       }
     }
