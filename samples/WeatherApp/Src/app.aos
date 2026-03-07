@@ -1084,6 +1084,30 @@ Program {
         }
 
         If {
+          Eq { Var(name=eventType) Lit(value="none") }
+          Block {
+            If {
+              Eq { Var(name=netKind) Lit(value="") }
+              Block {
+                If {
+                  Eq { Var(name=w) Var(name=lastW) }
+                  Block {
+                    If {
+                      Eq { Var(name=h) Var(name=lastH) }
+                      Block { Return { Var(name=state) } }
+                      Block { Lit(value=0) }
+                    }
+                  }
+                  Block { Lit(value=0) }
+                }
+              }
+              Block { Lit(value=0) }
+            }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
           Eq { Var(name=eventType) Lit(value="click") }
           Block {
             Let(name=entryW) { Add { Var(name=w) Lit(value=-220) } }
