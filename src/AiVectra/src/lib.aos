@@ -149,6 +149,24 @@ Program {
     }
   }
 
+  Let(name=frameRect) {
+    Fn(params=windowHandle,x,y,w,h,fill) {
+      Block {
+        Call(target=sys.ui.drawRect) { Var(name=windowHandle) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=fill) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=frameText) {
+    Fn(params=windowHandle,x,y,value,fill,fontSize) {
+      Block {
+        Call(target=sys.ui.drawText) { Var(name=windowHandle) Var(name=x) Var(name=y) Var(name=value) Var(name=fill) Var(name=fontSize) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
   Let(name=appRun) {
     Fn(params=windowHandle,model) {
       Block {
@@ -2081,6 +2099,8 @@ Program {
   Export(name=appRun)
   Export(name=frameBegin)
   Export(name=framePresent)
+  Export(name=frameRect)
+  Export(name=frameText)
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=uiWidth)

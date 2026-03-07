@@ -13,11 +13,10 @@ Program {
   Let(name=appRender) {
     Fn(params=windowHandle,state) {
       Block {
-        Call(target=sys.ui.beginFrame) { Var(name=windowHandle) }
-        Call(target=sys.ui.drawRect) { Var(name=windowHandle) Lit(value=20) Lit(value=20) Lit(value=600) Lit(value=320) Lit(value="#1e293b") }
-        Call(target=sys.ui.drawText) { Var(name=windowHandle) Lit(value=188) Lit(value=187) Var(name=state) Lit(value="#ffffff") Lit(value=34) }
-        Call(target=sys.ui.endFrame) { Var(name=windowHandle) }
-        Call(target=sys.ui.present) { Var(name=windowHandle) }
+        Call(target=frameBegin) { Var(name=windowHandle) }
+        Call(target=frameRect) { Var(name=windowHandle) Lit(value=20) Lit(value=20) Lit(value=600) Lit(value=320) Lit(value="#1e293b") }
+        Call(target=frameText) { Var(name=windowHandle) Lit(value=188) Lit(value=187) Var(name=state) Lit(value="#ffffff") Lit(value=34) }
+        Call(target=framePresent) { Var(name=windowHandle) }
         Return { Lit(value=0) }
       }
     }
