@@ -1788,21 +1788,7 @@ Program {
           }
         }
 
-        If {
-          Eq { Var(name=debugLive) Lit(value=true) }
-          Block {
-            If {
-              Eq { Var(name=eventType) Lit(value="none") }
-              Block { Lit(value=0) }
-              Block {
-                Call(target=traceEventToml) { Var(name=debugLive) Var(name=eventType) Var(name=eventKey) Var(name=eventText) Var(name=eventX) Var(name=eventY) }
-                Call(target=traceUiState) { Var(name=debugLive) Var(name=focused) Var(name=dropdownOpen) Var(name=radarOpen) Var(name=query) Var(name=selectedLabel) Var(name=statusLine) Var(name=entryWDebug) Var(name=submitXDebug) Var(name=w) Var(name=h) Var(name=submitFlash) }
-                Lit(value=0)
-              }
-            }
-          }
-          Block { Lit(value=0) }
-        }
+        Lit(value=0)
 
         If {
           Eq { Var(name=eventType) Lit(value="none") }
