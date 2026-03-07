@@ -126,6 +126,11 @@
 - Refactor `HelloWorld` to use the canonical hook-based runtime path.
 - Move samples away from direct loop ownership where possible.
 - Keep sample code free of direct `sys.*` calls after bootstrap.
+- Add canonical scene reuse support:
+  - `Defs`
+  - `Symbol`
+  - `Use`
+- Refactor samples to demonstrate scene reuse as an AiVectra capability rather than ad hoc sample-only helpers.
 
 ### Layout And Template Compliance
 - Make canonical app structure consistent:

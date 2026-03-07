@@ -99,6 +99,8 @@ Native Surface
 
 AiVectra operates as a deterministic vector scene system.
 
+Reusable scene fragments are an intended first-class capability, conceptually similar to SVG `defs`, `symbol`, and `use`.
+
 ---
 
 ## Rendering Model
