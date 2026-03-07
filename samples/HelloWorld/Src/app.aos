@@ -65,16 +65,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
-        If {
-          Eq { Var(name=mode) Lit(value="snapshot") }
-          Block { Return { Lit(value=0) } }
-          Block { Lit(value=0) }
-        }
-        Let(name=windowHandle) { Call(target=appBuild) { Lit(value="AiVectra Hello") Lit(value=640) Lit(value=360) } }
-        Let(name=state) { Call(target=appInit) { Var(name=args) } }
-        Call(target=appRun) { Var(name=windowHandle) Var(name=state) }
-        Return { Lit(value=0) }
+        Return { Call(target=appStart) { Var(name=args) Lit(value="AiVectra Hello") Lit(value=640) Lit(value=360) } }
       }
     }
   }

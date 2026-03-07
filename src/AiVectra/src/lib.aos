@@ -374,6 +374,27 @@ Program {
     }
   }
 
+  Let(name=appStart) {
+    Fn(params=args,title,width,height) {
+      Block {
+        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="snapshot") }
+          Block { Return { Lit(value=0) } }
+          Block { Lit(value=0) }
+        }
+        Let(name=windowHandle) { Call(target=appBuild) { Var(name=title) Var(name=width) Var(name=height) } }
+        Let(name=model) { Call(target=appInit) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="scene") }
+          Block { Call(target=appRunScene) { Var(name=windowHandle) Var(name=model) } }
+          Block { Call(target=appRun) { Var(name=windowHandle) Var(name=model) } }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
   Let(name=debugModeEvents) {
     Fn(params=mode) {
       Block {
@@ -2361,6 +2382,7 @@ Program {
   Export(name=appBuild)
   Export(name=appRun)
   Export(name=appRunScene)
+  Export(name=appStart)
   Export(name=frameBegin)
   Export(name=framePresent)
   Export(name=frameRect)
