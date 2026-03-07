@@ -573,12 +573,17 @@ run_via_macos_bundle_if_possible() {
   host_target="$(resolve_host_target)"
   local bundle_app
   bundle_app="$(ensure_macos_run_bundle "$project_dir" "$app_name" "$host_target")"
+  local bundle_exec
+  bundle_exec="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$bundle_app/Contents/Info.plist" 2>/dev/null || true)"
+  if [[ -z "$bundle_exec" ]]; then
+    bundle_exec="airun"
+  fi
   if command -v open >/dev/null 2>&1; then
     if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >/dev/null 2>&1); then
       return 0
     fi
   fi
-  (cd "$project_dir" && "$bundle_app/Contents/MacOS/airun" run "$target_abs" "$@")
+  (cd "$project_dir" && "$bundle_app/Contents/MacOS/$bundle_exec" run "$target_abs" "$@")
 }
 
 ensure_dir() {
