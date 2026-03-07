@@ -25,7 +25,7 @@ Program {
             Return {
               StrConcat {
                 Lit(value="Greeting: Hello, ")
-                StrConcat { Var(name=submittedName) Lit(value="!") }
+                StrConcat { StrConcat { Var(name=submittedName) Lit(value="") } Lit(value="!") }
               }
             }
           }
@@ -282,7 +282,7 @@ Program {
         Call(target=traceSceneNode) { Var(name=debugLive) Var(name=frameId) Lit(value=1) Lit(value="panel") Lit(value="Rect") Lit(value="#1e293b") Lit(value="") Lit(value=0) Lit(value=20) Lit(value=20) Add { Var(name=windowWidth) Lit(value=-40) } Add { Var(name=windowHeight) Lit(value=-40) } }
         Call(target=traceSceneNode) { Var(name=debugLive) Var(name=frameId) Lit(value=2) Lit(value="shape_bottom") Lit(value="Rect") Lit(value="#0f766e") Lit(value="") Lit(value=0) Lit(value=96) Lit(value=88) Lit(value=280) Lit(value=180) }
         Call(target=traceSceneNode) { Var(name=debugLive) Var(name=frameId) Lit(value=3) Lit(value="shape_top") Lit(value="Ellipse") Lit(value="#ea580c") Lit(value="") Lit(value=0) Lit(value=220) Lit(value=72) Lit(value=260) Lit(value=196) }
-        Call(target=traceSceneNode) { Var(name=debugLive) Var(name=frameId) Lit(value=4) Lit(value="hit_text") Lit(value="Text") Lit(value="#cbd5e1") StrConcat { Lit(value="Topmost hit: ") Var(name=lastHit) } Lit(value=16) Lit(value=72) Lit(value=286) Lit(value=0) Lit(value=0) }
+        Call(target=traceSceneNode) { Var(name=debugLive) Var(name=frameId) Lit(value=4) Lit(value="hit_text") Lit(value="Text") Lit(value="#cbd5e1") StrConcat { Lit(value="Topmost hit: ") StrConcat { Var(name=lastHit) Lit(value="") } } Lit(value=16) Lit(value=72) Lit(value=286) Lit(value=0) Lit(value=0) }
         Call(target=traceSceneNode) {
           Var(name=debugLive) Var(name=frameId) Lit(value=5) Lit(value="input_bg") Lit(value="Rect")
           If { Var(name=inputFocused) Block { Lit(value="#172554") } Block { Lit(value="#0f172a") } }
@@ -426,47 +426,7 @@ Program {
 
   Let(name=sceneSignature) {
     Fn(params=windowWidth,windowHeight,name,submittedName,inputFocused,caret,buttonFlash,lastHit) {
-      Block {
-        Return {
-          StrConcat {
-            Call(target=svgLayoutSignature) { Var(name=windowWidth) Var(name=windowHeight) }
-            StrConcat {
-              Lit(value="|n=")
-              StrConcat {
-                Var(name=name)
-                StrConcat {
-                  Lit(value="|s=")
-                  StrConcat {
-                    Var(name=submittedName)
-                    StrConcat {
-                      Lit(value="|f=")
-                      StrConcat {
-                        Call(target=boolWord) { Var(name=inputFocused) }
-                        StrConcat {
-                          Lit(value="|c=")
-                          StrConcat {
-                            ToString { Var(name=caret) }
-                            StrConcat {
-                              Lit(value="|b=")
-                              StrConcat {
-                                ToString { Var(name=buttonFlash) }
-                                StrConcat {
-                                  Lit(value="|h=")
-                                  Var(name=lastHit)
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      Block { Return { Lit(value="scene") } }
     }
   }
 
@@ -518,18 +478,16 @@ Program {
           Lit(value="#ea580c")
         }
 
-        Call(target=framePath) {
-          Var(name=handle)
-          Lit(value="520,84;560,124;520,164;480,124;520,84")
-          Lit(value="#93c5fd")
-          Lit(value=2)
-        }
+        Call(target=frameLine) { Var(name=handle) Lit(value=520) Lit(value=84) Lit(value=560) Lit(value=124) Lit(value="#93c5fd") Lit(value=2) }
+        Call(target=frameLine) { Var(name=handle) Lit(value=560) Lit(value=124) Lit(value=520) Lit(value=164) Lit(value="#93c5fd") Lit(value=2) }
+        Call(target=frameLine) { Var(name=handle) Lit(value=520) Lit(value=164) Lit(value=480) Lit(value=124) Lit(value="#93c5fd") Lit(value=2) }
+        Call(target=frameLine) { Var(name=handle) Lit(value=480) Lit(value=124) Lit(value=520) Lit(value=84) Lit(value="#93c5fd") Lit(value=2) }
 
         Call(target=frameText) {
           Var(name=handle)
           Lit(value=72)
           Lit(value=286)
-          StrConcat { Lit(value="Topmost hit: ") StrConcat { Var(name=lastHit) Lit(value="") } }
+          StrConcat { Lit(value="Topmost hit: ") StrConcat { ToString { Var(name=lastHit) } Lit(value="") } }
           Lit(value="#cbd5e1")
           Lit(value=16)
         }
@@ -711,7 +669,7 @@ Program {
             Lit(value=0)
             Lit(value=0)
             Lit(value="")
-            Call(target=debugModeLive) { Var(name=mode) }
+            Call(target=debugModeSceneOrLive) { Var(name=mode) }
             Lit(value="")
           }
         }
@@ -928,7 +886,11 @@ Program {
           Block { Lit(value=0) }
         }
         Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Interactive SVG MVP") Lit(value=960) Lit(value=640) } }
-        Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="scene") }
+          Block { Call(target=appRunScene) { Var(name=handle) Call(target=appInit) { Var(name=args) } } }
+          Block { Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } } }
+        }
         Return { Lit(value=0) }
       }
     }
