@@ -193,7 +193,7 @@ This repository is an **AiLang workspace** with:
 - `samples/HelloWorld/project.aiproj` - hello-world sample
 - `samples/HelloName/project.aiproj` - hello-name sample
 - `samples/InteractiveSvgMvp/project.aiproj` - interactive SVG sample
-- `samples/WeatherApp/project.aiproj` - weather sample (in progress)
+- `samples/WeatherApp/project.aiproj` - weather sample (UI/demo polish in progress; live HTTPS fetch path currently depends on AiLang `connectTlsStart`)
 
 Canonical AiVectra app structure:
 

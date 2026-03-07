@@ -530,6 +530,22 @@ Program {
     }
   }
 
+  Let(name=forecastDayLabel) {
+    Fn(params=dayIndex) {
+      Block {
+        Return {
+          If { Eq { Var(name=dayIndex) Lit(value=1) } Block { Lit(value="Today") } Block {
+            If { Eq { Var(name=dayIndex) Lit(value=2) } Block { Lit(value="Tomorrow") } Block {
+              If { Eq { Var(name=dayIndex) Lit(value=3) } Block { Lit(value="Day 3") } Block {
+                If { Eq { Var(name=dayIndex) Lit(value=4) } Block { Lit(value="Day 4") } Block { Lit(value="Day 5") } }
+              } }
+            } }
+          } }
+        }
+      }
+    }
+  }
+
   Let(name=emptyNode) {
     Fn(params=_) {
       Block { Return { Map { } } }
@@ -630,8 +646,9 @@ Program {
   Let(name=render) {
     Fn(params=handle,query,focused,dropdownOpen,geoBody,selectedLabel,forecastBody,statusLine,radarOpen,radarTick,w,h,submitFlash,caretVisible) {
       Block {
-        Let(name=entryW) { Add { Var(name=w) Lit(value=-220) } }
-        Let(name=submitX) { Add { Var(name=w) Lit(value=-168) } }
+        Let(name=entryW) { Add { Var(name=w) Lit(value=-244) } }
+        Let(name=submitX) { Add { Var(name=w) Lit(value=-176) } }
+        Let(name=radarX) { Add { Var(name=w) Lit(value=-170) } }
         Let(name=count1) {
           If {
             Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="") }
@@ -655,20 +672,50 @@ Program {
         }
 
         Call(target=frameBegin) { Var(name=handle) }
-        Call(target=frameRect) { Var(name=handle) Lit(value=20) Lit(value=20) Add { Var(name=w) Lit(value=-40) } Add { Var(name=h) Lit(value=-40) } Lit(value="#0f172a") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#07111f") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Lit(value=140) Lit(value="#0c1a2f") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=18) Lit(value=18) Add { Var(name=w) Lit(value=-36) } Add { Var(name=h) Lit(value=-36) } Lit(value="#0b1626") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=34) Lit(value=34) Add { Var(name=w) Lit(value=-68) } Lit(value=142) Lit(value="#11243b") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=34) Lit(value=194) Add { Var(name=w) Lit(value=-68) } Lit(value=132) Lit(value="#0f1c2f") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=34) Lit(value=344) Add { Var(name=w) Lit(value=-68) } Lit(value=148) Lit(value="#0f1c2f") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=34) Add { Var(name=h) Lit(value=-92) } Add { Var(name=w) Lit(value=-68) } Lit(value=44) Lit(value="#10243a") }
 
-        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=40) Lit(value="Weather App") Lit(value="#ffffff") Lit(value=26) }
-        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=68) Lit(value="ZIP, city, or city,state") Lit(value="#cbd5e1") Lit(value=14) }
-
-        Call(target=interactiveVectorState) {
-          Var(name=handle) Lit(value=40) Lit(value=92) Var(name=entryW) Lit(value=44)
-          If { Eq { Var(name=focused) Lit(value=true) } Block { Lit(value="focused") } Block { Lit(value="normal") } }
-          Lit(value="rect") Lit(value="") Lit(value="#0f172a") Lit(value="#0f172a") Lit(value="#0f172a") Lit(value="#172554") Lit(value="#0f172a")
+        Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=48) Lit(value="Weather") Lit(value="#f8fafc") Lit(value=28) }
+        Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=76) Lit(value="Search by ZIP, city, or city,state") Lit(value="#a5b4c7") Lit(value=14) }
+        Call(target=frameText) {
+          Var(name=handle)
+          Lit(value=52)
+          Lit(value=154)
+          If { Eq { Var(name=selectedLabel) Lit(value="") } Block { Lit(value="No location loaded yet") } Block { StrConcat { Lit(value="Tracking ") Var(name=selectedLabel) } } }
+          Lit(value="#dbe7f5")
+          Lit(value=15)
         }
         Call(target=frameText) {
-          Var(name=handle) Lit(value=56) Lit(value=103)
-          If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="e.g. Springfield or 10001") } Block { Var(name=query) } }
-          If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="#94a3b8") } Block { Lit(value="#ffffff") } }
+          Var(name=handle)
+          Lit(value=52)
+          Lit(value=216)
+          Lit(value="Current Conditions")
+          Lit(value="#dbe7f5")
+          Lit(value=16)
+        }
+        Call(target=frameText) {
+          Var(name=handle)
+          Lit(value=52)
+          Lit(value=366)
+          Lit(value="5-Day Outlook")
+          Lit(value="#dbe7f5")
+          Lit(value=16)
+        }
+
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Lit(value=52) Lit(value=94) Var(name=entryW) Lit(value=48)
+          If { Eq { Var(name=focused) Lit(value=true) } Block { Lit(value="focused") } Block { Lit(value="normal") } }
+          Lit(value="rect") Lit(value="") Lit(value="#081320") Lit(value="#0b1320") Lit(value="#0d1726") Lit(value="#173052") Lit(value="#081320")
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=68) Lit(value=108)
+          If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="Enter a ZIP code or city name") } Block { Var(name=query) } }
+          If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="#71839a") } Block { Lit(value="#f8fafc") } }
           Lit(value=18)
         }
         If {
@@ -679,8 +726,8 @@ Program {
               Block {
                 Call(target=frameRect) {
                   Var(name=handle)
-                  Add { Lit(value=56) Call(target=mul) { Lit(value=11) Call(target=strLen) { Var(name=query) } Lit(value=0) } }
-                  Lit(value=103) Lit(value=2) Lit(value=20) Lit(value="#e2e8f0")
+                  Add { Lit(value=68) Call(target=mul) { Lit(value=11) Call(target=strLen) { Var(name=query) } Lit(value=0) } }
+                  Lit(value=106) Lit(value=2) Lit(value=22) Lit(value="#dbeafe")
                 }
                 Lit(value=0)
               }
@@ -696,103 +743,118 @@ Program {
           Block {
             Call(target=interactiveVectorState) {
               Var(name=handle)
-              Var(name=submitX) Lit(value=92) Lit(value=140) Lit(value=44)
+              Var(name=submitX) Lit(value=94) Lit(value=124) Lit(value=48)
               Lit(value="normal")
-              Lit(value="rect") Lit(value="") Lit(value="#334155") Lit(value="#64748b") Lit(value="#475569") Lit(value="#1e293b") Lit(value="#475569")
+              Lit(value="rect") Lit(value="") Lit(value="#263446") Lit(value="#4b5e73") Lit(value="#304256") Lit(value="#17202d") Lit(value="#3c4c5f")
             }
             Call(target=frameRect) {
-              Var(name=handle) Add { Var(name=submitX) Lit(value=54) } Lit(value=110) Lit(value=8) Lit(value=8)
-              If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#93c5fd") } Block { Lit(value="#475569") } }
+              Var(name=handle) Add { Var(name=submitX) Lit(value=42) } Lit(value=114) Lit(value=8) Lit(value=8)
+              If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#93c5fd") } Block { Lit(value="#4b5e73") } }
             }
             Call(target=frameRect) {
-              Var(name=handle) Add { Var(name=submitX) Lit(value=68) } Lit(value=110) Lit(value=8) Lit(value=8)
-              If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#475569") } Block { Lit(value="#93c5fd") } }
+              Var(name=handle) Add { Var(name=submitX) Lit(value=56) } Lit(value=114) Lit(value=8) Lit(value=8)
+              If { Eq { Var(name=caretVisible) Lit(value=true) } Block { Lit(value="#4b5e73") } Block { Lit(value="#93c5fd") } }
             }
             Call(target=frameRect) {
-              Var(name=handle) Add { Var(name=submitX) Lit(value=82) } Lit(value=110) Lit(value=8) Lit(value=8)
-              Lit(value="#475569")
+              Var(name=handle) Add { Var(name=submitX) Lit(value=70) } Lit(value=114) Lit(value=8) Lit(value=8)
+              Lit(value="#4b5e73")
             }
             Lit(value=0)
           }
           Block {
             Call(target=interactiveVectorState) {
-              Var(name=handle) Var(name=submitX) Lit(value=92) Lit(value=140) Lit(value=44)
+              Var(name=handle) Var(name=submitX) Lit(value=94) Lit(value=124) Lit(value=48)
               If { Call(target=intLt) { Lit(value=0) Var(name=submitFlash) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
-              Lit(value="rect") Lit(value="") Lit(value="#2563eb") Lit(value="#93c5fd") Lit(value="#3b82f6") Lit(value="#1d4ed8") Lit(value="#64748b")
+              Lit(value="rect") Lit(value="") Lit(value="#0f766e") Lit(value="#5eead4") Lit(value="#14b8a6") Lit(value="#0b4f4a") Lit(value="#44606a")
             }
-            Call(target=frameText) { Var(name=handle) Add { Var(name=submitX) Lit(value=36) } Lit(value=103) Lit(value="Submit") Lit(value="#ffffff") Lit(value=18) }
+            Call(target=frameText) { Var(name=handle) Add { Var(name=submitX) Lit(value=26) } Lit(value=108) Lit(value="Search") Lit(value="#f0fdfa") Lit(value=18) }
             Lit(value=0)
           }
+        }
+
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Var(name=radarX) Lit(value=46) Lit(value=118) Lit(value=34)
+          If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
+          Lit(value="rect") Lit(value="") Lit(value="#13283f") Lit(value="#27496b") Lit(value="#1b3754") Lit(value="#10253a") Lit(value="#223244")
+        }
+        Call(target=frameText) {
+          Var(name=handle)
+          Add { Var(name=radarX) Lit(value=22) }
+          Lit(value=53)
+          If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="Hide Radar") } Block { Lit(value="Radar Panel") } }
+          Lit(value="#dbeafe")
+          Lit(value=14)
         }
 
         If {
           Eq { Var(name=dropdownOpen) Lit(value=true) }
           Block {
             Call(target=interactiveVectorState) {
-              Var(name=handle) Lit(value=40) Lit(value=138) Var(name=entryW)
-              Add { Lit(value=8) Call(target=mul) { Lit(value=32) Var(name=dropdownCount) Lit(value=0) } }
-              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#1e293b") Lit(value="#1e293b") Lit(value="#334155") Lit(value="#1e293b") Lit(value="#0f172a")
+              Var(name=handle) Lit(value=52) Lit(value=148) Var(name=entryW)
+              Add { Lit(value=12) Call(target=mul) { Lit(value=34) Var(name=dropdownCount) Lit(value=0) } }
+              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0f1b2d") Lit(value="#0f1b2d") Lit(value="#22364f") Lit(value="#0f1b2d") Lit(value="#0a1220")
             }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=1) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=148) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=2) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=180) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
-            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=3) } Block { Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=212) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=1) } Block { Call(target=frameText) { Var(name=handle) Lit(value=70) Lit(value=158) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=2) } Block { Call(target=frameLine) { Var(name=handle) Lit(value=66) Lit(value=180) Add { Lit(value=52) Var(name=entryW) } Lit(value=180) Lit(value="#22364f") Lit(value=1) } Call(target=frameText) { Var(name=handle) Lit(value=70) Lit(value=192) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
+            If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=3) } Block { Call(target=frameLine) { Var(name=handle) Lit(value=66) Lit(value=214) Add { Lit(value=52) Var(name=entryW) } Lit(value=214) Lit(value="#22364f") Lit(value=1) } Call(target=frameText) { Var(name=handle) Lit(value=70) Lit(value=226) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
             Lit(value=0)
           }
           Block { Lit(value=0) }
         }
-
-        Call(target=interactiveVectorState) {
-          Var(name=handle) Lit(value=40) Lit(value=250) Add { Var(name=w) Lit(value=-80) } Lit(value=120)
-          Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#1e293b") Lit(value="#1e293b") Lit(value="#334155") Lit(value="#1e293b") Lit(value="#0f172a")
-        }
         Call(target=frameText) {
-          Var(name=handle) Lit(value=56) Lit(value=262)
+          Var(name=handle) Lit(value=52) Lit(value=246)
           If { Eq { Var(name=selectedLabel) Lit(value="") } Block { Lit(value="Current: (no location loaded)") } Block { StrConcat { Lit(value="Current: ") Var(name=selectedLabel) } } }
-          Lit(value="#ffffff") Lit(value=18)
+          Lit(value="#f8fafc") Lit(value=22)
         }
         Call(target=frameText) {
-          Var(name=handle) Lit(value=56) Lit(value=292)
+          Var(name=handle) Lit(value=52) Lit(value=278)
           If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="Submit a location to fetch weather.") } Block { Call(target=currentLineFromForecast) { Var(name=forecastBody) } } }
-          Lit(value="#cbd5e1") Lit(value=16)
+          Lit(value="#d8e3f0") Lit(value=18)
         }
 
         If {
           Eq { Var(name=forecastBody) Lit(value="") }
-          Block { Lit(value=0) }
           Block {
-            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=338) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=358) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=2) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=378) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=3) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=398) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=4) } Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=56) Lit(value=418) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=5) } Lit(value="#e2e8f0") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=308) Lit(value="No forecast loaded yet.") Lit(value="#7f93aa") Lit(value=14) }
+            Lit(value=0)
+          }
+          Block {
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=394) Call(target=forecastDayLabel) { Lit(value=1) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=392) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#eef4fb") Lit(value=15) }
+            Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=406) Add { Var(name=w) Lit(value=-52) } Lit(value=406) Lit(value="#22364f") Lit(value=1) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=424) Call(target=forecastDayLabel) { Lit(value=2) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=422) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=2) } Lit(value="#eef4fb") Lit(value=15) }
+            Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=436) Add { Var(name=w) Lit(value=-52) } Lit(value=436) Lit(value="#22364f") Lit(value=1) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=454) Call(target=forecastDayLabel) { Lit(value=3) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=452) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=3) } Lit(value="#eef4fb") Lit(value=15) }
+            Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=466) Add { Var(name=w) Lit(value=-52) } Lit(value=466) Lit(value="#22364f") Lit(value=1) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=484) Call(target=forecastDayLabel) { Lit(value=4) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=482) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=4) } Lit(value="#eef4fb") Lit(value=15) }
+            Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=496) Add { Var(name=w) Lit(value=-52) } Lit(value=496) Lit(value="#22364f") Lit(value=1) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=514) Call(target=forecastDayLabel) { Lit(value=5) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=512) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=5) } Lit(value="#eef4fb") Lit(value=15) }
             Lit(value=0)
           }
         }
-
-        Let(name=radarX) { Add { Var(name=w) Lit(value=-188) } }
-        Call(target=interactiveVectorState) {
-          Var(name=handle) Var(name=radarX) Lit(value=254) Lit(value=132) Lit(value=40)
-          If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
-          Lit(value="rect") Lit(value="") Lit(value="#0891b2") Lit(value="#67e8f9") Lit(value="#06b6d4") Lit(value="#155e75") Lit(value="#64748b")
-        }
-        Call(target=frameText) { Var(name=handle) Add { Var(name=w) Lit(value=-164) } Lit(value=264) Lit(value="Radar") Lit(value="#ecfeff") Lit(value=17) }
         If {
           Eq { Var(name=radarOpen) Lit(value=true) }
           Block {
             Call(target=interactiveVectorState) {
-              Var(name=handle) Lit(value=96) Lit(value=438)
-              Add { Var(name=w) Lit(value=-192) }
-              Add { Var(name=h) Lit(value=-468) }
-              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0b1120") Lit(value="#0b1120") Lit(value="#1e293b") Lit(value="#0b1120") Lit(value="#020617")
+              Var(name=handle) Lit(value=34) Lit(value=510)
+              Add { Var(name=w) Lit(value=-68) }
+              Add { Var(name=h) Lit(value=-602) }
+              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0a1220") Lit(value="#0a1220") Lit(value="#22364f") Lit(value="#0a1220") Lit(value="#050b14")
             }
-            Call(target=frameText) { Var(name=handle) Lit(value=112) Lit(value=452) Lit(value="Radar loop panel (image syscall pending)") Lit(value="#e2e8f0") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=112) Lit(value=474) StrConcat { Lit(value="Frame: ") ToString { Var(name=radarTick) } } Lit(value="#93c5fd") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=534) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=558) Lit(value="Image rendering and HTTPS map fetches are waiting on lower-layer runtime support.") Lit(value="#c5d5e6") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=580) StrConcat { Lit(value="Preview frame token: ") ToString { Var(name=radarTick) } } Lit(value="#8fb7d9") Lit(value=13) }
             Lit(value=0)
           }
           Block { Lit(value=0) }
         }
 
-        Call(target=frameText) { Var(name=handle) Lit(value=40) Add { Var(name=h) Lit(value=-28) } Var(name=statusLine) Lit(value="#e2e8f0") Lit(value=14) }
+        Call(target=frameText) { Var(name=handle) Lit(value=52) Add { Var(name=h) Lit(value=-64) } Lit(value="Status") Lit(value="#9fb4ca") Lit(value=12) }
+        Call(target=frameText) { Var(name=handle) Lit(value=52) Add { Var(name=h) Lit(value=-46) } Var(name=statusLine) Lit(value="#eef4fb") Lit(value=14) }
         Call(target=framePresent) { Var(name=handle) }
         Return { Lit(value=0) }
       }
@@ -1047,8 +1109,8 @@ Program {
         Let(name=debugLive) { Call(target=stateDebugLive) { Var(name=state) } }
         Let(name=w) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastW) Lit(value=960) } }
         Let(name=h) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastH) Lit(value=640) } }
-        Let(name=entryWDebug) { Add { Var(name=w) Lit(value=-220) } }
-        Let(name=submitXDebug) { Add { Var(name=w) Lit(value=-168) } }
+        Let(name=entryWDebug) { Add { Var(name=w) Lit(value=-244) } }
+        Let(name=submitXDebug) { Add { Var(name=w) Lit(value=-176) } }
         Let(name=nextFlash) { Lit(value=0) }
         Let(name=nextBlink) { Lit(value=0) }
         Let(name=nextRadarTick) { Var(name=radarTick) }
@@ -1221,15 +1283,15 @@ Program {
         If {
           Eq { Var(name=eventType) Lit(value="click") }
           Block {
-            Let(name=entryW) { Add { Var(name=w) Lit(value=-220) } }
-            Let(name=submitX) { Add { Var(name=w) Lit(value=-168) } }
-            Let(name=radarX) { Add { Var(name=w) Lit(value=-188) } }
-            Let(name=inputHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=92) Var(name=entryW) Lit(value=44) } }
-            Let(name=submitHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=submitX) Lit(value=92) Lit(value=140) Lit(value=44) } }
-            Let(name=radarHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=radarX) Lit(value=254) Lit(value=132) Lit(value=40) } }
-            Let(name=row1Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=138) Var(name=entryW) Lit(value=32) } }
-            Let(name=row2Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=170) Var(name=entryW) Lit(value=32) } }
-            Let(name=row3Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=202) Var(name=entryW) Lit(value=32) } }
+            Let(name=entryW) { Add { Var(name=w) Lit(value=-244) } }
+            Let(name=submitX) { Add { Var(name=w) Lit(value=-176) } }
+            Let(name=radarX) { Add { Var(name=w) Lit(value=-170) } }
+            Let(name=inputHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=52) Lit(value=94) Var(name=entryW) Lit(value=48) } }
+            Let(name=submitHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=submitX) Lit(value=94) Lit(value=124) Lit(value=48) } }
+            Let(name=radarHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Var(name=radarX) Lit(value=46) Lit(value=118) Lit(value=34) } }
+            Let(name=row1Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=52) Lit(value=148) Var(name=entryW) Lit(value=34) } }
+            Let(name=row2Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=52) Lit(value=182) Var(name=entryW) Lit(value=34) } }
+            Let(name=row3Hit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=52) Lit(value=216) Var(name=entryW) Lit(value=34) } }
             If {
               Eq { Var(name=dropdownOpen) Lit(value=true) }
               Block {
