@@ -1482,7 +1482,7 @@ Program {
             Lit(value="")
             Call(target=emptyNode) { Lit(value=0) }
             Lit(value=0)
-            Call(target=debugModeEventsSceneOrLive) { Var(name=mode) }
+            Call(target=debugModeSceneOrLive) { Var(name=mode) }
           }
         }
       }
