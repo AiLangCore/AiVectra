@@ -244,6 +244,33 @@ Program {
     }
   }
 
+  Let(name=stripQuotes) {
+    Fn(params=text) {
+      Block {
+        Let(name=len) { Call(target=strLen) { Var(name=text) } }
+        If {
+          Call(target=intLt) { Var(name=len) Lit(value=2) }
+          Block { Return { Var(name=text) } }
+          Block {
+            If {
+              Eq { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Lit(value=1) } Lit(value="\"") }
+              Block {
+                Return {
+                  Call(target=sys.str.substring) {
+                    Var(name=text)
+                    Lit(value=1)
+                    Add { Var(name=len) Lit(value=-2) }
+                  }
+                }
+              }
+              Block { Return { Var(name=text) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=arrayListForKey) {
     Fn(params=json,key,start) {
       Block {
@@ -546,6 +573,62 @@ Program {
     }
   }
 
+  Let(name=forecastDateLabelFromRaw) {
+    Fn(params=forecastBody,dayIndex) {
+      Block {
+        Let(name=dailyStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"daily\":{") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=dailyStart) Lit(value=0) }
+          Block { Return { Call(target=forecastDayLabel) { Var(name=dayIndex) } } }
+          Block {
+            Let(name=timeList) { Call(target=arrayListForKey) { Var(name=forecastBody) Lit(value="\"time\":[") Var(name=dailyStart) } }
+            Let(name=rawDate) { Call(target=csvNth) { Var(name=timeList) Var(name=dayIndex) } }
+            Let(name=dateValue) { Call(target=stripQuotes) { Var(name=rawDate) } }
+            If {
+              Call(target=intLt) { Call(target=strLen) { Var(name=dateValue) } Lit(value=10) }
+              Block { Return { Call(target=forecastDayLabel) { Var(name=dayIndex) } } }
+              Block {
+                If {
+                  Eq { Var(name=dayIndex) Lit(value=1) }
+                  Block { Return { Lit(value="Today") } }
+                  Block {
+                    If {
+                      Eq { Var(name=dayIndex) Lit(value=2) }
+                      Block { Return { Lit(value="Tomorrow") } }
+                      Block {
+                        Return {
+                          StrConcat {
+                            Call(target=sys.str.substring) { Var(name=dateValue) Lit(value=5) Lit(value=2) }
+                            StrConcat {
+                              Lit(value="/")
+                              Call(target=sys.str.substring) { Var(name=dateValue) Lit(value=8) Lit(value=2) }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=forecastDayLabelForBody) {
+    Fn(params=forecastBody,dayIndex) {
+      Block {
+        If {
+          Call(target=contains) { Var(name=forecastBody) Lit(value="\"daily\":{") }
+          Block { Return { Call(target=forecastDateLabelFromRaw) { Var(name=forecastBody) Var(name=dayIndex) } } }
+          Block { Return { Call(target=forecastDayLabel) { Var(name=dayIndex) } } }
+        }
+      }
+    }
+  }
+
   Let(name=currentTemperatureText) {
     Fn(params=forecastBody) {
       Block {
@@ -600,7 +683,13 @@ Program {
         Return {
           If { Call(target=contains) { Var(name=statusLine) Lit(value="Loading") } Block { Lit(value="#38bdf8") } Block {
             If { Call(target=contains) { Var(name=statusLine) Lit(value="failed") } Block { Lit(value="#fb7185") } Block {
-              If { Call(target=contains) { Var(name=statusLine) Lit(value="No ") } Block { Lit(value="#f59e0b") } Block { Lit(value="#34d399") } }
+              If { Call(target=contains) { Var(name=statusLine) Lit(value="timed out") } Block { Lit(value="#fb7185") } Block {
+                If { Call(target=contains) { Var(name=statusLine) Lit(value="Unavailable") } Block { Lit(value="#f59e0b") } Block {
+                  If { Call(target=contains) { Var(name=statusLine) Lit(value="unavailable") } Block { Lit(value="#f59e0b") } Block {
+                    If { Call(target=contains) { Var(name=statusLine) Lit(value="No ") } Block { Lit(value="#f59e0b") } Block { Lit(value="#34d399") } }
+                  } }
+                } }
+              } }
             } }
           } }
         }
@@ -944,19 +1033,19 @@ Program {
           Block {
             Call(target=frameText) { Var(name=handle) Lit(value=68) Lit(value=410) Lit(value="Day") Lit(value="#8fb7d9") Lit(value=12) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=410) Lit(value="High / Low") Lit(value="#8fb7d9") Lit(value=12) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=394) Call(target=forecastDayLabel) { Lit(value=1) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=394) Call(target=forecastDayLabelForBody) { Var(name=forecastBody) Lit(value=1) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=392) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#eef4fb") Lit(value=15) }
             Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=406) Add { Var(name=w) Lit(value=-52) } Lit(value=406) Lit(value="#22364f") Lit(value=1) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=424) Call(target=forecastDayLabel) { Lit(value=2) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=424) Call(target=forecastDayLabelForBody) { Var(name=forecastBody) Lit(value=2) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=422) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=2) } Lit(value="#eef4fb") Lit(value=15) }
             Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=436) Add { Var(name=w) Lit(value=-52) } Lit(value=436) Lit(value="#22364f") Lit(value=1) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=454) Call(target=forecastDayLabel) { Lit(value=3) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=454) Call(target=forecastDayLabelForBody) { Var(name=forecastBody) Lit(value=3) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=452) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=3) } Lit(value="#eef4fb") Lit(value=15) }
             Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=466) Add { Var(name=w) Lit(value=-52) } Lit(value=466) Lit(value="#22364f") Lit(value=1) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=484) Call(target=forecastDayLabel) { Lit(value=4) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=484) Call(target=forecastDayLabelForBody) { Var(name=forecastBody) Lit(value=4) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=482) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=4) } Lit(value="#eef4fb") Lit(value=15) }
             Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=496) Add { Var(name=w) Lit(value=-52) } Lit(value=496) Lit(value="#22364f") Lit(value=1) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=514) Call(target=forecastDayLabel) { Lit(value=5) } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=514) Call(target=forecastDayLabelForBody) { Var(name=forecastBody) Lit(value=5) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=512) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=5) } Lit(value="#eef4fb") Lit(value=15) }
             Lit(value=0)
           }
@@ -971,8 +1060,8 @@ Program {
               Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0a1220") Lit(value="#0a1220") Lit(value="#22364f") Lit(value="#0a1220") Lit(value="#050b14")
             }
             Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=516) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=538) Lit(value="This panel is reserved for animated radar or map previews.") Lit(value="#c5d5e6") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=556) StrConcat { Lit(value="Preview frame token: ") ToString { Var(name=radarTick) } } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=538) Lit(value="Map preview is unavailable in the current runtime.") Lit(value="#c5d5e6") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=556) Lit(value="Required capability: image rendering or host open-url support.") Lit(value="#8fb7d9") Lit(value=13) }
             Lit(value=0)
           }
           Block {
@@ -1488,7 +1577,7 @@ Program {
                     If {
                       Eq { Var(name=radarOpen) Lit(value=true) }
                       Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar closed.") Lit(value=false) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar opened. (panel active)") Lit(value=true) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar preview unavailable on this runtime.") Lit(value=true) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                     }
                   }
                 }
