@@ -546,6 +546,68 @@ Program {
     }
   }
 
+  Let(name=currentTemperatureText) {
+    Fn(params=forecastBody) {
+      Block {
+        Let(name=line) { Call(target=currentLineFromForecast) { Var(name=forecastBody) } }
+        Let(name=endPos) { Call(target=findFrom) { Var(name=line) Lit(value=" C") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=endPos) Lit(value=0) }
+          Block { Return { Lit(value="--") } }
+          Block {
+            Return {
+              StrConcat {
+                Call(target=sys.str.substring) {
+                  Var(name=line)
+                  Lit(value=5)
+                  Call(target=sub) { Var(name=endPos) Lit(value=5) }
+                }
+                Lit(value=" C")
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=currentConditionText) {
+    Fn(params=forecastBody) {
+      Block {
+        Let(name=line) { Call(target=currentLineFromForecast) { Var(name=forecastBody) } }
+        Let(name=startPos) { Call(target=findFrom) { Var(name=line) Lit(value=" C  ") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=startPos) Lit(value=0) }
+          Block { Return { Lit(value="Weather unavailable") } }
+          Block {
+            Let(name=textStart) { Add { Var(name=startPos) Lit(value=4) } }
+            Return {
+              Call(target=sys.str.substring) {
+                Var(name=line)
+                Var(name=textStart)
+                Call(target=sub) { Call(target=strLen) { Var(name=line) } Var(name=textStart) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=statusAccent) {
+    Fn(params=statusLine) {
+      Block {
+        Return {
+          If { Call(target=contains) { Var(name=statusLine) Lit(value="Loading") } Block { Lit(value="#38bdf8") } Block {
+            If { Call(target=contains) { Var(name=statusLine) Lit(value="failed") } Block { Lit(value="#fb7185") } Block {
+              If { Call(target=contains) { Var(name=statusLine) Lit(value="No ") } Block { Lit(value="#f59e0b") } Block { Lit(value="#34d399") } }
+            } }
+          } }
+        }
+      }
+    }
+  }
+
   Let(name=emptyNode) {
     Fn(params=_) {
       Block { Return { Map { } } }
@@ -679,6 +741,9 @@ Program {
         Call(target=frameRect) { Var(name=handle) Lit(value=34) Lit(value=194) Add { Var(name=w) Lit(value=-68) } Lit(value=132) Lit(value="#0f1c2f") }
         Call(target=frameRect) { Var(name=handle) Lit(value=34) Lit(value=344) Add { Var(name=w) Lit(value=-68) } Lit(value=148) Lit(value="#0f1c2f") }
         Call(target=frameRect) { Var(name=handle) Lit(value=34) Add { Var(name=h) Lit(value=-92) } Add { Var(name=w) Lit(value=-68) } Lit(value=44) Lit(value="#10243a") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=52) Lit(value=223) Lit(value=166) Lit(value=76) Lit(value="#15304b") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=236) Lit(value=223) Add { Var(name=w) Lit(value=-288) } Lit(value=76) Lit(value="#12253c") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=52) Lit(value=392) Add { Var(name=w) Lit(value=-104) } Lit(value=26) Lit(value="#11243b") }
 
         Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=48) Lit(value="Weather") Lit(value="#f8fafc") Lit(value=28) }
         Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=76) Lit(value="Search by ZIP, city, or city,state") Lit(value="#a5b4c7") Lit(value=14) }
@@ -807,9 +872,34 @@ Program {
           Lit(value="#f8fafc") Lit(value=22)
         }
         Call(target=frameText) {
-          Var(name=handle) Lit(value=52) Lit(value=278)
-          If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="Submit a location to fetch weather.") } Block { Call(target=currentLineFromForecast) { Var(name=forecastBody) } } }
-          Lit(value="#d8e3f0") Lit(value=18)
+          Var(name=handle) Lit(value=68) Lit(value=232)
+          Lit(value="Temperature")
+          Lit(value="#9fb4ca") Lit(value=12)
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=68) Lit(value=248)
+          If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="--") } Block { Call(target=currentTemperatureText) { Var(name=forecastBody) } } }
+          Lit(value="#f8fafc") Lit(value=26)
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=68) Lit(value=278)
+          If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="Awaiting forecast data") } Block { Call(target=currentConditionText) { Var(name=forecastBody) } } }
+          Lit(value="#d8e3f0") Lit(value=16)
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=252) Lit(value=232)
+          Lit(value="Overview")
+          Lit(value="#9fb4ca") Lit(value=12)
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=252) Lit(value=250)
+          If { Eq { Var(name=selectedLabel) Lit(value="") } Block { Lit(value="No active location selected.") } Block { StrConcat { Var(name=selectedLabel) Lit(value=" is the active forecast target.") } } }
+          Lit(value="#eef4fb") Lit(value=15)
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=252) Lit(value=274)
+          If { Eq { Var(name=forecastBody) Lit(value="") } Block { Lit(value="Run a search to populate current conditions and the daily outlook.") } Block { Lit(value="Forecast text is reduced into a stable summary so the sample stays deterministic and lightweight.") } }
+          Lit(value="#b7cadc") Lit(value=13)
         }
 
         If {
@@ -819,6 +909,8 @@ Program {
             Lit(value=0)
           }
           Block {
+            Call(target=frameText) { Var(name=handle) Lit(value=68) Lit(value=410) Lit(value="Day") Lit(value="#8fb7d9") Lit(value=12) }
+            Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=410) Lit(value="High / Low") Lit(value="#8fb7d9") Lit(value=12) }
             Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=394) Call(target=forecastDayLabel) { Lit(value=1) } Lit(value="#8fb7d9") Lit(value=13) }
             Call(target=frameText) { Var(name=handle) Lit(value=156) Lit(value=392) Call(target=dayLineFromForecast) { Var(name=forecastBody) Lit(value=1) } Lit(value="#eef4fb") Lit(value=15) }
             Call(target=frameLine) { Var(name=handle) Lit(value=52) Lit(value=406) Add { Var(name=w) Lit(value=-52) } Lit(value=406) Lit(value="#22364f") Lit(value=1) }
@@ -846,13 +938,19 @@ Program {
               Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0a1220") Lit(value="#0a1220") Lit(value="#22364f") Lit(value="#0a1220") Lit(value="#050b14")
             }
             Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=534) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=558) Lit(value="Image rendering and HTTPS map fetches are waiting on lower-layer runtime support.") Lit(value="#c5d5e6") Lit(value=14) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=580) StrConcat { Lit(value="Preview frame token: ") ToString { Var(name=radarTick) } } Lit(value="#8fb7d9") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=558) Lit(value="This panel is reserved for animated radar or map previews.") Lit(value="#c5d5e6") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=580) Lit(value="HTTPS image fetch and draw support are currently waiting on lower-layer runtime completion.") Lit(value="#c5d5e6") Lit(value=13) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=600) StrConcat { Lit(value="Preview frame token: ") ToString { Var(name=radarTick) } } Lit(value="#8fb7d9") Lit(value=13) }
             Lit(value=0)
           }
-          Block { Lit(value=0) }
+          Block {
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=534) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=558) Lit(value="Open the radar panel to reserve space for map preview content.") Lit(value="#c5d5e6") Lit(value=14) }
+            Lit(value=0)
+          }
         }
 
+        Call(target=frameRect) { Var(name=handle) Lit(value=40) Add { Var(name=h) Lit(value=-58) } Lit(value=4) Lit(value=22) Call(target=statusAccent) { Var(name=statusLine) } }
         Call(target=frameText) { Var(name=handle) Lit(value=52) Add { Var(name=h) Lit(value=-64) } Lit(value="Status") Lit(value="#9fb4ca") Lit(value=12) }
         Call(target=frameText) { Var(name=handle) Lit(value=52) Add { Var(name=h) Lit(value=-46) } Var(name=statusLine) Lit(value="#eef4fb") Lit(value=14) }
         Call(target=framePresent) { Var(name=handle) }
