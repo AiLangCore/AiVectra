@@ -997,9 +997,15 @@ Program {
     }
   }
 
-  Let(name=isEnterKey) {
-    Fn(params=keyName) {
-      Block { Return { Eq { Call(target=debugControlName) { Var(name=keyName) } Lit(value="enter") } } }
+  Let(name=isEnterEvent) {
+    Fn(params=keyName,textValue) {
+      Block {
+        If {
+          Eq { Call(target=debugControlName) { Var(name=keyName) } Lit(value="enter") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Eq { Var(name=textValue) Lit(value="\r") } } }
+        }
+      }
     }
   }
 
@@ -1485,7 +1491,7 @@ Program {
                       Block { Return { Call(target=weatherState) { Call(target=weatherRemoveLastChar) { Var(name=query) } Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=nextFlash) Lit(value=0) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
                       Block {
                         If {
-                          Call(target=isEnterKey) { Var(name=eventKey) }
+                          Call(target=isEnterEvent) { Var(name=eventKey) Var(name=eventText) }
                           Block { Return { Call(target=submitQueryAndState) { Var(name=query) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Var(name=debugLive) } } }
                           Block {
                             Let(name=typed) { Call(target=inputCharFromEvent) { Var(name=eventKey) Var(name=eventText) } }
