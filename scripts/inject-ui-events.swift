@@ -6,13 +6,18 @@ import AppKit
 
 struct Config {
     var windowTitle: String = ""
+    var windowId: Int?
     var events: String = ""
     var delayMs: Int = 35
     var dryRun: Bool = false
+    var listWindows: Bool = false
 }
 
 struct WindowTarget {
+    let windowId: Int
     let pid: pid_t
+    let owner: String
+    let title: String
     let x: Double
     let y: Double
     let width: Double
@@ -27,6 +32,11 @@ func parseArgs() -> Config? {
         let a = args[i]
         if a == "--window", i + 1 < args.count {
             cfg.windowTitle = args[i + 1]
+            i += 2
+            continue
+        }
+        if a == "--window-id", i + 1 < args.count {
+            cfg.windowId = Int(args[i + 1])
             i += 2
             continue
         }
@@ -45,49 +55,78 @@ func parseArgs() -> Config? {
             i += 1
             continue
         }
+        if a == "--list-windows" {
+            cfg.listWindows = true
+            i += 1
+            continue
+        }
         fputs("unknown arg: \(a)\n", stderr)
         return nil
     }
-    if cfg.windowTitle.isEmpty || cfg.events.isEmpty {
-        fputs("usage: inject-ui-events.swift --window <title-substring> --events \"<tokens>\" [--delay-ms N] [--dry-run]\n", stderr)
+    if cfg.listWindows {
+        return cfg
+    }
+    if (cfg.windowTitle.isEmpty && cfg.windowId == nil) || cfg.events.isEmpty {
+        fputs("usage: inject-ui-events.swift (--window <title-substring> | --window-id <id>) --events \"<tokens>\" [--delay-ms N] [--dry-run] [--list-windows]\n", stderr)
         return nil
     }
     return cfg
 }
 
-func findWindow(titleContains needle: String) -> WindowTarget? {
+func listWindows() -> [WindowTarget] {
     guard let raw = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]] else {
-        return nil
+        return []
     }
-    let n = needle.lowercased()
+    var out: [WindowTarget] = []
     for w in raw {
+        guard let windowIdNum = w[kCGWindowNumber as String] as? NSNumber else { continue }
         guard let name = w[kCGWindowName as String] as? String else { continue }
-        if !name.lowercased().contains(n) { continue }
+        let owner = (w[kCGWindowOwnerName as String] as? String) ?? ""
         guard let pidNum = w[kCGWindowOwnerPID as String] as? NSNumber else { continue }
         guard let bounds = w[kCGWindowBounds as String] as? [String: Any] else { continue }
         let x = (bounds["X"] as? NSNumber)?.doubleValue ?? 0
         let y = (bounds["Y"] as? NSNumber)?.doubleValue ?? 0
         let width = (bounds["Width"] as? NSNumber)?.doubleValue ?? 0
         let height = (bounds["Height"] as? NSNumber)?.doubleValue ?? 0
-        return WindowTarget(pid: pid_t(pidNum.intValue), x: x, y: y, width: width, height: height)
+        out.append(WindowTarget(windowId: windowIdNum.intValue, pid: pid_t(pidNum.intValue), owner: owner, title: name, x: x, y: y, width: width, height: height))
+    }
+    return out
+}
+
+func findWindow(titleContains needle: String) -> WindowTarget? {
+    let n = needle.lowercased()
+    for w in listWindows() {
+        if w.title.lowercased().contains(n) || w.owner.lowercased().contains(n) {
+            return w
+        }
+    }
+    return nil
+}
+
+func findWindow(id windowId: Int) -> WindowTarget? {
+    for w in listWindows() {
+        if w.windowId == windowId { return w }
     }
     return nil
 }
 
 func activateWindowOwner(_ pid: pid_t) {
     if let app = NSRunningApplication(processIdentifier: pid) {
-        _ = app.activate(options: [])
-        usleep(180_000)
+        _ = app.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
+        usleep(260_000)
     }
 }
 
 func postMouseClick(x: Double, y: Double) {
     let p = CGPoint(x: x, y: y)
     let src = CGEventSource(stateID: .combinedSessionState)
+    let move = CGEvent(mouseEventSource: src, mouseType: .mouseMoved, mouseCursorPosition: p, mouseButton: .left)
     let down = CGEvent(mouseEventSource: src, mouseType: .leftMouseDown, mouseCursorPosition: p, mouseButton: .left)
     let up = CGEvent(mouseEventSource: src, mouseType: .leftMouseUp, mouseCursorPosition: p, mouseButton: .left)
+    move?.post(tap: .cghidEventTap)
+    usleep(18_000)
     down?.post(tap: .cghidEventTap)
-    usleep(12_000)
+    usleep(18_000)
     up?.post(tap: .cghidEventTap)
 }
 
@@ -158,12 +197,28 @@ func ensureAccessibilityNotice() {
 }
 
 guard let cfg = parseArgs() else { exit(2) }
+if cfg.listWindows {
+    for w in listWindows() {
+        print("\(w.windowId)\t\(w.owner)\t\(w.title)\t\(Int(w.width))x\(Int(w.height))+\(Int(w.x))+\(Int(w.y))")
+    }
+    exit(0)
+}
 let target: WindowTarget?
 if cfg.dryRun {
     target = nil
 } else {
-    guard let resolved = findWindow(titleContains: cfg.windowTitle) else {
-        fputs("window not found containing title: \(cfg.windowTitle)\n", stderr)
+    let resolved: WindowTarget?
+    if let windowId = cfg.windowId {
+        resolved = findWindow(id: windowId)
+    } else {
+        resolved = findWindow(titleContains: cfg.windowTitle)
+    }
+    guard let resolved else {
+        if let windowId = cfg.windowId {
+            fputs("window not found with id: \(windowId)\n", stderr)
+        } else {
+            fputs("window not found containing title: \(cfg.windowTitle)\n", stderr)
+        }
         exit(3)
     }
     target = resolved
