@@ -320,7 +320,7 @@ build_macos_icns_from_svg() {
     fi
   fi
   if [[ ! -f "$base_png" ]] && command -v magick >/dev/null 2>&1; then
-    magick "$svg" -background none -resize 1024x1024 "$base_png" >/dev/null 2>&1 || true
+    magick "$svg" -background none -alpha on -depth 8 PNG32:"$base_png" >/dev/null 2>&1 || true
   fi
   if [[ ! -f "$base_png" ]]; then
     rm -rf "$tmp"
@@ -399,9 +399,13 @@ ensure_macos_run_bundle() {
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
   elif [[ -f "$icon_svg" ]]; then
-    build_macos_icns_from_svg "$icon_svg" "$icon_icns" || true
+    if ! build_macos_icns_from_svg "$icon_svg" "$icon_icns"; then
+      echo "run warn: failed to build AppIcon.icns from $icon_svg" >&2
+    fi
   elif [[ -f "$icon_default" ]]; then
-    build_macos_icns_from_svg "$icon_default" "$icon_icns" || true
+    if ! build_macos_icns_from_svg "$icon_default" "$icon_icns"; then
+      echo "run warn: failed to build AppIcon.icns from $icon_default" >&2
+    fi
   fi
 
   cat > "$plist" <<EOF
