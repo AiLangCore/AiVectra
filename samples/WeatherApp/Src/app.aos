@@ -1183,7 +1183,29 @@ Program {
     Fn(params=args) {
       Block {
         Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
-        Return { Call(target=weatherState) { Lit(value="") Lit(value=true) Lit(value=false) Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="Ready. Enter location, then use Search.") Lit(value=false) Lit(value=0) Lit(value=960) Lit(value=640) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Call(target=debugModeEventsOrLive) { Var(name=mode) } } }
+        Return {
+          Call(target=weatherState) {
+            Lit(value="")
+            Lit(value=true)
+            Lit(value=false)
+            Lit(value="")
+            Lit(value="")
+            Lit(value="")
+            Lit(value="")
+            Lit(value="")
+            Lit(value="Ready. Enter location, then use Search.")
+            Lit(value=false)
+            Lit(value=0)
+            Lit(value=960)
+            Lit(value=640)
+            Lit(value=0)
+            Lit(value=0)
+            Lit(value="")
+            Call(target=emptyNode) { Lit(value=0) }
+            Lit(value=0)
+            Call(target=debugModeEventsSceneOrLive) { Var(name=mode) }
+          }
+        }
       }
     }
   }
@@ -1532,7 +1554,11 @@ Program {
           Block { Lit(value=0) }
         }
         Let(name=handle) { Call(target=appBuild) { Lit(value="AiVectra Weather") Lit(value=960) Lit(value=640) } }
-        Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } }
+        If {
+          Eq { Var(name=mode) Lit(value="scene") }
+          Block { Call(target=appRunScene) { Var(name=handle) Call(target=appInit) { Var(name=args) } } }
+          Block { Call(target=appRun) { Var(name=handle) Call(target=appInit) { Var(name=args) } } }
+        }
         Return { Lit(value=0) }
       }
     }

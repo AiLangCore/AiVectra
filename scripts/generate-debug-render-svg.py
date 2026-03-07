@@ -193,12 +193,12 @@ def build_svg(frame, nodes):
     children_by_parent = defaultdict(list)
     for n in nodes:
         parent = n["parent"]
-        if parent:
+        if parent and parent != "root":
             children_by_parent[parent].append(n["id"])
     for pid in list(children_by_parent.keys()):
         children_by_parent[pid].sort(key=lambda cid: by_id[cid]["order"])
 
-    roots = [n for n in nodes if not n["parent"]]
+    roots = [n for n in nodes if (not n["parent"]) or n["parent"] == "root"]
     roots.sort(key=lambda n: n["order"])
 
     lines = [

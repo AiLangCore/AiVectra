@@ -363,6 +363,17 @@ Program {
     }
   }
 
+  Let(name=appRunScene) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Call(target=appRender) { Var(name=windowHandle) Var(name=model) }
+        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+        Call(target=appRender) { Var(name=windowHandle) Var(name=model) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
   Let(name=debugModeEvents) {
     Fn(params=mode) {
       Block {
@@ -1195,17 +1206,17 @@ Program {
     Fn(params=raw,current,defaultValue) {
       Block {
         If {
-          Call(target=intLt) { Var(name=raw) Lit(value=1) }
+          Call(target=intLt) { Var(name=raw) Lit(value=2) }
           Block {
             If {
-              Call(target=intLt) { Var(name=current) Lit(value=1) }
+              Call(target=intLt) { Var(name=current) Lit(value=2) }
               Block { Return { Var(name=defaultValue) } }
               Block { Return { Var(name=current) } }
             }
           }
           Block {
             If {
-              Call(target=intLt) { Var(name=current) Lit(value=1) }
+              Call(target=intLt) { Var(name=current) Lit(value=2) }
               Block { Return { Var(name=raw) } }
               Block {
                 If {
@@ -2171,6 +2182,18 @@ Program {
     }
   }
 
+  Let(name=debugModeScene) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="scene") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
   Let(name=debugModeEventsOrLive) {
     Fn(params=mode) {
       Block {
@@ -2178,6 +2201,30 @@ Program {
           Eq { Var(name=mode) Lit(value="events") }
           Block { Return { Lit(value=true) } }
           Block { Return { Call(target=debugModeLive) { Var(name=mode) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugModeSceneOrLive) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="scene") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Call(target=debugModeLive) { Var(name=mode) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=debugModeEventsSceneOrLive) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="events") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Call(target=debugModeSceneOrLive) { Var(name=mode) } } }
         }
       }
     }
@@ -2313,6 +2360,7 @@ Program {
   Export(name=window)
   Export(name=appBuild)
   Export(name=appRun)
+  Export(name=appRunScene)
   Export(name=frameBegin)
   Export(name=framePresent)
   Export(name=frameRect)
@@ -2381,8 +2429,11 @@ Program {
   Export(name=debugEmitUiIf)
   Export(name=debugEmitSceneNodeIf)
   Export(name=debugModeLive)
+  Export(name=debugModeScene)
   Export(name=debugModeEvents)
   Export(name=debugModeEventsOrLive)
+  Export(name=debugModeSceneOrLive)
+  Export(name=debugModeEventsSceneOrLive)
   Export(name=argStringAt)
   Export(name=appModeFromArgs)
   Export(name=layoutSignature)

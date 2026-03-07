@@ -702,6 +702,193 @@ run_airun_debug_scenario_with_toml_artifacts() {
   fi
 }
 
+render_svg_to_png() {
+  local svg_path="$1"
+  local png_path="$2"
+  if [[ "$(uname -s)" == "Darwin" ]] && command -v qlmanage >/dev/null 2>&1; then
+    local out_dir
+    out_dir="$(dirname "$png_path")"
+    local base_name
+    base_name="$(basename "$svg_path")"
+    if qlmanage -t -s 2048 -o "$out_dir" "$svg_path" >/dev/null 2>&1; then
+      local ql_png="$out_dir/$base_name.png"
+      if [[ -f "$ql_png" ]]; then
+        mv "$ql_png" "$png_path"
+        return 0
+      fi
+    fi
+  fi
+  if command -v magick >/dev/null 2>&1; then
+    magick "$svg_path" "$png_path" >/dev/null 2>&1
+    return $?
+  fi
+  echo "missing SVG rasterizer; install ImageMagick or use --format svg" >&2
+  return 2
+}
+
+run_airun_screenshot_capture() {
+  local app_path="$1"
+  shift
+  local out_arg=""
+  local format="both"
+  local frame_id=0
+  local timeout_ms=1200
+  local app_args=()
+  local parsing_app_args="false"
+  while [[ $# -gt 0 ]]; do
+    if [[ "$parsing_app_args" == "true" ]]; then
+      app_args+=("$1")
+      shift
+      continue
+    fi
+    case "$1" in
+      --)
+        parsing_app_args="true"
+        shift
+        ;;
+      --out)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --out" >&2
+          exit 2
+        fi
+        out_arg="$(normalize_path_arg "$2")"
+        shift 2
+        ;;
+      --format)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --format" >&2
+          exit 2
+        fi
+        format="$2"
+        shift 2
+        ;;
+      --frame-id)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --frame-id" >&2
+          exit 2
+        fi
+        frame_id="$2"
+        shift 2
+        ;;
+      --timeout-ms)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --timeout-ms" >&2
+          exit 2
+        fi
+        timeout_ms="$2"
+        shift 2
+        ;;
+      *)
+        echo "unknown screenshot option: $1" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  case "$format" in
+    svg|png|both)
+      ;;
+    *)
+      echo "unsupported format: $format (expected svg, png, or both)" >&2
+      exit 2
+      ;;
+  esac
+
+  if ! [[ "$frame_id" =~ ^[0-9]+$ ]]; then
+    echo "frame id must be a non-negative integer" >&2
+    exit 2
+  fi
+  if ! [[ "$timeout_ms" =~ ^[0-9]+$ ]]; then
+    echo "timeout must be a non-negative integer in milliseconds" >&2
+    exit 2
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 is required for screenshot generation" >&2
+    exit 2
+  fi
+
+  local project_dir
+  project_dir="$(project_dir_from_target "$app_path")"
+  local app_name=""
+  if [[ -n "$project_dir" ]]; then
+    app_name="$(basename "$project_dir")"
+  fi
+  if [[ -z "$app_name" || "$app_name" == "." ]]; then
+    app_name="$(basename "$app_path" .aos)"
+  fi
+  local out_base
+  if [[ -n "$out_arg" ]]; then
+    case "$out_arg" in
+      *.svg|*.png)
+        out_base="${out_arg%.*}"
+        ;;
+      *)
+        out_base="$out_arg"
+        ;;
+    esac
+  else
+    out_base="$ROOT_DIR/.artifacts/screenshots/$app_name-$(date +%Y%m%d-%H%M%S)"
+  fi
+
+  local out_dir
+  out_dir="$(dirname "$out_base")"
+  ensure_dir "$out_dir"
+
+  local svg_out="$out_base.svg"
+  local png_out="$out_base.png"
+  local log_file
+  log_file="$(mktemp /tmp/aivectra-screenshot-log-XXXXXX)"
+
+  native_runtime_guard "$app_path"
+  "$AIRUN_BIN" run "$app_path" scene "${app_args[@]:-}" >"$log_file" 2>&1 &
+  local app_pid=$!
+  sleep "$(python3 - <<PY
+ms = int("$timeout_ms")
+print(f"{ms / 1000.0:.3f}")
+PY
+)"
+  kill "$app_pid" >/dev/null 2>&1 || true
+  wait "$app_pid" 2>/dev/null || true
+
+  if ! rg -q 'aivectra\.(scene|frame|node|frame_end)' "$log_file"; then
+    echo "screenshot capture failed: scene trace was not emitted" >&2
+    echo "log: $log_file" >&2
+    exit 1
+  fi
+
+  local frame_arg="$frame_id"
+  if [[ "$frame_id" == "0" ]]; then
+    local detected_frame=""
+    detected_frame="$(rg -o 'frame=[0-9]+' "$log_file" | sed 's/frame=//' | sort -n | tail -n1 || true)"
+    if [[ -n "$detected_frame" ]]; then
+      frame_arg="$detected_frame"
+    fi
+  fi
+
+  python3 "$ROOT_DIR/scripts/generate-debug-render-svg.py" \
+    --input-log "$log_file" \
+    --frame-id "$frame_arg" \
+    --out "$svg_out" >/dev/null
+
+  case "$format" in
+    svg)
+      rm -f "$log_file"
+      echo "$svg_out"
+      ;;
+    png)
+      render_svg_to_png "$svg_out" "$png_out"
+      rm -f "$svg_out"
+      rm -f "$log_file"
+      echo "$png_out"
+      ;;
+    both)
+      render_svg_to_png "$svg_out" "$png_out"
+      rm -f "$log_file"
+      printf "%s\n%s\n" "$svg_out" "$png_out"
+      ;;
+  esac
+}
+
 toml_get_string() {
   local file="$1"
   local key="$2"
@@ -951,6 +1138,7 @@ usage:
   ./scripts/aivectra doctor
   ./scripts/aivectra test
   ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra screenshot <app|project-dir> [--out <path>] [--format svg|png|both] [--frame-id N] [--timeout-ms N] [-- app-args...]
   ./scripts/aivectra publish <app|project-dir|.aibc1> [airun publish flags]
   ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
   ./scripts/aivectra icon <project-path> [label]
@@ -966,6 +1154,7 @@ example:
   ./scripts/aivectra init MyFocusedApp --targets +wasm-spa
   ./scripts/aivectra targets add ./samples/MyApp --targets +wasm-fullstack
   ./scripts/aivectra run ./samples/HelloWorld/
+  ./scripts/aivectra screenshot ./samples/InteractiveSvgMvp/ --out /tmp/interactive-shot --format both
   ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/Src/app.aos -- todd
   ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/cwd -- todd
   ./scripts/aivectra debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal
@@ -1581,6 +1770,22 @@ if [[ "${1:-}" == "run" ]]; then
   shift || true
   native_runtime_guard "$RUN_TARGET"
   run_via_macos_bundle_if_possible "$RUN_TARGET" "$@"
+  exit $?
+fi
+
+if [[ "${1:-}" == "screenshot" ]]; then
+  shift
+  if [[ $# -lt 1 ]]; then
+    if APP_PATH="$(resolve_cwd_app_path_if_project)"; then
+      set -- "$APP_PATH"
+    else
+      echo "missing app path for screenshot command (or run from a folder containing project.aiproj)" >&2
+      exit 2
+    fi
+  fi
+  SCREENSHOT_TARGET="$(resolve_app_path "$1")"
+  shift || true
+  run_airun_screenshot_capture "$SCREENSHOT_TARGET" "$@"
   exit $?
 fi
 
