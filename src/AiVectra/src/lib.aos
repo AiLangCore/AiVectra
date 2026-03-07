@@ -367,7 +367,15 @@ Program {
   Let(name=appRun) {
     Fn(params=windowHandle,model) {
       Block {
-        Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) } }
+        Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) Lit(value=false) } }
+      }
+    }
+  }
+
+  Let(name=appRunEvents) {
+    Fn(params=windowHandle,model) {
+      Block {
+        Return { Call(target=appLoop) { Var(name=windowHandle) Var(name=model) Lit(value=true) } }
       }
     }
   }
@@ -397,7 +405,13 @@ Program {
         If {
           Eq { Var(name=mode) Lit(value="scene") }
           Block { Call(target=appRunScene) { Var(name=windowHandle) Var(name=model) } }
-          Block { Call(target=appRun) { Var(name=windowHandle) Var(name=model) } }
+          Block {
+            If {
+              Eq { Var(name=mode) Lit(value="events") }
+              Block { Call(target=appRunEvents) { Var(name=windowHandle) Var(name=model) } }
+              Block { Call(target=appRun) { Var(name=windowHandle) Var(name=model) } }
+            }
+          }
         }
         Return { Lit(value=0) }
       }
@@ -417,7 +431,7 @@ Program {
   }
 
   Let(name=appLoop) {
-    Fn(params=windowHandle,model) {
+    Fn(params=windowHandle,model,emitEvents) {
       Block {
         Let(name=currentModel) { Var(name=model) }
         Loop {
@@ -466,6 +480,25 @@ Program {
             If {
               Eq { Var(name=eventType) Lit(value="closed") }
               Block { Break { } }
+              Block { Lit(value=0) }
+            }
+            If {
+              Eq { Var(name=emitEvents) Lit(value=true) }
+              Block {
+                If {
+                  Eq { Var(name=eventType) Lit(value="none") }
+                  Block { Lit(value=0) }
+                  Block {
+                    Call(target=debugEmitEvent) {
+                      Var(name=eventType)
+                      Var(name=eventKey)
+                      Var(name=eventText)
+                      Var(name=eventX)
+                      Var(name=eventY)
+                    }
+                  }
+                }
+              }
               Block { Lit(value=0) }
             }
             Let(name=nextModel) {
@@ -2390,6 +2423,7 @@ Program {
   Export(name=window)
   Export(name=appBuild)
   Export(name=appRun)
+  Export(name=appRunEvents)
   Export(name=appRunScene)
   Export(name=appStart)
   Export(name=frameBegin)
