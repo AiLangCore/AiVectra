@@ -9,3 +9,4 @@ artifacts/
 .tmp_*
 .toolchain/
 *.aibc1
+*.local.*
