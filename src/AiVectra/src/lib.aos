@@ -196,6 +196,15 @@ Program {
     }
   }
 
+  Let(name=frameImage) {
+    Fn(params=windowHandle,x,y,w,h,rgbaBase64) {
+      Block {
+        Call(target=sys.ui.drawImage) { Var(name=windowHandle) Var(name=x) Var(name=y) Var(name=w) Var(name=h) Var(name=rgbaBase64) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
   Let(name=uiPollEvent) {
     Fn(params=windowHandle) {
       Block {
@@ -2390,6 +2399,7 @@ Program {
   Export(name=frameLine)
   Export(name=frameEllipse)
   Export(name=framePath)
+  Export(name=frameImage)
   Export(name=uiPollEvent)
   Export(name=sceneDefs)
   Export(name=sceneSymbolInteractiveButton)
