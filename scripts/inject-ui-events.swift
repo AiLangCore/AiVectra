@@ -24,6 +24,8 @@ struct WindowTarget {
     let height: Double
 }
 
+let estimatedTitlebarHeight: Double = 28.0
+
 func parseArgs() -> Config? {
     var cfg = Config()
     var i = 1
@@ -128,6 +130,10 @@ func postMouseClick(x: Double, y: Double) {
     down?.post(tap: .cghidEventTap)
     usleep(18_000)
     up?.post(tap: .cghidEventTap)
+}
+
+func contentPoint(for target: WindowTarget, rx: Double, ry: Double) -> (Double, Double) {
+    return (target.x + rx, target.y + estimatedTitlebarHeight + ry)
 }
 
 func keyCodeMap() -> [String: CGKeyCode] {
@@ -249,7 +255,8 @@ for token in tokens {
     } else if token.hasPrefix("clickr:") || token.hasPrefix("touchr:") {
         let s = String(token.dropFirst(7))
         if let (rx, ry) = parseCoords(s), let t = target {
-            postMouseClick(x: t.x + rx, y: t.y + ry)
+            let (x, y) = contentPoint(for: t, rx: rx, ry: ry)
+            postMouseClick(x: x, y: y)
         }
     } else if token.hasPrefix("click:") || token.hasPrefix("touch:") {
         let s = String(token.dropFirst(6))
