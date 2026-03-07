@@ -1183,7 +1183,7 @@ Program {
     Fn(params=args) {
       Block {
         Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
-        Return { Call(target=weatherState) { Lit(value="") Lit(value=true) Lit(value=false) Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="Ready. Enter location, then use Search.") Lit(value=false) Lit(value=0) Lit(value=960) Lit(value=640) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Call(target=debugModeLive) { Var(name=mode) } } }
+        Return { Call(target=weatherState) { Lit(value="") Lit(value=true) Lit(value=false) Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="") Lit(value="Ready. Enter location, then use Search.") Lit(value=false) Lit(value=0) Lit(value=960) Lit(value=640) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Call(target=debugModeEventsOrLive) { Var(name=mode) } } }
       }
     }
   }

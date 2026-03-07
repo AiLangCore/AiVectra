@@ -363,6 +363,18 @@ Program {
     }
   }
 
+  Let(name=debugModeEvents) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="events") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
   Let(name=appLoop) {
     Fn(params=windowHandle,model) {
       Block {
@@ -2159,6 +2171,18 @@ Program {
     }
   }
 
+  Let(name=debugModeEventsOrLive) {
+    Fn(params=mode) {
+      Block {
+        If {
+          Eq { Var(name=mode) Lit(value="events") }
+          Block { Return { Lit(value=true) } }
+          Block { Return { Call(target=debugModeLive) { Var(name=mode) } } }
+        }
+      }
+    }
+  }
+
   Let(name=argStringAt) {
     Fn(params=args,index) {
       Block {
@@ -2195,10 +2219,16 @@ Program {
                           Eq { Var(name=candidate) Lit(value="scene") }
                           Block { Return { Lit(value="scene") } }
                           Block {
-                            Return {
-                              Call(target=appModeFromArgsAt) {
-                                Var(name=args)
-                                Add { Var(name=index) Lit(value=1) }
+                            If {
+                              Eq { Var(name=candidate) Lit(value="events") }
+                              Block { Return { Lit(value="events") } }
+                              Block {
+                                Return {
+                                  Call(target=appModeFromArgsAt) {
+                                    Var(name=args)
+                                    Add { Var(name=index) Lit(value=1) }
+                                  }
+                                }
                               }
                             }
                           }
@@ -2351,6 +2381,8 @@ Program {
   Export(name=debugEmitUiIf)
   Export(name=debugEmitSceneNodeIf)
   Export(name=debugModeLive)
+  Export(name=debugModeEvents)
+  Export(name=debugModeEventsOrLive)
   Export(name=argStringAt)
   Export(name=appModeFromArgs)
   Export(name=layoutSignature)
