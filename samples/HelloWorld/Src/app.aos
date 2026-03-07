@@ -10,12 +10,46 @@ Program {
     }
   }
 
+  Let(name=panelMargin) {
+    Fn(params=_) {
+      Block { Return { Lit(value=20) } }
+    }
+  }
+
+  Let(name=textX) {
+    Fn(params=windowWidth,message) {
+      Block {
+        Return {
+          Add {
+            Call(target=halfFloor) { Var(name=windowWidth) Lit(value=0) }
+            Call(target=mul) { Lit(value=-9) Call(target=textLen) { Var(name=message) } Lit(value=0) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=textY) {
+    Fn(params=windowHeight) {
+      Block {
+        Return { Add { Call(target=halfFloor) { Var(name=windowHeight) Lit(value=0) } Lit(value=17) } }
+      }
+    }
+  }
+
   Let(name=appRender) {
     Fn(params=windowHandle,state) {
       Block {
+        Let(name=windowWidthRaw) { Call(target=uiWidth) { Var(name=windowHandle) } }
+        Let(name=windowHeightRaw) { Call(target=uiHeight) { Var(name=windowHandle) } }
+        Let(name=windowWidth) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Lit(value=640) Lit(value=640) } }
+        Let(name=windowHeight) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Lit(value=360) Lit(value=360) } }
+        Let(name=margin) { Call(target=panelMargin) { Lit(value=0) } }
+        Let(name=panelWidth) { Add { Var(name=windowWidth) Lit(value=-40) } }
+        Let(name=panelHeight) { Add { Var(name=windowHeight) Lit(value=-40) } }
         Call(target=frameBegin) { Var(name=windowHandle) }
-        Call(target=frameRect) { Var(name=windowHandle) Lit(value=20) Lit(value=20) Lit(value=600) Lit(value=320) Lit(value="#1e293b") }
-        Call(target=frameText) { Var(name=windowHandle) Lit(value=188) Lit(value=187) Var(name=state) Lit(value="#ffffff") Lit(value=34) }
+        Call(target=frameRect) { Var(name=windowHandle) Var(name=margin) Var(name=margin) Var(name=panelWidth) Var(name=panelHeight) Lit(value="#1e293b") }
+        Call(target=frameText) { Var(name=windowHandle) Call(target=textX) { Var(name=windowWidth) Var(name=state) } Call(target=textY) { Var(name=windowHeight) } Var(name=state) Lit(value="#ffffff") Lit(value=34) }
         Call(target=framePresent) { Var(name=windowHandle) }
         Return { Lit(value=0) }
       }
