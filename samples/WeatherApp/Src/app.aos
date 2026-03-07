@@ -706,7 +706,7 @@ Program {
   }
 
   Let(name=render) {
-    Fn(params=handle,query,focused,dropdownOpen,geoBody,selectedLabel,forecastBody,statusLine,radarOpen,radarTick,w,h,submitFlash,caretVisible) {
+    Fn(params=handle,query,focused,dropdownOpen,geoBody,selectedLabel,forecastBody,statusLine,radarOpen,radarTick,netKind,w,h,submitFlash,caretVisible) {
       Block {
         Let(name=entryW) { Add { Var(name=w) Lit(value=-244) } }
         Let(name=submitX) { Add { Var(name=w) Lit(value=-176) } }
@@ -805,7 +805,16 @@ Program {
         }
 
         If {
-          Call(target=contains) { Var(name=statusLine) Lit(value="Loading") }
+          Eq { Var(name=netKind) Lit(value="") }
+          Block {
+            Call(target=interactiveVectorState) {
+              Var(name=handle) Var(name=submitX) Lit(value=94) Lit(value=124) Lit(value=48)
+              If { Call(target=intLt) { Lit(value=0) Var(name=submitFlash) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
+              Lit(value="rect") Lit(value="") Lit(value="#0f766e") Lit(value="#5eead4") Lit(value="#14b8a6") Lit(value="#0b4f4a") Lit(value="#44606a")
+            }
+            Call(target=frameText) { Var(name=handle) Add { Var(name=submitX) Lit(value=26) } Lit(value=108) Lit(value="Search") Lit(value="#f0fdfa") Lit(value=18) }
+            Lit(value=0)
+          }
           Block {
             Call(target=interactiveVectorState) {
               Var(name=handle)
@@ -825,15 +834,6 @@ Program {
               Var(name=handle) Add { Var(name=submitX) Lit(value=70) } Lit(value=114) Lit(value=8) Lit(value=8)
               Lit(value="#4b5e73")
             }
-            Lit(value=0)
-          }
-          Block {
-            Call(target=interactiveVectorState) {
-              Var(name=handle) Var(name=submitX) Lit(value=94) Lit(value=124) Lit(value=48)
-              If { Call(target=intLt) { Lit(value=0) Var(name=submitFlash) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
-              Lit(value="rect") Lit(value="") Lit(value="#0f766e") Lit(value="#5eead4") Lit(value="#14b8a6") Lit(value="#0b4f4a") Lit(value="#44606a")
-            }
-            Call(target=frameText) { Var(name=handle) Add { Var(name=submitX) Lit(value=26) } Lit(value=108) Lit(value="Search") Lit(value="#f0fdfa") Lit(value=18) }
             Lit(value=0)
           }
         }
@@ -1156,6 +1156,7 @@ Program {
         Let(name=statusLine) { Call(target=stateStatusLine) { Var(name=state) } }
         Let(name=radarOpen) { Call(target=stateRadarOpen) { Var(name=state) } }
         Let(name=radarTick) { Call(target=stateRadarTick) { Var(name=state) } }
+        Let(name=netKind) { Call(target=stateNetKind) { Var(name=state) } }
         Let(name=lastW) { Call(target=stateLastW) { Var(name=state) } }
         Let(name=lastH) { Call(target=stateLastH) { Var(name=state) } }
         Let(name=submitFlash) { Call(target=stateSubmitFlash) { Var(name=state) } }
@@ -1172,7 +1173,7 @@ Program {
           }
           Block { Lit(value=0) }
         }
-        Call(target=render) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=radarTick) Var(name=w) Var(name=h) Var(name=submitFlash) Lit(value=true) }
+        Call(target=render) { Var(name=handle) Var(name=query) Var(name=focused) Var(name=dropdownOpen) Var(name=geoBody) Var(name=selectedLabel) Var(name=forecastBody) Var(name=statusLine) Var(name=radarOpen) Var(name=radarTick) Var(name=netKind) Var(name=w) Var(name=h) Var(name=submitFlash) Lit(value=true) }
         Return { Lit(value=0) }
       }
     }
