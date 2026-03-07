@@ -13,30 +13,7 @@ Program {
   Let(name=findFrom) {
     Fn(params=text,pattern,index) {
       Block {
-        Let(name=textLenValue) { Call(target=strLen) { Var(name=text) } }
-        Let(name=patternLen) { Call(target=strLen) { Var(name=pattern) } }
-        If {
-          Call(target=intGte) { Var(name=index) Var(name=textLenValue) }
-          Block { Return { Lit(value=-1) } }
-          Block {
-            If {
-              Eq {
-                Call(target=sys.str.substring) { Var(name=text) Var(name=index) Var(name=patternLen) }
-                Var(name=pattern)
-              }
-              Block { Return { Var(name=index) } }
-              Block {
-                Return {
-                  Call(target=findFrom) {
-                    Var(name=text)
-                    Var(name=pattern)
-                    Add { Var(name=index) Lit(value=1) }
-                  }
-                }
-              }
-            }
-          }
-        }
+        Return { Call(target=sys.str.find) { Var(name=text) Var(name=pattern) Var(name=index) } }
       }
     }
   }
@@ -404,7 +381,43 @@ Program {
     }
   }
 
-  Let(name=currentLineFromForecast) {
+  Let(name=forecastLineAt) {
+    Fn(params=summary,index) {
+      Block {
+        If {
+          Eq { Var(name=index) Lit(value=1) }
+          Block {
+            Let(name=breakPos) { Call(target=findFrom) { Var(name=summary) Lit(value="\n") Lit(value=0) } }
+            If {
+              Call(target=intLt) { Var(name=breakPos) Lit(value=0) }
+              Block { Return { Var(name=summary) } }
+              Block { Return { Call(target=sys.str.substring) { Var(name=summary) Lit(value=0) Var(name=breakPos) } } }
+            }
+          }
+          Block {
+            Let(name=breakPos) { Call(target=findFrom) { Var(name=summary) Lit(value="\n") Lit(value=0) } }
+            If {
+              Call(target=intLt) { Var(name=breakPos) Lit(value=0) }
+              Block { Return { Lit(value="") } }
+              Block {
+                Let(name=nextStart) { Add { Var(name=breakPos) Lit(value=1) } }
+                Let(name=tail) {
+                  Call(target=sys.str.substring) {
+                    Var(name=summary)
+                    Var(name=nextStart)
+                    Call(target=sub) { Call(target=strLen) { Var(name=summary) } Var(name=nextStart) }
+                  }
+                }
+                Return { Call(target=forecastLineAt) { Var(name=tail) Add { Var(name=index) Lit(value=-1) } } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=currentLineFromForecastRaw) {
     Fn(params=forecastBody) {
       Block {
         Let(name=currentStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"current\":{") Lit(value=0) } }
@@ -426,7 +439,7 @@ Program {
     }
   }
 
-  Let(name=dayLineFromForecast) {
+  Let(name=dayLineFromForecastRaw) {
     Fn(params=forecastBody,dayIndex) {
       Block {
         Let(name=dailyStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"daily\":{") Lit(value=0) } }
@@ -448,6 +461,70 @@ Program {
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  Let(name=encodeForecastSummary) {
+    Fn(params=forecastBody) {
+      Block {
+        Return {
+          StrConcat {
+            Call(target=currentLineFromForecastRaw) { Var(name=forecastBody) }
+            StrConcat {
+              Lit(value="\n")
+              StrConcat {
+                Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Lit(value=1) }
+                StrConcat {
+                  Lit(value="\n")
+                  StrConcat {
+                    Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Lit(value=2) }
+                    StrConcat {
+                      Lit(value="\n")
+                      StrConcat {
+                        Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Lit(value=3) }
+                        StrConcat {
+                          Lit(value="\n")
+                          StrConcat {
+                            Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Lit(value=4) }
+                            StrConcat {
+                              Lit(value="\n")
+                              Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Lit(value=5) }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=currentLineFromForecast) {
+    Fn(params=forecastBody) {
+      Block {
+        If {
+          Call(target=contains) { Var(name=forecastBody) Lit(value="\"current\":{") }
+          Block { Return { Call(target=currentLineFromForecastRaw) { Var(name=forecastBody) } } }
+          Block { Return { Call(target=forecastLineAt) { Var(name=forecastBody) Lit(value=1) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=dayLineFromForecast) {
+    Fn(params=forecastBody,dayIndex) {
+      Block {
+        If {
+          Call(target=contains) { Var(name=forecastBody) Lit(value="\"daily\":{") }
+          Block { Return { Call(target=dayLineFromForecastRaw) { Var(name=forecastBody) Var(name=dayIndex) } } }
+          Block { Return { Call(target=forecastLineAt) { Var(name=forecastBody) Add { Var(name=dayIndex) Lit(value=1) } } } }
         }
       }
     }
@@ -505,6 +582,17 @@ Program {
   Let(name=stateNetState) { Fn(params=state) { Block { Return { Call(target=mapGetNodeOr) { Var(name=state) Lit(value="netState") Call(target=emptyNode) { Lit(value=0) } } } } } }
   Let(name=stateNetTicks) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="netTicks") Lit(value=0) } } } } }
   Let(name=stateDebugLive) { Fn(params=state) { Block { Return { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="debugLive") Lit(value=false) } } } } }
+
+  Let(name=stateUpdatePolling) {
+    Fn(params=state,lastW,lastH,netState,netTicks) {
+      Block {
+        Let(name=s1) { Call(target=mapSet) { Var(name=state) Lit(value="lastW") Var(name=lastW) } }
+        Let(name=s2) { Call(target=mapSet) { Var(name=s1) Lit(value="lastH") Var(name=lastH) } }
+        Let(name=s3) { Call(target=mapSet) { Var(name=s2) Lit(value="netState") Var(name=netState) } }
+        Return { Call(target=mapSet) { Var(name=s3) Lit(value="netTicks") Var(name=netTicks) } }
+      }
+    }
+  }
 
   Let(name=selectGeoAndState) {
     Fn(params=query,geoBody,index,radarOpen,nextRadarTick,w,h,debugLive) {
@@ -964,6 +1052,23 @@ Program {
         Let(name=nextFlash) { Lit(value=0) }
         Let(name=nextBlink) { Lit(value=0) }
         Let(name=nextRadarTick) { Var(name=radarTick) }
+        If {
+          Eq { Var(name=eventType) Lit(value="none") }
+          Block {
+            If {
+              Eq { Var(name=netKind) Lit(value="") }
+              Block { Lit(value=0) }
+              Block {
+                If {
+                  Call(target=intLt) { Var(name=netTicks) Lit(value=5) }
+                  Block { Return { Call(target=stateUpdatePolling) { Var(name=state) Var(name=w) Var(name=h) Var(name=netState) Add { Var(name=netTicks) Lit(value=1) } } } }
+                  Block { Lit(value=0) }
+                }
+              }
+            }
+          }
+          Block { Lit(value=0) }
+        }
         Let(name=netStateNow) {
           If {
             Eq { Var(name=netKind) Lit(value="") }
@@ -975,7 +1080,7 @@ Program {
           If {
             Eq { Var(name=netKind) Lit(value="") }
             Block { Lit(value=0) }
-            Block { Add { Var(name=netTicks) Lit(value=1) } }
+            Block { Lit(value=0) }
           }
         }
 
@@ -1048,6 +1153,7 @@ Program {
                       Block {
                         Let(name=forecast) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
                         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="forecast.response") ToString { Call(target=strLen) { Var(name=forecast) } } ToString { Call(target=contains) { Var(name=forecast) Lit(value="\"current\":{") } } }
+                        Let(name=forecastSummary) { Call(target=encodeForecastSummary) { Var(name=forecast) } }
                         Let(name=statusOut) {
                           If {
                             Eq { Var(name=forecast) Lit(value="") }
@@ -1055,7 +1161,7 @@ Program {
                             Block { StrConcat { Lit(value="Loaded weather for ") Var(name=selectedLabel) } }
                           }
                         }
-                        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecast) Var(name=statusOut) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
+                        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastSummary) Var(name=statusOut) Var(name=radarOpen) Var(name=nextRadarTick) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
                       }
                       Block { Lit(value=0) }
                     }
@@ -1086,6 +1192,11 @@ Program {
         If {
           Eq { Var(name=eventType) Lit(value="none") }
           Block {
+            If {
+              Eq { Var(name=netKind) Lit(value="") }
+              Block { Lit(value=0) }
+              Block { Return { Call(target=stateUpdatePolling) { Var(name=state) Var(name=w) Var(name=h) Var(name=netStateNow) Var(name=netTicksNow) } } }
+            }
             If {
               Eq { Var(name=netKind) Lit(value="") }
               Block {
