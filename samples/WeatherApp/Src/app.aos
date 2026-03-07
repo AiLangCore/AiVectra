@@ -1,5 +1,6 @@
 Program {
   Import(path="../../../.tools/std/core.aos")
+  Import(path="../../../.tools/std/image.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
   Import(path="../../../.tools/sys/http.aos")
   Export(name=start)
@@ -354,14 +355,29 @@ Program {
     Fn(params=host,path) {
       Block {
         Return {
+          Call(target=startHttpGetWithHeaders) {
+            Var(name=host)
+            Var(name=path)
+            Lit(value="User-Agent: AiVectraWeather\\r\\nAccept: application/json\\r\\nConnection: close")
+            Lit(value=65536)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=startHttpGetWithHeaders) {
+    Fn(params=host,path,headers,maxBytes) {
+      Block {
+        Return {
           Call(target=httpRequest) {
             Lit(value="GET")
             Var(name=host)
             Lit(value=443)
             Var(name=path)
-            Lit(value="User-Agent: AiVectraWeather\\r\\nAccept: application/json\\r\\nConnection: close")
+            Var(name=headers)
             Lit(value="")
-            Lit(value=65536)
+            Var(name=maxBytes)
           }
         }
       }
@@ -380,6 +396,161 @@ Program {
     Fn(params=lat,lon) {
       Block {
         Return { Call(target=startHttpGet) { Lit(value="api.open-meteo.com") Call(target=fetchForecastPath) { Var(name=lat) Var(name=lon) } } }
+      }
+    }
+  }
+
+  Let(name=startRadarMetaRequest) {
+    Fn(params=_) {
+      Block {
+        Return {
+          Call(target=startHttpGetWithHeaders) {
+            Lit(value="api.rainviewer.com")
+            Lit(value="/public/weather-maps.json")
+            Lit(value="User-Agent: AiVectraWeather\\r\\nAccept: application/json\\r\\nConnection: close")
+            Lit(value=131072)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=stripHttpsPrefix) {
+    Fn(params=text) {
+      Block {
+        If {
+          Call(target=contains) { Var(name=text) Lit(value="https://") }
+          Block {
+            Return {
+              Call(target=sys.str.substring) {
+                Var(name=text)
+                Lit(value=8)
+                Add { Call(target=strLen) { Var(name=text) } Lit(value=-8) }
+              }
+            }
+          }
+          Block { Return { Var(name=text) } }
+        }
+      }
+    }
+  }
+
+  Let(name=lastQuotedValueAt) {
+    Fn(params=text,token,start,index,last) {
+      Block {
+        Let(name=value) { Call(target=quotedValueAt) { Var(name=text) Var(name=token) Var(name=start) Var(name=index) } }
+        If {
+          Eq { Var(name=value) Lit(value="") }
+          Block { Return { Var(name=last) } }
+          Block {
+            Return {
+              Call(target=lastQuotedValueAt) {
+                Var(name=text)
+                Var(name=token)
+                Var(name=start)
+                Add { Var(name=index) Lit(value=1) }
+                Var(name=value)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=rainViewerHost) {
+    Fn(params=metaBody) {
+      Block { Return { Call(target=quotedValueAt) { Var(name=metaBody) Lit(value="\"host\":\"") Lit(value=0) Lit(value=1) } } }
+    }
+  }
+
+  Let(name=rainViewerLatestPath) {
+    Fn(params=metaBody) {
+      Block {
+        Let(name=pastStart) { Call(target=findFrom) { Var(name=metaBody) Lit(value="\"past\":[") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=pastStart) Lit(value=0) }
+          Block { Return { Lit(value="") } }
+          Block {
+            Return {
+              Call(target=lastQuotedValueAt) {
+                Var(name=metaBody)
+                Lit(value="\"path\":\"")
+                Var(name=pastStart)
+                Lit(value=1)
+                Lit(value="")
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=rainViewerTilePath) {
+    Fn(params=metaBody,lat,lon) {
+      Block {
+        Let(name=hostText) { Call(target=rainViewerHost) { Var(name=metaBody) } }
+        Let(name=pathText) { Call(target=rainViewerLatestPath) { Var(name=metaBody) } }
+        If {
+          Eq { Var(name=hostText) Lit(value="") }
+          Block { Return { Lit(value="") } }
+          Block {
+            If {
+              Eq { Var(name=pathText) Lit(value="") }
+              Block { Return { Lit(value="") } }
+              Block {
+                Return {
+                  StrConcat {
+                    Var(name=pathText)
+                    StrConcat {
+                      Lit(value="/256/7/")
+                      StrConcat {
+                        Var(name=lat)
+                        StrConcat {
+                          Lit(value="/")
+                          StrConcat {
+                            Var(name=lon)
+                            Lit(value="/2/1_1.png")
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=startRadarFrameRequest) {
+    Fn(params=metaBody,lat,lon) {
+      Block {
+        Let(name=hostText) { Call(target=stripHttpsPrefix) { Call(target=rainViewerHost) { Var(name=metaBody) } } }
+        Let(name=pathText) { Call(target=rainViewerTilePath) { Var(name=metaBody) Var(name=lat) Var(name=lon) } }
+        If {
+          Eq { Var(name=hostText) Lit(value="") }
+          Block { Return { Call(target=emptyNode) { Lit(value=0) } } }
+          Block {
+            If {
+              Eq { Var(name=pathText) Lit(value="") }
+              Block { Return { Call(target=emptyNode) { Lit(value=0) } } }
+              Block {
+                Return {
+                  Call(target=startHttpGetWithHeaders) {
+                    Var(name=hostText)
+                    Var(name=pathText)
+                    Lit(value="User-Agent: AiVectraWeather\\r\\nAccept: image/png,image/*\\r\\nConnection: close")
+                    Lit(value=262144)
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -806,7 +977,7 @@ Program {
         Let(name=label) { Call(target=geoLabelAt) { Var(name=geoBody) Var(name=index) } }
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="forecast.request") Var(name=lat) Var(name=lon) }
         Let(name=reqState) { Call(target=startForecastRequest) { Var(name=lat) Var(name=lon) } }
-        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=label) Var(name=lat) Var(name=lon) Lit(value="") Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="forecast") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
+        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=label) Var(name=lat) Var(name=lon) Lit(value="") Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Lit(value="") Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="forecast") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
       }
     }
   }
@@ -826,7 +997,7 @@ Program {
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.request") Var(name=query) Lit(value="open-meteo") }
         Let(name=reqState) { Call(target=startGeoRequest) { Var(name=query) } }
         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.started") Call(target=httpRequestPhase) { Var(name=reqState) } Lit(value="") }
-        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=12) Lit(value=0) Lit(value="geo") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
+        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Loading weather...") Var(name=radarOpen) Var(name=nextRadarTick) Lit(value="") Var(name=w) Var(name=h) Lit(value=12) Lit(value=0) Lit(value="geo") Var(name=reqState) Lit(value=0) Var(name=debugLive) } }
       }
     }
   }
@@ -1052,30 +1223,33 @@ Program {
             Lit(value=0)
           }
         }
+        Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=520) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
         If {
           Eq { Var(name=radarOpen) Lit(value=true) }
           Block {
+            Call(target=frameRect) { Var(name=handle) Lit(value=48) Lit(value=104) Add { Var(name=w) Lit(value=-96) } Add { Var(name=h) Lit(value=-168) } Lit(value="#07111fde") }
             Call(target=interactiveVectorState) {
-              Var(name=handle) Lit(value=34) Lit(value=494)
-              Add { Var(name=w) Lit(value=-68) }
-              Lit(value=72)
-              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#0a1220") Lit(value="#0a1220") Lit(value="#22364f") Lit(value="#0a1220") Lit(value="#050b14")
+              Var(name=handle) Lit(value=88) Lit(value=128)
+              Add { Var(name=w) Lit(value=-176) }
+              Add { Var(name=h) Lit(value=-236) }
+              Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#081320") Lit(value="#081320") Lit(value="#2c4868") Lit(value="#081320") Lit(value="#040812")
             }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=516) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
+            Call(target=frameText) { Var(name=handle) Lit(value=108) Lit(value=154) Lit(value="Radar") Lit(value="#eef4fb") Lit(value=18) }
+            Call(target=frameText) { Var(name=handle) Add { Var(name=w) Lit(value=-228) } Lit(value=154) Lit(value="Live image") Lit(value="#8fb7d9") Lit(value=13) }
             If {
               Eq { Var(name=radarImageRgba) Lit(value="") }
               Block {
-                Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=538) Lit(value="Map preview is unavailable in the current runtime.") Lit(value="#c5d5e6") Lit(value=14) }
-                Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=556) Lit(value="Required capability: radar frame fetch + RGBA decode.") Lit(value="#8fb7d9") Lit(value=13) }
+                Call(target=frameText) { Var(name=handle) Lit(value=108) Lit(value=188) Lit(value="Loading radar image...") Lit(value="#c5d5e6") Lit(value=15) }
+                Call(target=frameText) { Var(name=handle) Lit(value=108) Lit(value=212) Lit(value="WeatherApp now has image decode support on macOS; this panel will render the latest fetched frame once available.") Lit(value="#8fb7d9") Lit(value=13) }
                 Lit(value=0)
               }
               Block {
                 Call(target=frameImage) {
                   Var(name=handle)
-                  Lit(value=52)
-                  Lit(value=536)
-                  Add { Var(name=w) Lit(value=-104) }
-                  Lit(value=22)
+                  Lit(value=108)
+                  Lit(value=178)
+                  Add { Var(name=w) Lit(value=-216) }
+                  Add { Var(name=h) Lit(value=-286) }
                   Var(name=radarImageRgba)
                 }
                 Lit(value=0)
@@ -1084,8 +1258,7 @@ Program {
             Lit(value=0)
           }
           Block {
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=520) Lit(value="Radar / Maps") Lit(value="#eef4fb") Lit(value=16) }
-            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=542) Lit(value="Open the radar panel to reserve space for map preview content.") Lit(value="#c5d5e6") Lit(value=14) }
+            Call(target=frameText) { Var(name=handle) Lit(value=52) Lit(value=542) Lit(value="Open the radar panel to load an in-app radar image.") Lit(value="#c5d5e6") Lit(value=14) }
             Lit(value=0)
           }
         }
@@ -1502,7 +1675,59 @@ Program {
                   }
                 }
               }
-              Block { Lit(value=0) }
+              Block {
+                If {
+                  Eq { Var(name=netKind) Lit(value="radar_meta") }
+                  Block {
+                    If {
+                      Call(target=httpRequestFailed) { Var(name=netStateNow) }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Radar failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                      Block {
+                        If {
+                          Call(target=httpRequestDone) { Var(name=netStateNow) }
+                          Block {
+                            Let(name=metaBody) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
+                            Let(name=tilePath) { Call(target=rainViewerTilePath) { Var(name=metaBody) Var(name=selectedLat) Var(name=selectedLon) } }
+                            If {
+                              Eq { Var(name=tilePath) Lit(value="") }
+                              Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar metadata unavailable.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                              Block {
+                                Let(name=radarReqState) { Call(target=startRadarFrameRequest) { Var(name=metaBody) Var(name=selectedLat) Var(name=selectedLon) } }
+                                Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Loading radar image...") Var(name=radarOpen) Var(name=nextRadarTick) Lit(value="") Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="radar_frame") Var(name=radarReqState) Lit(value=0) Var(name=debugLive) } }
+                              }
+                            }
+                          }
+                          Block { Lit(value=0) }
+                        }
+                      }
+                    }
+                  }
+                  Block {
+                    If {
+                      Eq { Var(name=netKind) Lit(value="radar_frame") }
+                      Block {
+                        If {
+                          Call(target=httpRequestFailed) { Var(name=netStateNow) }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Radar failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                          Block {
+                            If {
+                              Call(target=httpRequestDone) { Var(name=netStateNow) }
+                              Block {
+                                Let(name=responseBytes) { Call(target=httpRequestResponseBytes) { Var(name=netStateNow) } }
+                                Let(name=bodyBytes) { Call(target=httpResponseBodyBytes) { Var(name=responseBytes) } }
+                                Let(name=decodedRgba) { Call(target=decodeToRgbaBase64) { Var(name=bodyBytes) Lit(value="image/png") } }
+                                Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar loaded.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=decodedRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
+                              }
+                              Block { Lit(value=0) }
+                            }
+                          }
+                        }
+                      }
+                      Block { Lit(value=0) }
+                    }
+                  }
+                }
+              }
             }
           }
         }
@@ -1599,7 +1824,22 @@ Program {
                     If {
                       Eq { Var(name=radarOpen) Lit(value=true) }
                       Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar closed.") Lit(value=false) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar preview unavailable on this runtime.") Lit(value=true) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                      Block {
+                        If {
+                          Eq { Var(name=netKind) Lit(value="") }
+                          Block {
+                            If {
+                              Eq { Var(name=radarImageRgba) Lit(value="") }
+                              Block {
+                                Let(name=radarMetaReqState) { Call(target=startRadarMetaRequest) { Lit(value=0) } }
+                                Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Loading radar...") Lit(value=true) Var(name=nextRadarTick) Lit(value="") Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="radar_meta") Var(name=radarMetaReqState) Lit(value=0) Var(name=debugLive) } }
+                              }
+                              Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Radar opened.") Lit(value=true) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                            }
+                          }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Please wait for the current request to finish.") Lit(value=true) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Var(name=netKind) Var(name=netStateNow) Var(name=netTicksNow) Var(name=debugLive) } } }
+                        }
+                      }
                     }
                   }
                 }
