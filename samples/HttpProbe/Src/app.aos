@@ -1,0 +1,258 @@
+Program {
+  Import(path="../../../.tools/std/core.aos")
+  Import(path="../../../src/AiVectra/src/lib.aos")
+  Import(path="../../../.tools/sys/http.aos")
+  Export(name=start)
+
+  Let(name=emptyNode) {
+    Fn(params=_) {
+      Block { Return { Map { } } }
+    }
+  }
+
+  Let(name=strLen) {
+    Fn(params=text) {
+      Block { Return { Call(target=textLen) { Var(name=text) } } }
+    }
+  }
+
+  Let(name=replaceSpaces) {
+    Fn(params=text) {
+      Block {
+        Let(name=pos) { Call(target=sys.str.find) { Var(name=text) Lit(value=" ") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=pos) Lit(value=0) }
+          Block { Return { Var(name=text) } }
+          Block {
+            Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
+            Let(name=suffixStart) { Add { Var(name=pos) Lit(value=1) } }
+            Let(name=suffix) {
+              Call(target=sys.str.substring) {
+                Var(name=text)
+                Var(name=suffixStart)
+                Call(target=sub) { Call(target=strLen) { Var(name=text) } Var(name=suffixStart) }
+              }
+            }
+            Return {
+              Call(target=replaceSpaces) {
+                StrConcat { Var(name=prefix) StrConcat { Lit(value="%20") Var(name=suffix) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=fetchGeoPath) {
+    Fn(params=query) {
+      Block {
+        Let(name=encoded) { Call(target=replaceSpaces) { Var(name=query) } }
+        Return {
+          StrConcat {
+            Lit(value="/v1/search?name=")
+            StrConcat { Var(name=encoded) Lit(value="&count=1&language=en&format=json") }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=startGeoRequest) {
+    Fn(params=query) {
+      Block {
+        Return {
+          Call(target=httpRequest) {
+            Lit(value="GET")
+            Lit(value="geocoding-api.open-meteo.com")
+            Lit(value=443)
+            Call(target=fetchGeoPath) { Var(name=query) }
+            Lit(value="User-Agent: AiVectraHttpProbe\\r\\nAccept: application/json\\r\\nConnection: close")
+            Lit(value="")
+            Lit(value=65536)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=probeState) {
+    Fn(params=query,statusLine,netKind,netState,netTicks,lastW,lastH) {
+      Block {
+        Let(name=s0) { Map { } }
+        Let(name=s1) { Call(target=mapSet) { Var(name=s0) Lit(value="query") Var(name=query) } }
+        Let(name=s2) { Call(target=mapSet) { Var(name=s1) Lit(value="statusLine") Var(name=statusLine) } }
+        Let(name=s3) { Call(target=mapSet) { Var(name=s2) Lit(value="netKind") Var(name=netKind) } }
+        Let(name=s4) { Call(target=mapSet) { Var(name=s3) Lit(value="netState") Var(name=netState) } }
+        Let(name=s5) { Call(target=mapSet) { Var(name=s4) Lit(value="netTicks") Var(name=netTicks) } }
+        Let(name=s6) { Call(target=mapSet) { Var(name=s5) Lit(value="lastW") Var(name=lastW) } }
+        Return { Call(target=mapSet) { Var(name=s6) Lit(value="lastH") Var(name=lastH) } }
+      }
+    }
+  }
+
+  Let(name=stateQuery) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="query") Lit(value="76103") } } } } }
+  Let(name=stateStatusLine) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="statusLine") Lit(value="Ready. Click Start.") } } } } }
+  Let(name=stateNetKind) { Fn(params=state) { Block { Return { Call(target=mapGetStringOr) { Var(name=state) Lit(value="netKind") Lit(value="") } } } } }
+  Let(name=stateNetState) { Fn(params=state) { Block { Return { Call(target=mapGetNodeOr) { Var(name=state) Lit(value="netState") Call(target=emptyNode) { Lit(value=0) } } } } } }
+  Let(name=stateNetTicks) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="netTicks") Lit(value=0) } } } } }
+  Let(name=stateLastW) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastW") Lit(value=640) } } } } }
+  Let(name=stateLastH) { Fn(params=state) { Block { Return { Call(target=mapGetIntOr) { Var(name=state) Lit(value="lastH") Lit(value=420) } } } } }
+
+  Let(name=bodyFromHttp) {
+    Fn(params=response) {
+      Block {
+        Let(name=sep) { Call(target=sys.str.find) { Var(name=response) Lit(value="\r\n\r\n") Lit(value=0) } }
+        If {
+          Call(target=intLt) { Var(name=sep) Lit(value=0) }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=bodyStart) { Add { Var(name=sep) Lit(value=4) } }
+            Return {
+              Call(target=sys.str.substring) {
+                Var(name=response)
+                Var(name=bodyStart)
+                Call(target=sub) { Call(target=strLen) { Var(name=response) } Var(name=bodyStart) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=appInit) {
+    Fn(params=args) {
+      Block {
+        Return { Call(target=probeState) { Lit(value="76103") Lit(value="Ready. Click Start.") Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Lit(value=640) Lit(value=420) } }
+      }
+    }
+  }
+
+  Let(name=appRender) {
+    Fn(params=handle,state) {
+      Block {
+        Let(name=query) { Call(target=stateQuery) { Var(name=state) } }
+        Let(name=statusLine) { Call(target=stateStatusLine) { Var(name=state) } }
+        Let(name=netKind) { Call(target=stateNetKind) { Var(name=state) } }
+        Let(name=lastW) { Call(target=stateLastW) { Var(name=state) } }
+        Let(name=lastH) { Call(target=stateLastH) { Var(name=state) } }
+        Let(name=wRaw) { Call(target=uiWidth) { Var(name=handle) } }
+        Let(name=hRaw) { Call(target=uiHeight) { Var(name=handle) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=wRaw) Var(name=lastW) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=hRaw) Var(name=lastH) Lit(value=420) } }
+        Call(target=frameBegin) { Var(name=handle) }
+        Call(target=frameRect) { Var(name=handle) Lit(value=0) Lit(value=0) Var(name=w) Var(name=h) Lit(value="#0b1220") }
+        Call(target=frameRect) { Var(name=handle) Lit(value=24) Lit(value=24) Add { Var(name=w) Lit(value=-48) } Add { Var(name=h) Lit(value=-48) } Lit(value="#132238") }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=48) Lit(value="HTTP Probe") Lit(value="#f8fafc") Lit(value=24) }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=84) StrConcat { Lit(value="Query: ") ToString { Var(name=query) } } Lit(value="#cbd5e1") Lit(value=16) }
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Lit(value=40) Lit(value=116) Lit(value=140) Lit(value=42)
+          If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="normal") } Block { Lit(value="disabled") } }
+          Lit(value="rect") Lit(value="") Lit(value="#1d4ed8") Lit(value="#2563eb") Lit(value="#1e40af") Lit(value="#1d4ed8") Lit(value="#475569")
+        }
+        Call(target=frameText) {
+          Var(name=handle) Lit(value=78) Lit(value=142)
+          If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="Start") } Block { Lit(value="Busy") } }
+          Lit(value="#eff6ff") Lit(value=16)
+        }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=196) Var(name=statusLine) Lit(value="#e2e8f0") Lit(value=16) }
+        Call(target=frameText) { Var(name=handle) Lit(value=40) Lit(value=230) StrConcat { Lit(value="Phase: ") Var(name=netKind) } Lit(value="#93c5fd") Lit(value=14) }
+        Call(target=framePresent) { Var(name=handle) }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=appUpdate) {
+    Fn(params=state,eventType,eventKey,eventText,eventX,eventY,windowWidthRaw,windowHeightRaw) {
+      Block {
+        Let(name=query) { Call(target=stateQuery) { Var(name=state) } }
+        Let(name=statusLine) { Call(target=stateStatusLine) { Var(name=state) } }
+        Let(name=netKind) { Call(target=stateNetKind) { Var(name=state) } }
+        Let(name=netState) { Call(target=stateNetState) { Var(name=state) } }
+        Let(name=netTicks) { Call(target=stateNetTicks) { Var(name=state) } }
+        Let(name=lastW) { Call(target=stateLastW) { Var(name=state) } }
+        Let(name=lastH) { Call(target=stateLastH) { Var(name=state) } }
+        Let(name=w) { Call(target=stabilizeSize) { Var(name=windowWidthRaw) Var(name=lastW) Lit(value=640) } }
+        Let(name=h) { Call(target=stabilizeSize) { Var(name=windowHeightRaw) Var(name=lastH) Lit(value=420) } }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="none") }
+          Block {
+            If {
+              Eq { Var(name=netKind) Lit(value="geo_start") }
+              Block {
+                Let(name=reqState) { Call(target=startGeoRequest) { Var(name=query) } }
+                Return { Call(target=probeState) { Var(name=query) Lit(value="Started request.") Lit(value="geo") Var(name=reqState) Lit(value=0) Var(name=w) Var(name=h) } }
+              }
+              Block {
+                If {
+                  Eq { Var(name=netKind) Lit(value="geo") }
+                  Block {
+                    Let(name=polled) { Call(target=httpRequestPoll) { Var(name=netState) } }
+                    If {
+                      Call(target=httpRequestDone) { Var(name=polled) }
+                      Block {
+                        Let(name=body) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=polled) } } }
+                        Return { Call(target=probeState) { Var(name=query) StrConcat { Lit(value="Done. body bytes=") StrConcat { ToString { Call(target=strLen) { Var(name=body) } } Lit(value="") } } Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=w) Var(name=h) } }
+                      }
+                      Block {
+                        If {
+                          Call(target=httpRequestFailed) { Var(name=polled) }
+                          Block { Return { Call(target=probeState) { Var(name=query) StrConcat { Lit(value="Failed: ") StrConcat { ToString { Call(target=httpRequestError) { Var(name=polled) } } Lit(value="") } } Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=w) Var(name=h) } } }
+                          Block { Return { Call(target=probeState) { Var(name=query) StrConcat { Lit(value="Polling... tick=") StrConcat { ToString { Add { Var(name=netTicks) Lit(value=1) } } Lit(value="") } } Lit(value="geo") Var(name=polled) Add { Var(name=netTicks) Lit(value=1) } Var(name=w) Var(name=h) } } }
+                        }
+                      }
+                    }
+                  }
+                  Block {
+                    If {
+                      Eq { Var(name=w) Var(name=lastW) }
+                      Block {
+                        If {
+                          Eq { Var(name=h) Var(name=lastH) }
+                          Block { Return { Var(name=state) } }
+                          Block { Lit(value=0) }
+                        }
+                      }
+                      Block { Lit(value=0) }
+                    }
+                  }
+                }
+              }
+            }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=eventType) Lit(value="click") }
+          Block {
+            Let(name=buttonHit) { Call(target=pointInRect) { Var(name=eventX) Var(name=eventY) Lit(value=40) Lit(value=116) Lit(value=140) Lit(value=42) } }
+            If {
+              Eq { Var(name=buttonHit) Lit(value=true) }
+              Block {
+                If {
+                  Eq { Var(name=netKind) Lit(value="") }
+                  Block { Return { Call(target=probeState) { Var(name=query) Lit(value="Queued request start...") Lit(value="geo_start") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=w) Var(name=h) } } }
+                  Block { Return { Call(target=probeState) { Var(name=query) Lit(value="Already busy.") Var(name=netKind) Var(name=netState) Var(name=netTicks) Var(name=w) Var(name=h) } } }
+                }
+              }
+              Block { Return { Call(target=probeState) { Var(name=query) Var(name=statusLine) Var(name=netKind) Var(name=netState) Var(name=netTicks) Var(name=w) Var(name=h) } } }
+            }
+          }
+          Block { Return { Call(target=probeState) { Var(name=query) Var(name=statusLine) Var(name=netKind) Var(name=netState) Var(name=netTicks) Var(name=w) Var(name=h) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Return { Call(target=appStart) { Var(name=args) Lit(value="AiVectra HTTP Probe") Lit(value=640) Lit(value=420) } }
+      }
+    }
+  }
+}
