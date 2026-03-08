@@ -1997,34 +1997,20 @@ Program {
   Let(name=debugEmitEvent) {
     Fn(params=eventType,keyName,textValue,clickX,clickY) {
       Block {
-        Let(name=keyToken) { Call(target=debugInputToken) { Var(name=keyName) } }
-        Let(name=textToken) { Call(target=debugInputToken) { Var(name=textValue) } }
         Call(target=sys.stdout.writeLine) {
           StrConcat {
-            Lit(value="aivectra.event = { type=\"")
+            Lit(value="aivectra.event ")
             StrConcat {
               ToString { Var(name=eventType) }
               StrConcat {
-                Lit(value="\", key=\"")
+                Lit(value=" x=")
                 StrConcat {
-                  ToString { Var(name=keyToken) }
+                  ToString { Var(name=clickX) }
                   StrConcat {
-                    Lit(value="\", text=\"")
+                    Lit(value=" y=")
                     StrConcat {
-                      ToString { Var(name=textToken) }
-                      StrConcat {
-                        Lit(value="\", x=")
-                        StrConcat {
-                          ToString { Var(name=clickX) }
-                          StrConcat {
-                            Lit(value=", y=")
-                            StrConcat {
-                              ToString { Var(name=clickY) }
-                              Lit(value=" }")
-                            }
-                          }
-                        }
-                      }
+                      ToString { Var(name=clickY) }
+                      Lit(value="")
                     }
                   }
                 }
