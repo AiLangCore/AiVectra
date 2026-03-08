@@ -1002,7 +1002,6 @@ Program {
   Let(name=render) {
     Fn(params=handle,query,focused,dropdownOpen,geoBody,selectedLabel,forecastBody,statusLine,radarOpen,radarTick,radarImageRgba,netKind,w,h,submitFlash,caretVisible) {
       Block {
-        Let(name=defs) { Call(target=weatherSceneDefs) { Lit(value=0) } }
         Let(name=radarX) { Add { Var(name=w) Lit(value=-178) } }
         Let(name=entryW) { Add { Var(name=radarX) Lit(value=-70) } }
         Let(name=submitX) { Add { Lit(value=52) Add { Var(name=entryW) Lit(value=-42) } } }
@@ -1079,28 +1078,22 @@ Program {
           If { Eq { Var(name=query) Lit(value="") } Block { Lit(value="#71839a") } Block { Lit(value="#f8fafc") } }
           Lit(value=18)
         }
-        Call(target=sceneUse) {
-          Var(name=handle)
-          Var(name=defs)
-          Lit(value="weather.button")
-          Lit(value="search_action")
-          Var(name=submitX)
-          Lit(value=100)
-          Call(target=buttonSymbolProps) {
-            Lit(value=36) Lit(value=36)
-            If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="normal") } Block { Lit(value="disabled") } }
-            Lit(value="")
-            Lit(value="#f8fafc")
-            Lit(value=16)
-            Lit(value=0)
-            Lit(value=0)
-            If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="search") } Block { Lit(value="dots") } }
-            If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="#dbeafe") } Block { Lit(value="#93c5fd") } }
-            Lit(value="#16314e")
-            Lit(value="#28547f")
-            Lit(value="#1f4265")
-            Lit(value="#24527b")
-            Lit(value="#425569")
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Var(name=submitX) Lit(value=100) Lit(value=36) Lit(value=36)
+          If { Eq { Var(name=netKind) Lit(value="") } Block { Lit(value="normal") } Block { Lit(value="disabled") } }
+          Lit(value="rect") Lit(value="")
+          Lit(value="#16314e") Lit(value="#28547f") Lit(value="#1f4265") Lit(value="#24527b") Lit(value="#425569")
+        }
+        If {
+          Eq { Var(name=netKind) Lit(value="") }
+          Block {
+            Call(target=frameEllipse) { Var(name=handle) Add { Var(name=submitX) Lit(value=9) } Lit(value=108) Lit(value=12) Lit(value=12) Lit(value="#dbeafe") }
+            Call(target=frameLine) { Var(name=handle) Add { Var(name=submitX) Lit(value=20) } Lit(value=119) Add { Var(name=submitX) Lit(value=27) } Lit(value=126) Lit(value="#dbeafe") Lit(value=2) }
+          }
+          Block {
+            Call(target=frameEllipse) { Var(name=handle) Add { Var(name=submitX) Lit(value=8) } Lit(value=112) Lit(value=6) Lit(value=6) Lit(value="#93c5fd") }
+            Call(target=frameEllipse) { Var(name=handle) Add { Var(name=submitX) Lit(value=16) } Lit(value=112) Lit(value=6) Lit(value=6) Lit(value="#93c5fd") }
+            Call(target=frameEllipse) { Var(name=handle) Add { Var(name=submitX) Lit(value=24) } Lit(value=112) Lit(value=6) Lit(value=6) Lit(value="#93c5fd") }
           }
         }
         If {
@@ -1123,29 +1116,19 @@ Program {
           Block { Lit(value=0) }
         }
 
-        Call(target=sceneUse) {
+        Call(target=interactiveVectorState) {
+          Var(name=handle) Var(name=radarX) Lit(value=46) Lit(value=126) Lit(value=34)
+          If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
+          Lit(value="rect") Lit(value="")
+          Lit(value="#13283f") Lit(value="#27496b") Lit(value="#1b3754") Lit(value="#10253a") Lit(value="#223244")
+        }
+        Call(target=frameText) {
           Var(name=handle)
-          Var(name=defs)
-          Lit(value="weather.button")
-          Lit(value="radar_toggle")
-          Var(name=radarX)
-          Lit(value=46)
-          Call(target=buttonSymbolProps) {
-            Lit(value=126) Lit(value=34)
-            If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="pressed") } Block { Lit(value="normal") } }
-            If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="Hide Radar") } Block { Lit(value="Open Radar") } }
-            Lit(value="#dbeafe")
-            Lit(value=14)
-            Lit(value=16)
-            Lit(value=21)
-            Lit(value="")
-            Lit(value="#dbeafe")
-            Lit(value="#13283f")
-            Lit(value="#27496b")
-            Lit(value="#1b3754")
-            Lit(value="#10253a")
-            Lit(value="#223244")
-          }
+          Add { Var(name=radarX) Lit(value=16) }
+          Lit(value=67)
+          If { Eq { Var(name=radarOpen) Lit(value=true) } Block { Lit(value="Hide Radar") } Block { Lit(value="Open Radar") } }
+          Lit(value="#dbeafe")
+          Lit(value=14)
         }
 
         If {
