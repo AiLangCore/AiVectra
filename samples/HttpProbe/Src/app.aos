@@ -16,12 +16,18 @@ Program {
     }
   }
 
+  Let(name=findNotFound) {
+    Fn(params=index) {
+      Block { Return { Eq { Var(name=index) Lit(value=-1) } } }
+    }
+  }
+
   Let(name=replaceSpaces) {
     Fn(params=text) {
       Block {
         Let(name=pos) { Call(target=sys.str.find) { Var(name=text) Lit(value=" ") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=pos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=pos) }
           Block { Return { Var(name=text) } }
           Block {
             Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
@@ -104,7 +110,7 @@ Program {
       Block {
         Let(name=sep) { Call(target=sys.str.find) { Var(name=response) Lit(value="\r\n\r\n") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=sep) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=sep) }
           Block { Return { Lit(value="") } }
           Block {
             Let(name=bodyStart) { Add { Var(name=sep) Lit(value=4) } }

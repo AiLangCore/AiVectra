@@ -19,9 +19,22 @@ Program {
     }
   }
 
+  Let(name=findNotFound) {
+    Fn(params=index) {
+      Block { Return { Eq { Var(name=index) Lit(value=-1) } } }
+    }
+  }
+
   Let(name=contains) {
     Fn(params=text,pattern) {
-      Block { Return { Call(target=intGte) { Call(target=findFrom) { Var(name=text) Var(name=pattern) Lit(value=0) } Lit(value=0) } } }
+      Block {
+        Let(name=found) { Call(target=findFrom) { Var(name=text) Var(name=pattern) Lit(value=0) } }
+        If {
+          Call(target=findNotFound) { Var(name=found) }
+          Block { Return { Lit(value=false) } }
+          Block { Return { Lit(value=true) } }
+        }
+      }
     }
   }
 
@@ -29,17 +42,17 @@ Program {
     Fn(params=a,b,fallback) {
       Block {
         If {
-          Call(target=intLt) { Var(name=a) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=a) }
           Block {
             If {
-              Call(target=intLt) { Var(name=b) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=b) }
               Block { Return { Var(name=fallback) } }
               Block { Return { Var(name=b) } }
             }
           }
           Block {
             If {
-              Call(target=intLt) { Var(name=b) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=b) }
               Block { Return { Var(name=a) } }
               Block {
                 If {
@@ -60,7 +73,7 @@ Program {
       Block {
         Let(name=sep) { Call(target=findFrom) { Var(name=response) Lit(value="\r\n\r\n") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=sep) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=sep) }
           Block { Return { Lit(value="") } }
           Block {
             Let(name=bodyStart) { Add { Var(name=sep) Lit(value=4) } }
@@ -82,7 +95,7 @@ Program {
       Block {
         Let(name=pos) { Call(target=findFrom) { Var(name=text) Lit(value=" ") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=pos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=pos) }
           Block { Return { Var(name=text) } }
           Block {
             Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
@@ -114,7 +127,7 @@ Program {
           Block {
             Let(name=found) { Call(target=findFrom) { Var(name=text) Var(name=token) Var(name=start) } }
             If {
-              Call(target=intLt) { Var(name=found) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=found) }
               Block { Return { Lit(value=-1) } }
               Block {
                 If {
@@ -144,13 +157,13 @@ Program {
       Block {
         Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
         If {
-          Call(target=intLt) { Var(name=pos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=pos) }
           Block { Return { Lit(value="") } }
           Block {
             Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
             Let(name=valueEnd) { Call(target=findFrom) { Var(name=text) Lit(value="\"") Var(name=valueStart) } }
             If {
-              Call(target=intLt) { Var(name=valueEnd) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=valueEnd) }
               Block { Return { Lit(value="") } }
               Block {
                 Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=valueEnd) Var(name=valueStart) } } }
@@ -167,7 +180,7 @@ Program {
       Block {
         Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
         If {
-          Call(target=intLt) { Var(name=pos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=pos) }
           Block { Return { Lit(value="") } }
           Block {
             Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
@@ -223,7 +236,7 @@ Program {
           Block {
             Let(name=commaPos) { Call(target=findFrom) { Var(name=listText) Lit(value=",") Lit(value=0) } }
             If {
-              Call(target=intLt) { Var(name=commaPos) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=commaPos) }
               Block { Return { Var(name=listText) } }
               Block { Return { Call(target=sys.str.substring) { Var(name=listText) Lit(value=0) Var(name=commaPos) } } }
             }
@@ -231,7 +244,7 @@ Program {
           Block {
             Let(name=commaPos) { Call(target=findFrom) { Var(name=listText) Lit(value=",") Lit(value=0) } }
             If {
-              Call(target=intLt) { Var(name=commaPos) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=commaPos) }
               Block { Return { Lit(value="") } }
               Block {
                 Let(name=nextStart) { Add { Var(name=commaPos) Lit(value=1) } }
@@ -277,13 +290,13 @@ Program {
       Block {
         Let(name=keyPos) { Call(target=findFrom) { Var(name=json) Var(name=key) Var(name=start) } }
         If {
-          Call(target=intLt) { Var(name=keyPos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=keyPos) }
           Block { Return { Lit(value="") } }
           Block {
             Let(name=listStart) { Add { Var(name=keyPos) Call(target=strLen) { Var(name=key) } } }
             Let(name=listEnd) { Call(target=findFrom) { Var(name=json) Lit(value="]") Var(name=listStart) } }
             If {
-              Call(target=intLt) { Var(name=listEnd) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=listEnd) }
               Block { Return { Lit(value="") } }
               Block { Return { Call(target=sys.str.substring) { Var(name=json) Var(name=listStart) Call(target=sub) { Var(name=listEnd) Var(name=listStart) } } } }
             }
@@ -469,7 +482,7 @@ Program {
       Block {
         Let(name=pastStart) { Call(target=findFrom) { Var(name=metaBody) Lit(value="\"past\":[") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=pastStart) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=pastStart) }
           Block { Return { Lit(value="") } }
           Block {
             Return {
@@ -587,7 +600,7 @@ Program {
           Block {
             Let(name=breakPos) { Call(target=findFrom) { Var(name=summary) Lit(value="\n") Lit(value=0) } }
             If {
-              Call(target=intLt) { Var(name=breakPos) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=breakPos) }
               Block { Return { Var(name=summary) } }
               Block { Return { Call(target=sys.str.substring) { Var(name=summary) Lit(value=0) Var(name=breakPos) } } }
             }
@@ -595,7 +608,7 @@ Program {
           Block {
             Let(name=breakPos) { Call(target=findFrom) { Var(name=summary) Lit(value="\n") Lit(value=0) } }
             If {
-              Call(target=intLt) { Var(name=breakPos) Lit(value=0) }
+              Call(target=findNotFound) { Var(name=breakPos) }
               Block { Return { Lit(value="") } }
               Block {
                 Let(name=nextStart) { Add { Var(name=breakPos) Lit(value=1) } }
@@ -620,7 +633,7 @@ Program {
       Block {
         Let(name=currentStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"current\":{") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=currentStart) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=currentStart) }
           Block { Return { Lit(value="Now: unavailable") } }
           Block {
             Let(name=temp) { Call(target=numberValueAt) { Var(name=forecastBody) Lit(value="\"temperature_2m\":") Var(name=currentStart) Lit(value=1) } }
@@ -642,7 +655,7 @@ Program {
       Block {
         Let(name=dailyStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"daily\":{") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=dailyStart) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=dailyStart) }
           Block { Return { Lit(value="--") } }
           Block {
             Let(name=maxList) { Call(target=arrayListForKey) { Var(name=forecastBody) Lit(value="\"temperature_2m_max\":[") Var(name=dailyStart) } }
@@ -749,7 +762,7 @@ Program {
       Block {
         Let(name=dailyStart) { Call(target=findFrom) { Var(name=forecastBody) Lit(value="\"daily\":{") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=dailyStart) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=dailyStart) }
           Block { Return { Call(target=forecastDayLabel) { Var(name=dayIndex) } } }
           Block {
             Let(name=timeList) { Call(target=arrayListForKey) { Var(name=forecastBody) Lit(value="\"time\":[") Var(name=dailyStart) } }
@@ -806,7 +819,7 @@ Program {
         Let(name=line) { Call(target=currentLineFromForecast) { Var(name=forecastBody) } }
         Let(name=endPos) { Call(target=findFrom) { Var(name=line) Lit(value=" C") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=endPos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=endPos) }
           Block { Return { Lit(value="--") } }
           Block {
             Return {
@@ -831,7 +844,7 @@ Program {
         Let(name=line) { Call(target=currentLineFromForecast) { Var(name=forecastBody) } }
         Let(name=startPos) { Call(target=findFrom) { Var(name=line) Lit(value=" C  ") Lit(value=0) } }
         If {
-          Call(target=intLt) { Var(name=startPos) Lit(value=0) }
+          Call(target=findNotFound) { Var(name=startPos) }
           Block { Return { Lit(value="Weather unavailable") } }
           Block {
             Let(name=textStart) { Add { Var(name=startPos) Lit(value=4) } }
