@@ -12,19 +12,24 @@ It does not define host/runtime implementation details.
 ## Commands
 `aivectra` supports:
 - `run <app-or-project> [app-args...]`
-- `debug [debug-options] [app-or-project] [-- app-args...]`
+- `debug run [debug-options] [app-or-project] [-- app-args...]`
+- `debug trace run [debug-options] [app-or-project] [-- app-args...]`
+- `debug capture run [debug-options] [app-or-project] [-- app-args...]`
 - `debug scenario <fixture.toml> [--name <scenario>]`
 - `input --window "<title>" --events "<tokens>" [--delay-ms N] [--dry-run]`
 - `icon <project-path> [label]`
 
 ## Debug Grammar
 Accepted forms:
-- `aivectra debug --debug-mode <live|snapshot|replay|scene> <target> [-- app-args...]`
-- `aivectra debug --debug-mode=<live|snapshot|replay|scene> <target> [-- app-args...]`
+- `aivectra debug run --debug-mode <live|snapshot|replay|scene> <target> [-- app-args...]`
+- `aivectra debug run --debug-mode=<live|snapshot|replay|scene> <target> [-- app-args...]`
+- `aivectra debug trace run <target> [-- app-args...]`
+- `aivectra debug capture run <target> [--out <dir>] [-- app-args...]`
 - `aivectra debug scenario <fixture.toml> [--name <scenario>]`
 
 Legacy compatibility form remains valid:
 - `aivectra debug <live|snapshot|replay|scene> <target> [app-args...]`
+- `aivectra debug [debug-options] <target> [-- app-args...]`
 
 `--` is the required forwarding boundary for app arguments in canonical form.
 

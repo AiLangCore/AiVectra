@@ -260,6 +260,8 @@ Wrapper/CLI:
 - Debug tooling (TOML artifacts; no sample instrumentation):
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
   - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/hello-world`
+  - `./tools/airun debug trace run ./samples/HttpProbe/Src/app.aos --no-cache`
+  - `./tools/airun debug capture run ./samples/HttpProbe/Src/app.aos --no-cache --out .artifacts/debug/native-capture`
   - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
   - `./scripts/test-debug-ci-parity.sh`
   - Debug APIs in the SDK/CLI are generic only; sample-specific debug formats must stay out of `src/AiVectra`.
@@ -284,6 +286,7 @@ Agent debug workflow:
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
 - Run app with artifact capture:
   - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/my-run`
+  - `./scripts/aivectra debug capture run ./samples/HttpProbe/Src/app.aos --out ./.artifacts/debug/native-capture`
 
 CLI behavior contract:
 - See `SPEC/CLI.md` for normative command grammar, forwarding, cwd inference, and exit semantics.

@@ -607,11 +607,14 @@ normalize_debug_artifacts_to_toml() {
 }
 
 run_airun_debug_with_toml_artifacts() {
-  local app_path="$1"
+  local debug_action="$1"
+  local app_path="$2"
+  shift
   shift
   local out_dir=""
   local wrapper_args=()
   local app_args=()
+  local has_log_level="false"
   local parsing_app_args="false"
   while [[ $# -gt 0 ]]; do
     if [[ "$parsing_app_args" == "true" ]]; then
@@ -633,6 +636,20 @@ run_airun_debug_with_toml_artifacts() {
         wrapper_args+=("$1" "$out_dir")
         shift 2
         ;;
+      --log-level)
+        if [[ $# -lt 2 ]]; then
+          echo "missing value for --log-level" >&2
+          exit 2
+        fi
+        has_log_level="true"
+        wrapper_args+=("$1" "$2")
+        shift 2
+        ;;
+      --log-level=*)
+        has_log_level="true"
+        wrapper_args+=("$1")
+        shift
+        ;;
       *)
         wrapper_args+=("$1")
         shift
@@ -640,8 +657,18 @@ run_airun_debug_with_toml_artifacts() {
     esac
   done
   if [[ -z "$out_dir" ]]; then
-    out_dir="$ROOT_DIR/.artifacts/debug/$(basename "$app_path" .aos)-$(date +%s)"
+    if [[ "$debug_action" == "capture" ]]; then
+      out_dir="$ROOT_DIR/.artifacts/debug/native-capture"
+    else
+      out_dir="$ROOT_DIR/.artifacts/debug/$(basename "$app_path" .aos)-$(date +%s)"
+    fi
     wrapper_args+=("--out" "$out_dir")
+  fi
+
+  if [[ "$debug_action" == "trace" || "$debug_action" == "capture" ]]; then
+    if [[ "$has_log_level" != "true" ]]; then
+      wrapper_args+=("--log-level" "trace")
+    fi
   fi
 
   local debug_mode="off"
@@ -670,7 +697,11 @@ run_airun_debug_with_toml_artifacts() {
 
   native_runtime_guard "$app_path"
   ensure_dir "$out_dir"
-  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
+  if [[ "$debug_action" == "trace" || "$debug_action" == "capture" ]]; then
+    "$AIRUN_BIN" debug "$debug_action" run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
+  else
+    "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
+  fi
   normalize_debug_artifacts_to_toml "$out_dir"
 }
 
@@ -1137,7 +1168,9 @@ usage:
   ./scripts/aivectra targets add [project-path] --targets <expr>
   ./scripts/aivectra doctor
   ./scripts/aivectra test
-  ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra debug run [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra debug trace run [debug-flags] [app|project-dir] [-- app-args...]
+  ./scripts/aivectra debug capture run [debug-flags] [app|project-dir] [-- app-args...]
   ./scripts/aivectra screenshot <app|project-dir> [--out <path>] [--format svg|png|both] [--frame-id N] [--timeout-ms N] [-- app-args...]
   ./scripts/aivectra publish <app|project-dir|.aibc1> [airun publish flags]
   ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
@@ -1155,8 +1188,10 @@ example:
   ./scripts/aivectra targets add ./samples/MyApp --targets +wasm-fullstack
   ./scripts/aivectra run ./samples/HelloWorld/
   ./scripts/aivectra screenshot ./samples/InteractiveSvgMvp/ --out /tmp/interactive-shot --format both
-  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/Src/app.aos -- todd
-  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/cwd -- todd
+  ./scripts/aivectra debug run --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/Src/app.aos -- todd
+  ./scripts/aivectra debug trace run ./samples/HttpProbe/Src/app.aos --no-cache
+  ./scripts/aivectra debug capture run ./samples/HelloName/Src/app.aos --out ./.artifacts/debug/native-capture
+  ./scripts/aivectra debug run --debug-mode live --out ./.artifacts/debug/cwd -- todd
   ./scripts/aivectra debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal
   AIVECTRA_MAC_REQUIRE_ICON=1 ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
   AIVECTRA_MAC_SIGN_IDENTITY="Developer ID Application: YOUR TEAM" ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
@@ -1705,7 +1740,7 @@ EOF
   echo "targets: apple-macos=$T_APPLE_MAC windows=$T_WINDOWS linux=$T_LINUX wasm-spa=$T_WASM_SPA wasm-fullstack=$T_WASM_FULLSTACK"
   echo "next:"
   echo "  ./scripts/aivectra run $APP_DIR/"
-  echo "  ./scripts/aivectra debug $APP_DIR/Src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
+  echo "  ./scripts/aivectra debug run $APP_DIR/Src/app.aos --out $APP_DIR/.artifacts/debug/first-run"
   exit 0
 fi
 
@@ -1845,7 +1880,14 @@ fi
 
 if [[ "${1:-}" == "debug" ]]; then
   shift
-  if [[ "${1:-}" == "run" ]]; then
+  DEBUG_ACTION="run"
+  if [[ "${1:-}" == "trace" || "${1:-}" == "capture" ]]; then
+    DEBUG_ACTION="$1"
+    shift
+    if [[ "${1:-}" == "run" ]]; then
+      shift
+    fi
+  elif [[ "${1:-}" == "run" ]]; then
     shift
   fi
 
@@ -1931,7 +1973,7 @@ if [[ "${1:-}" == "debug" ]]; then
   fi
 
   set +u
-  run_airun_debug_with_toml_artifacts "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
+  run_airun_debug_with_toml_artifacts "$DEBUG_ACTION" "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
   RC=$?
   set -u
   exit $RC
@@ -1949,7 +1991,7 @@ if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
   fi
   APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/samples/HelloName/Src/app.aos}")"
   shift || true
-  run_airun_debug_with_toml_artifacts "$APP_PATH" -- "$@"
+  run_airun_debug_with_toml_artifacts "run" "$APP_PATH" -- "$@"
   exit $?
 fi
 
