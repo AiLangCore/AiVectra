@@ -230,22 +230,21 @@ Run the named greeting example:
 
 `HelloName` uses GUI text entry from key events and a clickable `Submit` button to switch to the greeting view.
 
-Wrapper/CLI:
+Compiled CLI boundary:
 
-- `./scripts/aivectra` is a thin wrapper over `airun` (no project-specific default).
-- Override runtime location with env or flag:
-  - `AIRUN_BIN=/path/to/airun ./scripts/aivectra`
-  - `./scripts/aivectra --airun /path/to/airun`
-- Example:
-  - `./scripts/aivectra doctor`
-  - `./scripts/aivectra test`
-  - `./scripts/aivectra init MyApp`
-  - `./scripts/aivectra run ./samples/HelloWorld/`
-  - `./scripts/aivectra run ./samples/InteractiveSvgMvp/`
-  - `./scripts/aivectra icon ./samples/HelloWorld/`
-  - `./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"`
+- Default to the compiled AiVectra CLI project at:
+  - `./src/AiVectra.Cli/app.aibc1`
+- Preferred execution chain:
+  - `AiLang -> compiled AiVectra -> airun -> compiled app`
+- Use project-level invocation through the compiled CLI for normal app debugging and validation.
+- Reserve `./scripts/aivectra` for toolchain development, CLI development, and wrapper-specific debugging.
+
+Examples:
+  - `airun run ./src/AiVectra.Cli/`
+  - `airun run ./src/AiVectra.Cli/ debug snapshot`
+  - `airun run ./src/AiVectra.Cli/ debug replay`
 - Tool-side input injection (no sample/app instrumentation required):
-  - `./scripts/aivectra input --window "<title-substring>" --events "<tokens>"`
+  - use the compiled/debug runtime path first; wrapper input is for tool testing and wrapper development
   - tokens are semicolon-delimited:
     - `text:<value>`
     - `key:<name>` (`enter`, `backspace`, `left`, `right`, `cmd+w`, etc.)
@@ -259,9 +258,9 @@ Wrapper/CLI:
     - `--dry-run`
 - Debug tooling (TOML artifacts; no sample instrumentation):
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
-  - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/hello-world`
-  - `./tools/airun debug trace run ./samples/HttpProbe/Src/app.aos --no-cache`
-  - `./tools/airun debug capture run ./samples/HttpProbe/Src/app.aos --no-cache --out .artifacts/debug/native-capture`
+  - `./tools/airun debug run ./src/AiVectra.Cli/app.aibc1 -- debug snapshot --out .artifacts/debug/hello-world`
+  - `./tools/airun debug trace run ./src/AiVectra.Cli/app.aibc1 -- run ./samples/HttpProbe/ events --no-cache`
+  - `./tools/airun debug capture run ./src/AiVectra.Cli/app.aibc1 -- run ./samples/HttpProbe/ events --no-cache --out .artifacts/debug/native-capture`
   - `./tools/airun debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
   - `./scripts/test-debug-ci-parity.sh`
   - Debug APIs in the SDK/CLI are generic only; sample-specific debug formats must stay out of `src/AiVectra`.
@@ -285,8 +284,8 @@ Agent debug workflow:
 - Bootstrap fixtures from clean checkout:
   - `./scripts/bootstrap-golden-publish-fixtures.sh`
 - Run app with artifact capture:
-  - `./tools/airun debug run ./examples/debug/apps/debug_minimal.aos --out .artifacts/debug/my-run`
-  - `./scripts/aivectra debug capture run ./samples/HttpProbe/Src/app.aos --out ./.artifacts/debug/native-capture`
+  - `./tools/airun debug run ./src/AiVectra.Cli/app.aibc1 -- debug snapshot --out .artifacts/debug/my-run`
+  - `./tools/airun debug capture run ./src/AiVectra.Cli/app.aibc1 -- run ./samples/HttpProbe/ events --out ./.artifacts/debug/native-capture`
 
 CLI behavior contract:
 - See `SPEC/CLI.md` for normative command grammar, forwarding, cwd inference, and exit semantics.
@@ -313,10 +312,8 @@ Run the library project directly (sanity check):
 `airun run ./src/AiVectra/src/lib.aos`
 
 Native runtime note:
-- `./scripts/aivectra` checks runtime capabilities from `airun --help`.
-- When runtime requires prebuilt bytecode, wrapper emits:
-  - `Err#err1(code=AIV001 ... )`
-- When runtime supports source/project targets, wrapper runs `.aos`/project inputs directly.
+- Prefer compiled project artifacts and the compiled `AiVectra.Cli` path for normal execution.
+- Drop to raw source or wrapper execution only when debugging the toolchain boundary itself.
 
 Windowed hello world baseline:
 

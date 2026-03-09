@@ -273,6 +273,22 @@ Sample apps may call debug APIs, but must not define custom debug output formats
 
 Do not add sample-specific debug emitters or sample-specific debug schema to `src/AiVectra`.
 
+Default execution boundary:
+
+• Use the compiled `AiVectra.Cli` project as the default tool boundary
+• Use project-level invocation, not single-file execution, for normal app run/debug/test flows
+• Use compiled app artifacts by default when the runtime/toolchain supports them
+• The default chain is: AiLang -> compiled AiVectra -> AiRun -> compiled app
+
+Direct `airun` or single-file `.aos` execution is allowed only when:
+
+• Compiling AiVectra itself
+• Debugging AiVectra tooling or CLI behavior
+• Isolating a lower-layer AiLang/AiVM failure after the compiled AiVectra path fails
+• Testing the debug tooling itself
+
+Do not default to `scripts/aivectra` or raw sample-file execution for normal application debugging when the compiled AiVectra tool path is available.
+
 ⸻
 
 	10.	UI-Related Syscalls

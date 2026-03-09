@@ -93,26 +93,41 @@ Program {
   Let(name=replaceSpaces) {
     Fn(params=text) {
       Block {
-        Let(name=pos) { Call(target=findFrom) { Var(name=text) Lit(value=" ") Lit(value=0) } }
+        Return { Call(target=replaceSpacesAt) { Var(name=text) Lit(value=0) Lit(value="") } }
+      }
+    }
+  }
+
+  Let(name=replaceSpacesAt) {
+    Fn(params=text,index,acc) {
+      Block {
         If {
-          Call(target=findNotFound) { Var(name=pos) }
-          Block { Return { Var(name=text) } }
+          Call(target=intLt) { Var(name=index) Call(target=strLen) { Var(name=text) } }
           Block {
-            Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
-            Let(name=suffixStart) { Add { Var(name=pos) Lit(value=1) } }
-            Let(name=suffix) {
-              Call(target=sys.str.substring) {
-                Var(name=text)
-                Var(name=suffixStart)
-                Call(target=sub) { Call(target=strLen) { Var(name=text) } Var(name=suffixStart) }
+            Let(name=ch) { Call(target=sys.str.substring) { Var(name=text) Var(name=index) Lit(value=1) } }
+            If {
+              Eq { Var(name=ch) Lit(value=" ") }
+              Block {
+                Return {
+                  Call(target=replaceSpacesAt) {
+                    Var(name=text)
+                    Add { Var(name=index) Lit(value=1) }
+                    StrConcat { Var(name=acc) Lit(value="%20") }
+                  }
+                }
               }
-            }
-            Return {
-              Call(target=replaceSpaces) {
-                StrConcat { Var(name=prefix) StrConcat { Lit(value="%20") Var(name=suffix) } }
+              Block {
+                Return {
+                  Call(target=replaceSpacesAt) {
+                    Var(name=text)
+                    Add { Var(name=index) Lit(value=1) }
+                    StrConcat { Var(name=acc) Var(name=ch) }
+                  }
+                }
               }
             }
           }
+          Block { Return { Var(name=acc) } }
         }
       }
     }
@@ -155,18 +170,24 @@ Program {
   Let(name=quotedValueAt) {
     Fn(params=text,token,start,n) {
       Block {
-        Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
         If {
-          Call(target=findNotFound) { Var(name=pos) }
+          Call(target=intLt) { Call(target=strLen) { Var(name=text) } Lit(value=1) }
           Block { Return { Lit(value="") } }
           Block {
-            Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
-            Let(name=valueEnd) { Call(target=findFrom) { Var(name=text) Lit(value="\"") Var(name=valueStart) } }
+            Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
             If {
-              Call(target=findNotFound) { Var(name=valueEnd) }
+              Call(target=findNotFound) { Var(name=pos) }
               Block { Return { Lit(value="") } }
               Block {
-                Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=valueEnd) Var(name=valueStart) } } }
+                Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
+                Let(name=valueEnd) { Call(target=findFrom) { Var(name=text) Lit(value="\"") Var(name=valueStart) } }
+                If {
+                  Call(target=findNotFound) { Var(name=valueEnd) }
+                  Block { Return { Lit(value="") } }
+                  Block {
+                    Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=valueEnd) Var(name=valueStart) } } }
+                  }
+                }
               }
             }
           }
@@ -178,18 +199,24 @@ Program {
   Let(name=numberValueAt) {
     Fn(params=text,token,start,n) {
       Block {
-        Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
         If {
-          Call(target=findNotFound) { Var(name=pos) }
+          Call(target=intLt) { Call(target=strLen) { Var(name=text) } Lit(value=1) }
           Block { Return { Lit(value="") } }
           Block {
-            Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
-            Let(name=commaPos) { Call(target=findFrom) { Var(name=text) Lit(value=",") Var(name=valueStart) } }
-            Let(name=bracePos) { Call(target=findFrom) { Var(name=text) Lit(value="}") Var(name=valueStart) } }
-            Let(name=bracketPos) { Call(target=findFrom) { Var(name=text) Lit(value="]") Var(name=valueStart) } }
-            Let(name=end1) { Call(target=minPositive) { Var(name=commaPos) Var(name=bracePos) Call(target=strLen) { Var(name=text) } } }
-            Let(name=end2) { Call(target=minPositive) { Var(name=end1) Var(name=bracketPos) Call(target=strLen) { Var(name=text) } } }
-            Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=end2) Var(name=valueStart) } } }
+            Let(name=pos) { Call(target=nthPos) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
+            If {
+              Call(target=findNotFound) { Var(name=pos) }
+              Block { Return { Lit(value="") } }
+              Block {
+                Let(name=valueStart) { Add { Var(name=pos) Call(target=strLen) { Var(name=token) } } }
+                Let(name=commaPos) { Call(target=findFrom) { Var(name=text) Lit(value=",") Var(name=valueStart) } }
+                Let(name=bracePos) { Call(target=findFrom) { Var(name=text) Lit(value="}") Var(name=valueStart) } }
+                Let(name=bracketPos) { Call(target=findFrom) { Var(name=text) Lit(value="]") Var(name=valueStart) } }
+                Let(name=end1) { Call(target=minPositive) { Var(name=commaPos) Var(name=bracePos) Call(target=strLen) { Var(name=text) } } }
+                Let(name=end2) { Call(target=minPositive) { Var(name=end1) Var(name=bracketPos) Call(target=strLen) { Var(name=text) } } }
+                Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=end2) Var(name=valueStart) } } }
+              }
+            }
           }
         }
       }
@@ -1018,25 +1045,31 @@ Program {
         Let(name=radarX) { Add { Var(name=w) Lit(value=-178) } }
         Let(name=entryW) { Add { Var(name=radarX) Lit(value=-70) } }
         Let(name=submitX) { Add { Lit(value=52) Add { Var(name=entryW) Lit(value=-42) } } }
-        Let(name=count1) {
-          If {
-            Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="") }
-            Block { Lit(value=0) }
-            Block { Lit(value=1) }
-          }
-        }
-        Let(name=count2) {
-          If {
-            Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="") }
-            Block { Var(name=count1) }
-            Block { Add { Var(name=count1) Lit(value=1) } }
-          }
-        }
         Let(name=dropdownCount) {
           If {
-            Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="") }
-            Block { Var(name=count2) }
-            Block { Add { Var(name=count2) Lit(value=1) } }
+            Call(target=intLt) { Call(target=strLen) { Var(name=geoBody) } Lit(value=1) }
+            Block { Lit(value=0) }
+            Block {
+              Let(name=count1) {
+                If {
+                  Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="") }
+                  Block { Lit(value=0) }
+                  Block { Lit(value=1) }
+                }
+              }
+              Let(name=count2) {
+                If {
+                  Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=2) } Lit(value="") }
+                  Block { Var(name=count1) }
+                  Block { Add { Var(name=count1) Lit(value=1) } }
+                }
+              }
+              If {
+                Eq { Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=3) } Lit(value="") }
+                Block { Var(name=count2) }
+                Block { Add { Var(name=count2) Lit(value=1) } }
+              }
+            }
           }
         }
 

@@ -25,26 +25,41 @@ Program {
   Let(name=replaceSpaces) {
     Fn(params=text) {
       Block {
-        Let(name=pos) { Call(target=sys.str.find) { Var(name=text) Lit(value=" ") Lit(value=0) } }
+        Return { Call(target=replaceSpacesAt) { Var(name=text) Lit(value=0) Lit(value="") } }
+      }
+    }
+  }
+
+  Let(name=replaceSpacesAt) {
+    Fn(params=text,index,acc) {
+      Block {
         If {
-          Call(target=findNotFound) { Var(name=pos) }
-          Block { Return { Var(name=text) } }
+          Call(target=intLt) { Var(name=index) Call(target=strLen) { Var(name=text) } }
           Block {
-            Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
-            Let(name=suffixStart) { Add { Var(name=pos) Lit(value=1) } }
-            Let(name=suffix) {
-              Call(target=sys.str.substring) {
-                Var(name=text)
-                Var(name=suffixStart)
-                Call(target=sub) { Call(target=strLen) { Var(name=text) } Var(name=suffixStart) }
+            Let(name=ch) { Call(target=sys.str.substring) { Var(name=text) Var(name=index) Lit(value=1) } }
+            If {
+              Eq { Var(name=ch) Lit(value=" ") }
+              Block {
+                Return {
+                  Call(target=replaceSpacesAt) {
+                    Var(name=text)
+                    Add { Var(name=index) Lit(value=1) }
+                    StrConcat { Var(name=acc) Lit(value="%20") }
+                  }
+                }
               }
-            }
-            Return {
-              Call(target=replaceSpaces) {
-                StrConcat { Var(name=prefix) StrConcat { Lit(value="%20") Var(name=suffix) } }
+              Block {
+                Return {
+                  Call(target=replaceSpacesAt) {
+                    Var(name=text)
+                    Add { Var(name=index) Lit(value=1) }
+                    StrConcat { Var(name=acc) Var(name=ch) }
+                  }
+                }
               }
             }
           }
+          Block { Return { Var(name=acc) } }
         }
       }
     }
