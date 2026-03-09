@@ -238,6 +238,14 @@ Compiled CLI boundary:
   - `AiLang -> compiled AiVectra -> airun -> compiled app`
 - Use project-level invocation through the compiled CLI for normal app debugging and validation.
 - Reserve `./scripts/aivectra` for toolchain development, CLI development, and wrapper-specific debugging.
+- Canonical grammar:
+  - `aivectra [command-args...] [subcommands] [subcommand-args...] ... [project-path] [--] [app-args...]`
+  - if `project-path` is omitted, the current directory project is used
+  - `--` is the explicit app-argument boundary and should be used whenever parsing could be ambiguous
+- Canonical option forms:
+  - `--full-name`
+  - `-f`
+  - `/flag` is not canonical AiVectra CLI syntax; if a generated Windows app exposes slash options, that is target/app behavior, not the AiVectra CLI contract
 
 Examples:
   - `airun run ./src/AiVectra.Cli/`
