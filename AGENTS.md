@@ -251,6 +251,20 @@ Allowed debugging tools include:
 • State inspection
 • Focus debugging overlay
 
+Agents must use AiLang and AiVectra debugging tools exclusively for runtime diagnosis.
+
+External host tools may be used only to:
+
+• Validate the debugging tools themselves
+• Prove a specific debug-tool shortfall
+
+If a required debugging workflow cannot be completed with AiLang/AiVectra tooling:
+
+1. Stop relying on the external tool for normal diagnosis
+2. Report the missing debug capability to the owning layer
+3. Update the built-in debugging tools
+4. Resume diagnosis using those built-in tools
+
 Debug logic must not pollute sample apps.
 
 SDK/CLI debug APIs must be generic and app-agnostic.
