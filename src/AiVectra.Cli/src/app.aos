@@ -1,6 +1,37 @@
 Program {
   Export(name=start)
 
+  Let(name=airunBin) {
+    Fn(params=_) {
+      Block {
+        Let(name=envBin) { Call(target=sys.process.env.get) { Lit(value="AIRUN_BIN") } }
+        If {
+          Eq { Var(name=envBin) Lit(value="") }
+          Block { Return { Lit(value="./.tools/airun") } }
+          Block { Return { Var(name=envBin) } }
+        }
+      }
+    }
+  }
+
+  Let(name=passThrough) {
+    Fn(params=args) {
+      Block {
+        Let(name=cwd) { Call(target=sys.process.cwd) }
+        Let(name=env) { Map { } }
+        Let(name=handle) {
+          Call(target=sys.process.spawn) {
+            Call(target=airunBin) { Lit(value=0) }
+            Var(name=args)
+            Var(name=cwd)
+            Var(name=env)
+          }
+        }
+        Return { Call(target=sys.process.wait) { Var(name=handle) } }
+      }
+    }
+  }
+
   Let(name=printHelp) {
     Fn(params=_) {
       Block {
@@ -163,6 +194,22 @@ Program {
           Block {
             Call(target=sys.stdout.writeLine) { Lit(value="usage: aivectra icon <project-path> [label]") }
             Return { Lit(value=0) }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=cmd1) Lit(value="run") }
+          Block {
+            Return { Call(target=passThrough) { Var(name=args) } }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=cmd1) Lit(value="debug") }
+          Block {
+            Return { Call(target=passThrough) { Var(name=args) } }
           }
           Block { Lit(value=0) }
         }
