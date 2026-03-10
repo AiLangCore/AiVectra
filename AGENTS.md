@@ -258,6 +258,17 @@ External host tools may be used only to:
 • Validate the debugging tools themselves
 • Prove a specific debug-tool shortfall
 
+Cross-agent mailbox rules:
+
+• The active runtime mailbox is `/tmp/codex/agent-bus/`
+• The persistent mirror is `/Users/toddhenderson/.codex/agent-bus/`
+• `/tmp/codex/agent-bus/` may disappear at any time and must be treated as volatile
+• On every mailbox write to `/tmp/codex/agent-bus/`, update the matching file under `/Users/toddhenderson/.codex/agent-bus/` when permissions allow
+• On startup, if both mailbox trees exist, prefer the newer file by modification time and copy it to the other location so both remain synchronized
+• If only one mailbox tree exists, use it as the source of truth and recreate the missing counterpart
+• If the persistent path is not writable, continue using `/tmp/codex/agent-bus/` and report degraded persistence sync
+• File names and directory structure must remain identical between the two mailbox trees
+
 If a required debugging workflow cannot be completed with AiLang/AiVectra tooling:
 
 1. Stop relying on the external tool for normal diagnosis
