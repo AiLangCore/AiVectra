@@ -90,6 +90,16 @@ Program {
     }
   }
 
+  Let(name=httpResponseBodyText) {
+    Fn(params=requestState) {
+      Block {
+        Let(name=responseBytes) { Call(target=httpRequestResponseBytes) { Var(name=requestState) } }
+        Let(name=bodyBytes) { Call(target=httpResponseBodyBytes) { Var(name=responseBytes) } }
+        Return { Call(target=sys.bytes.toUtf8String) { Var(name=bodyBytes) } }
+      }
+    }
+  }
+
   Let(name=replaceSpaces) {
     Fn(params=text) {
       Block {
@@ -1702,7 +1712,7 @@ Program {
                 If {
                   Call(target=httpRequestDone) { Var(name=netStateNow) }
                   Block {
-                    Let(name=geo) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
+                    Let(name=geo) { Call(target=httpResponseBodyText) { Var(name=netStateNow) } }
                     Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.response") ToString { Call(target=strLen) { Var(name=geo) } } ToString { Call(target=contains) { Var(name=geo) Lit(value="\"results\":") } } }
                     Let(name=label1) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=1) } }
                     Let(name=label2) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=2) } }
@@ -1712,13 +1722,14 @@ Program {
                       Block { Lit(value=0) }
                     }
                     If {
-                      Call(target=contains) { Var(name=geo) Lit(value="\"results\":") }
-                      Block { Lit(value=0) }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response (possible HTTP redirect).") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
-                    }
-                    If {
                       Eq { Var(name=label1) Lit(value="") }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                      Block {
+                        If {
+                          Call(target=contains) { Var(name=geo) Lit(value="\"results\":[]") }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                        }
+                      }
                       Block {
                         If {
                           Eq { Var(name=label2) Lit(value="") }
@@ -1744,7 +1755,7 @@ Program {
                     If {
                       Call(target=httpRequestDone) { Var(name=netStateNow) }
                       Block {
-                        Let(name=forecast) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
+                        Let(name=forecast) { Call(target=httpResponseBodyText) { Var(name=netStateNow) } }
                         Call(target=traceNetLine) { Var(name=debugLive) Lit(value="forecast.response") ToString { Call(target=strLen) { Var(name=forecast) } } ToString { Call(target=contains) { Var(name=forecast) Lit(value="\"current\":{") } } }
                         Let(name=forecastSummary) { Call(target=encodeForecastSummary) { Var(name=forecast) } }
                         Let(name=statusOut) {
@@ -1772,7 +1783,7 @@ Program {
                         If {
                           Call(target=httpRequestDone) { Var(name=netStateNow) }
                           Block {
-                            Let(name=metaBody) { Call(target=bodyFromHttp) { Call(target=httpRequestResponse) { Var(name=netStateNow) } } }
+                            Let(name=metaBody) { Call(target=httpResponseBodyText) { Var(name=netStateNow) } }
                             Let(name=tilePath) { Call(target=rainViewerTilePath) { Var(name=metaBody) Var(name=selectedLat) Var(name=selectedLon) } }
                             If {
                               Eq { Var(name=tilePath) Lit(value="") }
