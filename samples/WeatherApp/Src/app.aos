@@ -100,6 +100,62 @@ Program {
     }
   }
 
+  Let(name=httpFailureDisplay) {
+    Fn(params=requestState,prefix) {
+      Block {
+        Let(name=errorText) { Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=requestState) } } }
+        If {
+          Call(target=httpRequestFailedDnsLocal) { Var(name=requestState) }
+          Block { Return { StrConcat { Var(name=prefix) Lit(value="DNS lookup failed.") } } }
+          Block {
+            If {
+              Call(target=httpRequestFailedTlsLocal) { Var(name=requestState) }
+              Block { Return { StrConcat { Var(name=prefix) Lit(value="TLS connection failed.") } } }
+              Block { Return { StrConcat { Var(name=prefix) Var(name=errorText) } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=startsWith) {
+    Fn(params=text,prefix) {
+      Block {
+        Let(name=found) { Call(target=findFrom) { Var(name=text) Var(name=prefix) Lit(value=0) } }
+        Return { Eq { Var(name=found) Lit(value=0) } }
+      }
+    }
+  }
+
+  Let(name=httpRequestFailedDnsLocal) {
+    Fn(params=requestState) {
+      Block {
+        Let(name=errorText) { Call(target=httpRequestError) { Var(name=requestState) } }
+        If {
+          Call(target=startsWith) { Var(name=errorText) Lit(value="dns_failed:") }
+          Block { Return { Lit(value=true) } }
+          Block {
+            If {
+              Call(target=startsWith) { Var(name=errorText) Lit(value="connect_failed:dns_failed:") }
+              Block { Return { Lit(value=true) } }
+              Block { Return { Call(target=startsWith) { Var(name=errorText) Lit(value="connect_tls_failed:dns_failed:") } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=httpRequestFailedTlsLocal) {
+    Fn(params=requestState) {
+      Block {
+        Let(name=errorText) { Call(target=httpRequestError) { Var(name=requestState) } }
+        Return { Call(target=startsWith) { Var(name=errorText) Lit(value="connect_tls_failed:") } }
+      }
+    }
+  }
+
   Let(name=replaceSpaces) {
     Fn(params=text) {
       Block {
@@ -1707,7 +1763,7 @@ Program {
           Block {
             If {
               Call(target=httpRequestFailed) { Var(name=netStateNow) }
-              Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Geocode failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+              Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Call(target=httpFailureDisplay) { Var(name=netStateNow) Lit(value="Geocode failed: ") } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
               Block {
                 If {
                   Call(target=httpRequestDone) { Var(name=netStateNow) }
@@ -1750,7 +1806,7 @@ Program {
               Block {
                 If {
                   Call(target=httpRequestFailed) { Var(name=netStateNow) }
-                  Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Lit(value="") StrConcat { Lit(value="Forecast failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                  Block { Return { Call(target=weatherState) { Var(name=query) Var(name=focused) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Lit(value="") Call(target=httpFailureDisplay) { Var(name=netStateNow) Lit(value="Forecast failed: ") } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                   Block {
                     If {
                       Call(target=httpRequestDone) { Var(name=netStateNow) }
@@ -1778,7 +1834,7 @@ Program {
                   Block {
                     If {
                       Call(target=httpRequestFailed) { Var(name=netStateNow) }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Radar failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Call(target=httpFailureDisplay) { Var(name=netStateNow) Lit(value="Radar failed: ") } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                       Block {
                         If {
                           Call(target=httpRequestDone) { Var(name=netStateNow) }
@@ -1804,7 +1860,7 @@ Program {
                       Block {
                         If {
                           Call(target=httpRequestFailed) { Var(name=netStateNow) }
-                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) StrConcat { Lit(value="Radar failed: ") Call(target=httpErrorDisplay) { Call(target=httpRequestError) { Var(name=netStateNow) } } } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=false) Lit(value=false) Var(name=geoBody) Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Call(target=httpFailureDisplay) { Var(name=netStateNow) Lit(value="Radar failed: ") } Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Var(name=nextFlash) Var(name=blinkTick) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                           Block {
                             If {
                               Call(target=httpRequestDone) { Var(name=netStateNow) }
