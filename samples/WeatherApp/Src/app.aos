@@ -168,33 +168,37 @@ Program {
   Let(name=replaceSpacesAt) {
     Fn(params=text,index,acc) {
       Block {
+        Let(name=nextSpace) { Call(target=findFrom) { Var(name=text) Lit(value=" ") Var(name=index) } }
         If {
-          Call(target=intLt) { Var(name=index) Call(target=strLen) { Var(name=text) } }
+          Call(target=findNotFound) { Var(name=nextSpace) }
           Block {
-            Let(name=ch) { Call(target=sys.str.substring) { Var(name=text) Var(name=index) Lit(value=1) } }
-            If {
-              Eq { Var(name=ch) Lit(value=" ") }
-              Block {
-                Return {
-                  Call(target=replaceSpacesAt) {
-                    Var(name=text)
-                    Add { Var(name=index) Lit(value=1) }
-                    StrConcat { Var(name=acc) Lit(value="%20") }
-                  }
-                }
-              }
-              Block {
-                Return {
-                  Call(target=replaceSpacesAt) {
-                    Var(name=text)
-                    Add { Var(name=index) Lit(value=1) }
-                    StrConcat { Var(name=acc) Var(name=ch) }
-                  }
+            Return {
+              StrConcat {
+                Var(name=acc)
+                Call(target=sys.str.substring) {
+                  Var(name=text)
+                  Var(name=index)
+                  Call(target=sub) { Call(target=strLen) { Var(name=text) } Var(name=index) }
                 }
               }
             }
           }
-          Block { Return { Var(name=acc) } }
+          Block {
+            Let(name=segmentLen) { Call(target=sub) { Var(name=nextSpace) Var(name=index) } }
+            Return {
+              Call(target=replaceSpacesAt) {
+                Var(name=text)
+                Add { Var(name=nextSpace) Lit(value=1) }
+                StrConcat {
+                  StrConcat {
+                    Var(name=acc)
+                    Call(target=sys.str.substring) { Var(name=text) Var(name=index) Var(name=segmentLen) }
+                  }
+                  Lit(value="%20")
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -1792,6 +1796,11 @@ Program {
                     }
                     If {
                       Call(target=contains) { Var(name=geo) Lit(value="\"results\":[") }
+                      Block { Lit(value=0) }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                    }
+                    If {
+                      Call(target=contains) { Var(name=geo) Lit(value=""name":"") }
                       Block { Lit(value=0) }
                       Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                     }

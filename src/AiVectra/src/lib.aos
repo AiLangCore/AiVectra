@@ -1127,7 +1127,7 @@ Program {
     }
   }
 
-  Let(name=intLt) {
+  Let(name=intNatLt) {
     Fn(params=a,b) {
       Block {
         If {
@@ -1143,9 +1143,170 @@ Program {
                   Block { Return { Lit(value=false) } }
                   Block {
                     Return {
-                      Call(target=intLt) {
+                      Call(target=intNatLt) {
                         Add { Var(name=a) Lit(value=-1) }
                         Add { Var(name=b) Lit(value=-1) }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=intTextLen) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Return {
+              Add {
+                Lit(value=1)
+                Call(target=intTextLen) { Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=intTextFirst) {
+    Fn(params=textValue) {
+      Block {
+        Return { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+      }
+    }
+  }
+
+  Let(name=intTextRest) {
+    Fn(params=textValue) {
+      Block {
+        Return { Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+      }
+    }
+  }
+
+  Let(name=intDigitValue) {
+    Fn(params=ch) {
+      Block {
+        If { Eq { Var(name=ch) Lit(value="0") } Block { Return { Lit(value=0) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="1") } Block { Return { Lit(value=1) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="2") } Block { Return { Lit(value=2) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="3") } Block { Return { Lit(value=3) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="4") } Block { Return { Lit(value=4) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="5") } Block { Return { Lit(value=5) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="6") } Block { Return { Lit(value=6) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="7") } Block { Return { Lit(value=7) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="8") } Block { Return { Lit(value=8) } } Block { Lit(value=0) } }
+        If { Eq { Var(name=ch) Lit(value="9") } Block { Return { Lit(value=9) } } Block { Return { Lit(value=-1) } } }
+      }
+    }
+  }
+
+  Let(name=intIsNegativeText) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Return { Eq { Call(target=intTextFirst) { Var(name=textValue) } Lit(value="-") } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=intAbsText) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Call(target=intIsNegativeText) { Var(name=textValue) }
+          Block { Return { Call(target=intTextRest) { Var(name=textValue) } } }
+          Block { Return { Var(name=textValue) } }
+        }
+      }
+    }
+  }
+
+  Let(name=intPositiveTextLt) {
+    Fn(params=aText,bText) {
+      Block {
+        If {
+          Eq { Var(name=aText) Var(name=bText) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Let(name=aLen) { Call(target=intTextLen) { Var(name=aText) } }
+            Let(name=bLen) { Call(target=intTextLen) { Var(name=bText) } }
+            If {
+              Eq { Var(name=aLen) Var(name=bLen) }
+              Block {
+                Let(name=aDigit) { Call(target=intDigitValue) { Call(target=intTextFirst) { Var(name=aText) } } }
+                Let(name=bDigit) { Call(target=intDigitValue) { Call(target=intTextFirst) { Var(name=bText) } } }
+                If {
+                  Eq { Var(name=aDigit) Var(name=bDigit) }
+                  Block {
+                    Return {
+                      Call(target=intPositiveTextLt) {
+                        Call(target=intTextRest) { Var(name=aText) }
+                        Call(target=intTextRest) { Var(name=bText) }
+                      }
+                    }
+                  }
+                  Block { Return { Call(target=intNatLt) { Var(name=aDigit) Var(name=bDigit) } } }
+                }
+              }
+              Block { Return { Call(target=intNatLt) { Var(name=aLen) Var(name=bLen) } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=intLt) {
+    Fn(params=a,b) {
+      Block {
+        If {
+          Eq { Var(name=a) Var(name=b) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Let(name=aText) { ToString { Var(name=a) } }
+            Let(name=bText) { ToString { Var(name=b) } }
+            Let(name=aNegative) { Call(target=intIsNegativeText) { Var(name=aText) } }
+            Let(name=bNegative) { Call(target=intIsNegativeText) { Var(name=bText) } }
+            If {
+              Var(name=aNegative)
+              Block {
+                If {
+                  Var(name=bNegative)
+                  Block {
+                    Return {
+                      Call(target=intPositiveTextLt) {
+                        Call(target=intAbsText) { Var(name=bText) }
+                        Call(target=intAbsText) { Var(name=aText) }
+                      }
+                    }
+                  }
+                  Block { Return { Lit(value=true) } }
+                }
+              }
+              Block {
+                If {
+                  Var(name=bNegative)
+                  Block { Return { Lit(value=false) } }
+                  Block {
+                    Return {
+                      Call(target=intPositiveTextLt) {
+                        Call(target=intAbsText) { Var(name=aText) }
+                        Call(target=intAbsText) { Var(name=bText) }
                       }
                     }
                   }
