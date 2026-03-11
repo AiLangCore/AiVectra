@@ -1,5 +1,6 @@
 Program {
   Import(path="../../../.tools/std/core.aos")
+  Import(path="../../../.tools/std/number.aos")
   Import(path="../../../.tools/std/image.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
   Import(path="../../../.tools/sys/http.aos")
@@ -289,6 +290,15 @@ Program {
     }
   }
 
+  Let(name=wholeNumberValueAt) {
+    Fn(params=text,token,start,n,fallback) {
+      Block {
+        Let(name=raw) { Call(target=numberValueAt) { Var(name=text) Var(name=token) Var(name=start) Var(name=n) } }
+        Return { Call(target=parseNumberOr) { Var(name=raw) Var(name=fallback) } }
+      }
+    }
+  }
+
   Let(name=geoLabelAt) {
     Fn(params=geoBody,index) {
       Block {
@@ -403,13 +413,13 @@ Program {
     Fn(params=code) {
       Block {
         Return {
-          If { Eq { Var(name=code) Lit(value="0") } Block { Lit(value="Clear") } Block {
-            If { Eq { Var(name=code) Lit(value="1") } Block { Lit(value="Mainly clear") } Block {
-              If { Eq { Var(name=code) Lit(value="2") } Block { Lit(value="Partly cloudy") } Block {
-                If { Eq { Var(name=code) Lit(value="3") } Block { Lit(value="Cloudy") } Block {
-                  If { Eq { Var(name=code) Lit(value="45") } Block { Lit(value="Fog") } Block {
-                    If { Eq { Var(name=code) Lit(value="61") } Block { Lit(value="Rain") } Block {
-                      If { Eq { Var(name=code) Lit(value="71") } Block { Lit(value="Snow") } Block { Lit(value="Weather") } }
+          If { Eq { Var(name=code) Lit(value=0) } Block { Lit(value="Clear") } Block {
+            If { Eq { Var(name=code) Lit(value=1) } Block { Lit(value="Mainly clear") } Block {
+              If { Eq { Var(name=code) Lit(value=2) } Block { Lit(value="Partly cloudy") } Block {
+                If { Eq { Var(name=code) Lit(value=3) } Block { Lit(value="Cloudy") } Block {
+                  If { Eq { Var(name=code) Lit(value=45) } Block { Lit(value="Fog") } Block {
+                    If { Eq { Var(name=code) Lit(value=61) } Block { Lit(value="Rain") } Block {
+                      If { Eq { Var(name=code) Lit(value=71) } Block { Lit(value="Snow") } Block { Lit(value="Weather") } }
                     } }
                   } }
                 } }
@@ -730,7 +740,7 @@ Program {
           Block { Return { Lit(value="Now: unavailable") } }
           Block {
             Let(name=temp) { Call(target=numberValueAt) { Var(name=forecastBody) Lit(value="\"temperature_2m\":") Var(name=currentStart) Lit(value=1) } }
-            Let(name=code) { Call(target=numberValueAt) { Var(name=forecastBody) Lit(value="\"weather_code\":") Var(name=currentStart) Lit(value=1) } }
+            Let(name=code) { Call(target=wholeNumberValueAt) { Var(name=forecastBody) Lit(value="\"weather_code\":") Var(name=currentStart) Lit(value=1) Lit(value=-1) } }
             Return {
               StrConcat {
                 Lit(value="Now: ")

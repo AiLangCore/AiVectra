@@ -70,6 +70,7 @@
 - Each sample should have one clear purpose.
 - Keep sample architecture minimal and canonical.
 - Avoid hacks that bypass missing engine features.
+- Prefer AiLang stdlib helpers for parsing and normalization before introducing sample-local utility code.
 - If a sample needs a missing capability, stop and specify the capability instead.
 
 ## Packaging And Layout

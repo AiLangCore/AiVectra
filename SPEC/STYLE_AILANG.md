@@ -60,6 +60,8 @@
 - Split large functions once they begin mixing unrelated concerns.
 - Pass required inputs explicitly.
 - Do not rely on ambient mutable context.
+- Prefer canonical stdlib helpers over ad hoc parsing logic.
+- Use `std.number` for numeric text parsing and comparison instead of sample-local number parsers when the data shape fits the stdlib surface.
 
 ## Control Flow
 - Prefer straightforward `If`, `Loop`, and helper calls over clever expression packing.
