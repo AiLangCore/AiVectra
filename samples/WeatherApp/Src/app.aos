@@ -1780,21 +1780,27 @@ Program {
                   Block {
                     Let(name=geo) { Call(target=httpResponseBodyText) { Var(name=netStateNow) } }
                     Call(target=traceNetLine) { Var(name=debugLive) Lit(value="geo.response") ToString { Call(target=strLen) { Var(name=geo) } } ToString { Call(target=contains) { Var(name=geo) Lit(value="\"results\":") } } }
-                    Let(name=label1) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=1) } }
-                    Let(name=label2) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=2) } }
                     If {
                       Eq { Var(name=geo) Lit(value="") }
                       Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Network request failed (empty response).") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                       Block { Lit(value=0) }
                     }
                     If {
+                      Call(target=contains) { Var(name=geo) Lit(value="\"results\":[]") }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                      Block { Lit(value=0) }
+                    }
+                    If {
+                      Call(target=contains) { Var(name=geo) Lit(value="\"results\":[") }
+                      Block { Lit(value=0) }
+                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
+                    }
+                    Let(name=label1) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=1) } }
+                    Let(name=label2) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=2) } }
+                    If {
                       Eq { Var(name=label1) Lit(value="") }
                       Block {
-                        If {
-                          Call(target=contains) { Var(name=geo) Lit(value="\"results\":[]") }
-                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
-                          Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
-                        }
+                        Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } }
                       }
                       Block {
                         If {
