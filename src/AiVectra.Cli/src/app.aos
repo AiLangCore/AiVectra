@@ -180,6 +180,47 @@ Program {
     }
   }
 
+  Let(name=cleanArtifactPath) {
+    Fn(params=path) {
+      Block {
+        If {
+          Call(target=endsWith) { Var(name=path) Lit(value=".aibc1") }
+          Block { Return { Var(name=path) } }
+          Block {
+            Return {
+              If {
+                Call(target=endsWith) { Var(name=path) Lit(value="/") }
+                Block { StrConcat { Var(name=path) Lit(value="app.aibc1") } }
+                Block { StrConcat { Var(name=path) Lit(value="/app.aibc1") } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=cleanProjectArtifact) {
+    Fn(params=args) {
+      Block {
+        Let(name=count) { ChildCount { Var(name=args) } }
+        If {
+          Call(target=intLt) { Var(name=count) Lit(value=2) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Let(name=targetPath) { Call(target=argAt) { Var(name=args) Lit(value=1) } }
+            Let(name=artifactPath) { Call(target=cleanArtifactPath) { Var(name=targetPath) } }
+            If {
+              Call(target=fileExists) { Var(name=artifactPath) }
+              Block { Return { Call(target=fileDelete) { Var(name=artifactPath) } } }
+              Block { Return { Lit(value=false) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=resolvedDebugArgs) {
     Fn(params=args) {
       Block {
@@ -266,6 +307,7 @@ Program {
         Call(target=sys.stdout.writeLine) { Lit(value="usage:") }
         Call(target=sys.stdout.writeLine) { Lit(value="  aivectra debug <snapshot|replay|live>") }
         Call(target=sys.stdout.writeLine) { Lit(value="  aivectra icon <project-path> [label]") }
+        Call(target=sys.stdout.writeLine) { Lit(value="  aivectra clean [project-path]") }
         Return { Lit(value=0) }
       }
     }
@@ -429,6 +471,15 @@ Program {
           Eq { Var(name=cmd1) Lit(value="run") }
           Block {
             Return { Call(target=passThrough) { Call(target=resolvedRunArgs) { Var(name=args) } } }
+          }
+          Block { Lit(value=0) }
+        }
+
+        If {
+          Eq { Var(name=cmd1) Lit(value="clean") }
+          Block {
+            Call(target=cleanProjectArtifact) { Var(name=args) }
+            Return { Call(target=passThrough) { Var(name=args) } }
           }
           Block { Lit(value=0) }
         }

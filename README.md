@@ -249,6 +249,7 @@ Compiled CLI boundary:
 
 Examples:
   - `airun run ./src/AiVectra.Cli/`
+  - `airun run ./src/AiVectra.Cli/ clean ./samples/WeatherApp/`
   - `airun run ./src/AiVectra.Cli/ debug snapshot`
   - `airun run ./src/AiVectra.Cli/ debug replay`
 - Tool-side input injection (no sample/app instrumentation required):

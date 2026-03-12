@@ -25,8 +25,10 @@ Resolution rules:
 
 Canonical examples:
 - `aivectra run`
+- `aivectra clean`
 - `aivectra debug`
 - `aivectra run ./samples/WeatherApp`
+- `aivectra clean ./samples/WeatherApp`
 - `aivectra debug ./samples/WeatherApp events`
 - `aivectra debug ./samples/WeatherApp -- events`
 - `aivectra debug trace run ./samples/HttpProbe -- events`
@@ -34,6 +36,7 @@ Canonical examples:
 ## Commands
 `aivectra` supports command chains including:
 - `run [project-path] [-- app-args...]`
+- `clean [project-path]`
 - `debug [project-path] [-- app-args...]`
 - `debug run [debug-options] [project-path] [-- app-args...]`
 - `debug trace run [debug-options] [project-path] [-- app-args...]`
@@ -75,6 +78,12 @@ Rules:
 - Else, if `project-path` contains `Src/app.aos`, target resolves to that app entry file.
 - If `run` or `debug` is invoked without explicit `project-path`, and cwd contains `project.aiproj`, cwd project is used.
 - Absolute and relative paths are accepted.
+
+## Clean Semantics
+- `aivectra clean [project-path]` is the canonical project cleanup command.
+- If `project-path` is a directory, AiVectra removes `<project-path>/app.aibc1` when present before delegating to the lower-layer clean command.
+- If `project-path` is an explicit `.aibc1` path, AiVectra removes that artifact directly before delegating to the lower-layer clean command.
+- If no `project-path` is provided, AiVectra delegates directly to the lower-layer clean command for the current working directory context.
 
 ## Argument Forwarding
 - Arguments after `--` are forwarded to the app unchanged.
