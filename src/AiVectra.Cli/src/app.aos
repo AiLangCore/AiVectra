@@ -1,4 +1,6 @@
 Program {
+  Import(path="../../../.tools/std/fs.aos")
+  Import(path="../../../src/AiVectra/src/lib.aos")
   Export(name=start)
 
   Let(name=airunBin) {
@@ -28,6 +30,231 @@ Program {
           }
         }
         Return { Call(target=sys.process.wait) { Var(name=handle) } }
+      }
+    }
+  }
+
+  Let(name=strLen) {
+    Fn(params=text) {
+      Block { Return { Call(target=textLen) { Var(name=text) } } }
+    }
+  }
+
+  Let(name=endsWith) {
+    Fn(params=text,suffix) {
+      Block {
+        Let(name=textLenValue) { Call(target=strLen) { Var(name=text) } }
+        Let(name=suffixLen) { Call(target=strLen) { Var(name=suffix) } }
+        If {
+          Call(target=intLt) { Var(name=textLenValue) Var(name=suffixLen) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Let(name=startAt) { Call(target=sub) { Var(name=textLenValue) Var(name=suffixLen) } }
+            Return {
+              Eq {
+                Call(target=sys.str.substring) { Var(name=text) Var(name=startAt) Var(name=suffixLen) }
+                Var(name=suffix)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=ensureArtifactPath) {
+    Fn(params=path) {
+      Block {
+        If {
+          Call(target=endsWith) { Var(name=path) Lit(value=".aibc1") }
+          Block { Return { Var(name=path) } }
+          Block {
+            Let(name=joined) {
+              If {
+                Call(target=endsWith) { Var(name=path) Lit(value="/") }
+                Block { StrConcat { Var(name=path) Lit(value="app.aibc1") } }
+                Block { StrConcat { Var(name=path) Lit(value="/app.aibc1") } }
+              }
+            }
+            If {
+              Call(target=pathExists) { Var(name=joined) }
+              Block { Return { Var(name=joined) } }
+              Block { Return { Var(name=path) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=argAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block { Return { AttrValueString { ChildAt { Var(name=args) Var(name=index) } Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=argsEmpty) {
+    Fn(params=_) {
+      Block { Return { MakeBlock { Lit(value="args") } } }
+    }
+  }
+
+  Let(name=argsAppend) {
+    Fn(params=args,value) {
+      Block {
+        Return {
+          AppendChild {
+            Var(name=args)
+            MakeLitString { Lit(value="value") Var(name=value) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=argsReplaceAtFold) {
+    Fn(params=args,targetIndex,replacement,index,acc) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Var(name=acc) } }
+          Block {
+            Let(name=current) { Call(target=argAt) { Var(name=args) Var(name=index) } }
+            Let(name=nextValue) {
+              If {
+                Eq { Var(name=index) Var(name=targetIndex) }
+                Block { Var(name=replacement) }
+                Block { Var(name=current) }
+              }
+            }
+            Return {
+              Call(target=argsReplaceAtFold) {
+                Var(name=args)
+                Var(name=targetIndex)
+                Var(name=replacement)
+                Add { Var(name=index) Lit(value=1) }
+                Call(target=argsAppend) { Var(name=acc) Var(name=nextValue) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=argsReplaceAt) {
+    Fn(params=args,targetIndex,replacement) {
+      Block {
+        Return {
+          Call(target=argsReplaceAtFold) {
+            Var(name=args)
+            Var(name=targetIndex)
+            Var(name=replacement)
+            Lit(value=0)
+            Call(target=argsEmpty) { Lit(value=0) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=resolvedRunArgs) {
+    Fn(params=args) {
+      Block {
+        Let(name=count) { ChildCount { Var(name=args) } }
+        If {
+          Call(target=intLt) { Var(name=count) Lit(value=2) }
+          Block { Return { Var(name=args) } }
+          Block {
+            Let(name=programPath) { Call(target=argAt) { Var(name=args) Lit(value=1) } }
+            Return { Call(target=argsReplaceAt) { Var(name=args) Lit(value=1) Call(target=ensureArtifactPath) { Var(name=programPath) } } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=resolvedDebugArgs) {
+    Fn(params=args) {
+      Block {
+        Let(name=count) { ChildCount { Var(name=args) } }
+        Let(name=cmd2) {
+          If {
+            Call(target=intLt) { Var(name=count) Lit(value=2) }
+            Block { Lit(value="") }
+            Block { Call(target=argAt) { Var(name=args) Lit(value=1) } }
+          }
+        }
+        Let(name=cmd3) {
+          If {
+            Call(target=intLt) { Var(name=count) Lit(value=3) }
+            Block { Lit(value="") }
+            Block { Call(target=argAt) { Var(name=args) Lit(value=2) } }
+          }
+        }
+        If {
+          Eq { Var(name=cmd2) Lit(value="run") }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=count) Lit(value=3) }
+              Block { Return { Var(name=args) } }
+              Block {
+                Let(name=programPath) { Call(target=argAt) { Var(name=args) Lit(value=2) } }
+                Return { Call(target=argsReplaceAt) { Var(name=args) Lit(value=2) Call(target=ensureArtifactPath) { Var(name=programPath) } } }
+              }
+            }
+          }
+          Block {
+            If {
+              Eq { Var(name=cmd2) Lit(value="capture") }
+              Block {
+                If {
+                  Eq { Var(name=cmd3) Lit(value="run") }
+                  Block {
+                    If {
+                      Call(target=intLt) { Var(name=count) Lit(value=4) }
+                      Block { Return { Var(name=args) } }
+                      Block {
+                        Let(name=programPath) { Call(target=argAt) { Var(name=args) Lit(value=3) } }
+                        Return { Call(target=argsReplaceAt) { Var(name=args) Lit(value=3) Call(target=ensureArtifactPath) { Var(name=programPath) } } }
+                      }
+                    }
+                  }
+                  Block { Lit(value=0) }
+                }
+              }
+              Block {
+                If {
+                  Eq { Var(name=cmd2) Lit(value="trace") }
+                  Block {
+                    If {
+                      Eq { Var(name=cmd3) Lit(value="run") }
+                      Block {
+                        If {
+                          Call(target=intLt) { Var(name=count) Lit(value=4) }
+                          Block { Return { Var(name=args) } }
+                          Block {
+                            Let(name=programPath) { Call(target=argAt) { Var(name=args) Lit(value=3) } }
+                            Return { Call(target=argsReplaceAt) { Var(name=args) Lit(value=3) Call(target=ensureArtifactPath) { Var(name=programPath) } } }
+                          }
+                        }
+                      }
+                      Block { Lit(value=0) }
+                    }
+                  }
+                  Block { Lit(value=0) }
+                }
+              }
+            }
+            Return { Var(name=args) }
+          }
+        }
       }
     }
   }
@@ -201,7 +428,7 @@ Program {
         If {
           Eq { Var(name=cmd1) Lit(value="run") }
           Block {
-            Return { Call(target=passThrough) { Var(name=args) } }
+            Return { Call(target=passThrough) { Call(target=resolvedRunArgs) { Var(name=args) } } }
           }
           Block { Lit(value=0) }
         }
@@ -209,7 +436,7 @@ Program {
         If {
           Eq { Var(name=cmd1) Lit(value="debug") }
           Block {
-            Return { Call(target=passThrough) { Var(name=args) } }
+            Return { Call(target=passThrough) { Call(target=resolvedDebugArgs) { Var(name=args) } } }
           }
           Block { Lit(value=0) }
         }
