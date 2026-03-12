@@ -1,5 +1,6 @@
 Program {
   Import(path="../../../.tools/std/core.aos")
+  Import(path="../../../.tools/std/json.aos")
   Import(path="../../../.tools/std/number.aos")
   Import(path="../../../.tools/std/image.aos")
   Import(path="../../../src/AiVectra/src/lib.aos")
@@ -303,11 +304,131 @@ Program {
     }
   }
 
+  Let(name=jsonAttrStringOrAt) {
+    Fn(params=node,key,index,fallback) {
+      Block {
+        If {
+          Eq { Var(name=index) AttrCount { Var(name=node) } }
+          Block { Return { Var(name=fallback) } }
+          Block {
+            If {
+              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
+              Block { Return { AttrValueString { Var(name=node) Var(name=index) } } }
+              Block {
+                Return {
+                  Call(target=jsonAttrStringOrAt) {
+                    Var(name=node)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                    Var(name=fallback)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=jsonAttrStringOr) {
+    Fn(params=node,key,fallback) {
+      Block { Return { Call(target=jsonAttrStringOrAt) { Var(name=node) Var(name=key) Lit(value=0) Var(name=fallback) } } }
+    }
+  }
+
+  Let(name=jsonObjectFieldAt) {
+    Fn(params=objNode,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=objNode) } }
+          Block { Return { Call(target=nodeEmpty) { Lit(value="JsonMissing") } } }
+          Block {
+            Let(name=field) { ChildAt { Var(name=objNode) Var(name=index) } }
+            If {
+              Eq { Call(target=jsonAttrStringOr) { Var(name=field) Lit(value="key") Lit(value="") } Var(name=key) }
+              Block { Return { Var(name=field) } }
+              Block {
+                Return {
+                  Call(target=jsonObjectFieldAt) {
+                    Var(name=objNode)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=jsonObjectField) {
+    Fn(params=objNode,key) {
+      Block { Return { Call(target=jsonObjectFieldAt) { Var(name=objNode) Var(name=key) Lit(value=0) } } }
+    }
+  }
+
+  Let(name=jsonFieldValueOr) {
+    Fn(params=field,fallback) {
+      Block {
+        If {
+          Eq { ChildCount { Var(name=field) } Lit(value=0) }
+          Block { Return { Var(name=fallback) } }
+          Block { Return { ChildAt { Var(name=field) Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=geoRootNode) {
+    Fn(params=geoBody) {
+      Block {
+        Let(name=parsed) { Call(target=parseNode) { Var(name=geoBody) } }
+        Return { Call(target=resultNodeOr) { Var(name=parsed) Call(target=nodeEmpty) { Lit(value="JsonInvalid") } } }
+      }
+    }
+  }
+
+  Let(name=geoResultsArray) {
+    Fn(params=geoBody) {
+      Block {
+        Let(name=root) { Call(target=geoRootNode) { Var(name=geoBody) } }
+        Let(name=resultsField) { Call(target=jsonObjectField) { Var(name=root) Lit(value="results") } }
+        Return { Call(target=jsonFieldValueOr) { Var(name=resultsField) Call(target=nodeEmpty) { Lit(value="JsonArray") } } }
+      }
+    }
+  }
+
+  Let(name=geoResultNode) {
+    Fn(params=geoBody,index) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=index) Lit(value=1) }
+          Block { Return { Call(target=nodeEmpty) { Lit(value="JsonMissing") } } }
+          Block {
+            Let(name=results) { Call(target=geoResultsArray) { Var(name=geoBody) } }
+            Let(name=at) { Add { Var(name=index) Lit(value=-1) } }
+            If {
+              Call(target=intGte) { Var(name=at) ChildCount { Var(name=results) } }
+              Block { Return { Call(target=nodeEmpty) { Lit(value="JsonMissing") } } }
+              Block { Return { ChildAt { Var(name=results) Var(name=at) } } }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=geoLabelAt) {
     Fn(params=geoBody,index) {
       Block {
-        Let(name=name) { Call(target=quotedValueAt) { Var(name=geoBody) Lit(value="\"name\":\"") Lit(value=0) Var(name=index) } }
-        Let(name=admin) { Call(target=quotedValueAt) { Var(name=geoBody) Lit(value="\"admin1\":\"") Lit(value=0) Var(name=index) } }
+        Let(name=resultNode) { Call(target=geoResultNode) { Var(name=geoBody) Var(name=index) } }
+        Let(name=nameField) { Call(target=jsonObjectField) { Var(name=resultNode) Lit(value="name") } }
+        Let(name=adminField) { Call(target=jsonObjectField) { Var(name=resultNode) Lit(value="admin1") } }
+        Let(name=name) { Call(target=jsonAttrStringOr) { Call(target=jsonFieldValueOr) { Var(name=nameField) Call(target=nodeEmpty) { Lit(value="JsonMissing") } } Lit(value="value") Lit(value="") } }
+        Let(name=admin) { Call(target=jsonAttrStringOr) { Call(target=jsonFieldValueOr) { Var(name=adminField) Call(target=nodeEmpty) { Lit(value="JsonMissing") } } Lit(value="value") Lit(value="") } }
         If {
           Eq { Var(name=name) Lit(value="") }
           Block { Return { Lit(value="") } }
@@ -325,13 +446,21 @@ Program {
 
   Let(name=geoLatAt) {
     Fn(params=geoBody,index) {
-      Block { Return { Call(target=numberValueAt) { Var(name=geoBody) Lit(value="\"latitude\":") Lit(value=0) Var(name=index) } } }
+      Block {
+        Let(name=resultNode) { Call(target=geoResultNode) { Var(name=geoBody) Var(name=index) } }
+        Let(name=latField) { Call(target=jsonObjectField) { Var(name=resultNode) Lit(value="latitude") } }
+        Return { Call(target=jsonAttrStringOr) { Call(target=jsonFieldValueOr) { Var(name=latField) Call(target=nodeEmpty) { Lit(value="JsonMissing") } } Lit(value="raw") Lit(value="") } }
+      }
     }
   }
 
   Let(name=geoLonAt) {
     Fn(params=geoBody,index) {
-      Block { Return { Call(target=numberValueAt) { Var(name=geoBody) Lit(value="\"longitude\":") Lit(value=0) Var(name=index) } } }
+      Block {
+        Let(name=resultNode) { Call(target=geoResultNode) { Var(name=geoBody) Var(name=index) } }
+        Let(name=lonField) { Call(target=jsonObjectField) { Var(name=resultNode) Lit(value="longitude") } }
+        Return { Call(target=jsonAttrStringOr) { Call(target=jsonFieldValueOr) { Var(name=lonField) Call(target=nodeEmpty) { Lit(value="JsonMissing") } } Lit(value="raw") Lit(value="") } }
+      }
     }
   }
 
@@ -1790,19 +1919,9 @@ Program {
                       Block { Lit(value=0) }
                     }
                     If {
-                      Call(target=contains) { Var(name=geo) Lit(value="\"results\":[]") }
+                      Eq { ChildCount { Call(target=geoResultsArray) { Var(name=geo) } } Lit(value=0) }
                       Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="No geocode match found.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                       Block { Lit(value=0) }
-                    }
-                    If {
-                      Call(target=contains) { Var(name=geo) Lit(value="\"results\":[") }
-                      Block { Lit(value=0) }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
-                    }
-                    If {
-                      Call(target=contains) { Var(name=geo) Lit(value=""name":"") }
-                      Block { Lit(value=0) }
-                      Block { Return { Call(target=weatherState) { Var(name=query) Lit(value=true) Lit(value=false) Lit(value="") Var(name=selectedLabel) Var(name=selectedLat) Var(name=selectedLon) Var(name=forecastBody) Lit(value="Unexpected geocode response.") Var(name=radarOpen) Var(name=nextRadarTick) Var(name=radarImageRgba) Var(name=w) Var(name=h) Lit(value=0) Lit(value=0) Lit(value="") Call(target=emptyNode) { Lit(value=0) } Lit(value=0) Var(name=debugLive) } } }
                     }
                     Let(name=label1) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=1) } }
                     Let(name=label2) { Call(target=geoLabelAt) { Var(name=geo) Lit(value=2) } }
