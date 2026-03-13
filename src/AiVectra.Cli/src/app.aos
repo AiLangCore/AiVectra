@@ -29,7 +29,8 @@ Program {
             Var(name=env)
           }
         }
-        Return { Call(target=sys.process.wait) { Var(name=handle) } }
+        Let(name=exitCode) { Call(target=sys.process.wait) { Var(name=handle) } }
+        Return { Var(name=exitCode) }
       }
     }
   }
