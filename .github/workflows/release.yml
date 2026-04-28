@@ -1,0 +1,60 @@
+name: AiVectra Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Package SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          package_dir="aivectra-${version}"
+          mkdir -p "${package_dir}/bin" "${package_dir}/src" "${package_dir}/SPEC" "${package_dir}/samples"
+          cp ./scripts/aivectra "${package_dir}/bin/aivectra"
+          chmod +x "${package_dir}/bin/aivectra"
+          cp -R ./src/AiVectra "${package_dir}/src/AiVectra"
+          cp -R ./src/AiVectra.Cli "${package_dir}/src/AiVectra.Cli"
+          cp -R ./SPEC/. "${package_dir}/SPEC/"
+          cp -R ./samples/. "${package_dir}/samples/"
+          cp ./README.md ./LICENSE "${package_dir}/"
+          tar -czf "aivectra-${version}.tar.gz" "${package_dir}"
+          zip -qr "aivectra-${version}.zip" "${package_dir}"
+
+      - name: Upload packaged artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aivectra
+          path: |
+            ./aivectra-*.tar.gz
+            ./aivectra-*.zip
+
+  release:
+    name: github-release
+    runs-on: ubuntu-latest
+    needs: package
+
+    steps:
+      - name: Download packaged artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./release-assets
+          merge-multiple: true
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./release-assets/*

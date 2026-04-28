@@ -3,16 +3,16 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/airun"
+AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/ailang"
 AIRUN_BIN="${AIRUN_BIN:-$AIRUN_BIN_DEFAULT}"
 if [[ ! -x "$AIRUN_BIN" ]]; then
-  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-airun}"
+  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-ailang}"
 fi
 
-# Optional override: ./scripts/aivectra --airun /path/to/airun ...
-if [[ "${1:-}" == "--airun" ]]; then
+# Optional override: ./scripts/aivectra --ailang /path/to/ailang ...
+if [[ "${1:-}" == "--ailang" ]]; then
   if [[ -z "${2:-}" ]]; then
-    echo "missing value for --airun" >&2
+    echo "missing value for --ailang" >&2
     exit 2
   fi
   AIRUN_BIN="$2"
@@ -101,7 +101,7 @@ resolve_app_path() {
 is_native_c_runtime() {
   local v
   v="$("$AIRUN_BIN" version 2>/dev/null || true)"
-  [[ "$v" == airun-native-c* ]]
+  [[ "$v" == ailang-native-c* ]]
 }
 
 supports_source_targets() {
@@ -266,7 +266,7 @@ EOF
 [Desktop Entry]
 Type=Application
 Name=$app_name
-Exec=airun run $app_dir
+Exec=ailang run $app_dir
 Icon=app
 Categories=Utility;
 EOF
@@ -384,7 +384,7 @@ ensure_macos_run_bundle() {
   local macos="$contents/MacOS"
   local resources="$contents/Resources"
   local plist="$contents/Info.plist"
-  local bundle_exec="airun"
+  local bundle_exec="ailang"
   local embedded_airun="$macos/$bundle_exec"
   local icon_svg="$project_dir/Assets/icons/app.svg"
   local icon_icns_src="$project_dir/Assets/icons/app.icns"
@@ -578,7 +578,7 @@ run_via_macos_bundle_if_possible() {
       return 0
     fi
   fi
-  (cd "$project_dir" && "$bundle_app/Contents/MacOS/airun" run "$target_abs" "$@")
+  (cd "$project_dir" && "$bundle_app/Contents/MacOS/ailang" run "$target_abs" "$@")
 }
 
 ensure_dir() {
@@ -882,10 +882,10 @@ PROJECT_DIR="$project_dir"
 if [[ -x "${AIRUN_BIN:-}" ]]; then
   exec "${AIRUN_BIN}" run "\$PROJECT_DIR" "\$@"
 fi
-if [[ -x "./.tools/airun" ]]; then
-  exec "./.tools/airun" run "\$PROJECT_DIR" "\$@"
+if [[ -x "./.tools/ailang" ]]; then
+  exec "./.tools/ailang" run "\$PROJECT_DIR" "\$@"
 fi
-exec airun run "\$PROJECT_DIR" "\$@"
+exec ailang run "\$PROJECT_DIR" "\$@"
 EOF
   chmod +x "$runner"
   return 0
@@ -933,16 +933,16 @@ EOF
 
 if [[ "${1:-}" == "--help" || "${1:-}" == "-h" || "${1:-}" == "help" || $# -eq 0 ]]; then
   cat <<'EOF'
-AiVectra airun wrapper
+AiVectra AiLang wrapper
 usage:
-  ./scripts/aivectra [--airun /path/to/airun] <airun-args>
+  ./scripts/aivectra [--ailang /path/to/ailang] <ailang-args>
   ./scripts/aivectra init <AppName|path> [--force] [--target <name>] [--targets <expr>]
   ./scripts/aivectra targets add [project-path] --target <name> [--target <name> ...]
   ./scripts/aivectra targets add [project-path] --targets <expr>
   ./scripts/aivectra doctor
   ./scripts/aivectra test
   ./scripts/aivectra debug [debug-flags] [app|project-dir] [-- app-args...]
-  ./scripts/aivectra publish <app|project-dir|.aibc1> [airun publish flags]
+  ./scripts/aivectra publish <app|project-dir|.aibc1> [ailang publish flags]
   ./scripts/aivectra debug scenario <fixture.toml> [--name <scenario>]
   ./scripts/aivectra icon <project-path> [label]
   ./scripts/aivectra input --window "<title>" --events "<tokens>" [--delay-ms N] [--dry-run]
