@@ -2,10 +2,13 @@
 out
 build
 .tools
+.tmp/
 .artifacts/
 artifacts/
+*.local.*
 
 .tmp-*
 .tmp_*
 .toolchain/
+**/.toolchain/
 *.aibc1
