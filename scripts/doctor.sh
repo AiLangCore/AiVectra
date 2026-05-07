@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-AIRUN_BIN="${AIRUN_BIN:-$ROOT_DIR/.tools/airun}"
+AIRUN_BIN="${AIRUN_BIN:-$ROOT_DIR/.tools/ailang}"
 if [[ ! -x "$AIRUN_BIN" ]]; then
-  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-airun}"
+  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-ailang}"
 fi
 
 pass() { echo "[doctor] pass: $1"; }
@@ -18,9 +18,9 @@ if [[ "$help_text" != *".aos"* || "$help_text" != *"project-dir"* ]]; then
 fi
 
 if command -v "$AIRUN_BIN" >/dev/null 2>&1; then
-  pass "airun available ($AIRUN_BIN)"
+  pass "ailang available ($AIRUN_BIN)"
 else
-  fail "airun not found (set AIRUN_BIN or install airun)"
+  fail "airun not found (set AIRUN_BIN or install ailang)"
   has_failure=1
 fi
 

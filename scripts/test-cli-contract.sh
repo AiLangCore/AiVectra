@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 AIVECTRA="$ROOT_DIR/scripts/aivectra"
-AIRUN_BIN="${AIRUN_BIN:-$ROOT_DIR/.tools/airun}"
+AIRUN_BIN="${AIRUN_BIN:-$ROOT_DIR/.tools/ailang}"
 HELP_TEXT="$("$AIRUN_BIN" --help 2>&1 || true)"
 REQUIRES_PREBUILT=0
 if [[ "$HELP_TEXT" != *".aos"* || "$HELP_TEXT" != *"project-dir"* ]]; then

@@ -215,7 +215,7 @@ Canonical AiVectra app structure:
 
 ## Local Run
 
-Use `ailang` from your normal toolchain (`PATH`).
+Use `ailang` from your installed AiLang toolchain (`PATH`).
 If you have a temporary local binary in this repo, replace `ailang` with `./.tools/ailang`.
 
 Run the sample app from repo root:

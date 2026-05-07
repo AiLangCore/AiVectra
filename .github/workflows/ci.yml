@@ -1,0 +1,48 @@
+name: AiVectra CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/**"
+      - "release/**"
+      - "hotfix/**"
+      - "codex/**"
+
+jobs:
+  sdk:
+    name: sdk-linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Script syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          find ./scripts -type f -name '*.sh' -print | sort | xargs -I{} bash -n {}
+          bash -n ./scripts/aivectra
+
+      - name: Node ID check
+        shell: bash
+        run: ./scripts/check-node-ids.sh
+
+      - name: Package smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          package_dir=".tmp/aivectra-ci-package"
+          rm -rf "$package_dir"
+          mkdir -p "$package_dir/bin" "$package_dir/src" "$package_dir/SPEC" "$package_dir/samples"
+          cp ./scripts/aivectra "$package_dir/bin/aivectra"
+          chmod +x "$package_dir/bin/aivectra"
+          cp -R ./src/AiVectra "$package_dir/src/AiVectra"
+          cp -R ./src/AiVectra.Cli "$package_dir/src/AiVectra.Cli"
+          cp -R ./SPEC/. "$package_dir/SPEC/"
+          cp -R ./samples/. "$package_dir/samples/"
+          cp ./README.md ./LICENSE "$package_dir/"
+          "$package_dir/bin/aivectra" --help >/dev/null

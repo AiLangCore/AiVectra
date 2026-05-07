@@ -17,6 +17,15 @@ This document defines rules that ALL agents must follow when modifying AiVectra 
 
 ⸻
 
+IMPORTANT: Until a major or minor release is officially released, all contracts,
+APIs, schemas, interfaces, and architectural decisions are considered
+negotiable and may change freely. Do not add backward compatibility layers,
+legacy adapters, or dual-path support unless explicitly requested. When changing
+direction, replace the old implementation completely and update the codebase
+consistently to the new contract. Patch releases are for bug fixes only.
+
+⸻
+
 	1.	Architectural Model
 
 AiVectra is a UI layer built on top of AiLang and executed by AiVM.
@@ -30,6 +39,12 @@ AiVM owns:
 • Core deterministic event queue
 • Thread scheduling mechanics
 • Syscall dispatch boundary
+
+New `sys.*` targets require absolute justification. A syscall may only be added
+when it crosses a host boundary and cannot be implemented deterministically in
+AiLang or AiLang core libraries. Do not add syscalls for deterministic library
+behavior, template rendering, parsing, validation, compiler policy, or
+compatibility adapters.
 
 AiLang owns:
 • Language semantics

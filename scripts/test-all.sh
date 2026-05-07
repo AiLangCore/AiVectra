@@ -2,6 +2,14 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+export AIVECTRA_USE_MACOS_BUNDLE="${AIVECTRA_USE_MACOS_BUNDLE:-0}"
+if [[ -z "${AIRUN_BIN:-}" ]]; then
+  if [[ -x "$ROOT_DIR/.tools/ailang" ]]; then
+    export AIRUN_BIN="$ROOT_DIR/.tools/ailang"
+  elif [[ -x "${HOME}/.ailang/bin/ailang" ]]; then
+    export AIRUN_BIN="${HOME}/.ailang/bin/ailang"
+  fi
+fi
 
 echo "[test-all] cli contract"
 "$ROOT_DIR/scripts/test-cli-contract.sh"

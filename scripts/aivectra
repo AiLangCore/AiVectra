@@ -6,7 +6,11 @@ ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/ailang"
 AIRUN_BIN="${AIRUN_BIN:-$AIRUN_BIN_DEFAULT}"
 if [[ ! -x "$AIRUN_BIN" ]]; then
-  AIRUN_BIN="${AIRUN_BIN_FALLBACK:-ailang}"
+  if [[ -x "${HOME}/.ailang/bin/ailang" ]]; then
+    AIRUN_BIN="${AIRUN_BIN_FALLBACK:-${HOME}/.ailang/bin/ailang}"
+  else
+    AIRUN_BIN="${AIRUN_BIN_FALLBACK:-ailang}"
+  fi
 fi
 
 # Optional override: ./scripts/aivectra --ailang /path/to/ailang ...
@@ -558,6 +562,10 @@ run_via_macos_bundle_if_possible() {
   local target_abs
   target_abs="$(abs_path "$target")"
   if [[ "$(uname -s)" != "Darwin" ]]; then
+    "$AIRUN_BIN" run "$target_abs" "$@"
+    return $?
+  fi
+  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-1}" == "0" ]]; then
     "$AIRUN_BIN" run "$target_abs" "$@"
     return $?
   fi
