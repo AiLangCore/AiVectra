@@ -29,7 +29,7 @@ if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/HelloName/app.aibc1" ]
   }
 else
   echo "[cli-contract] explicit target + forwarding boundary"
-  "$AIVECTRA" debug --debug-mode live "$ROOT_DIR/samples/HelloName/" -- --debug-mode=bogus >/dev/null
+  "$AIVECTRA" debug --debug-mode snapshot "$ROOT_DIR/src/AiVectra.Cli/" -- --debug-mode=bogus >/dev/null
 fi
 
 if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/HelloWorld/app.aibc1" ]]; then
@@ -52,7 +52,7 @@ if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/HelloWorld/app.aibc1" 
 else
   echo "[cli-contract] implicit cwd project inference"
   (
-    cd "$ROOT_DIR/samples/HelloName"
+    cd "$ROOT_DIR/src/AiVectra.Cli"
     ../../scripts/aivectra debug --debug-mode snapshot --out ../../.artifacts/debug/cli-contract-cwd >/dev/null
   )
 fi

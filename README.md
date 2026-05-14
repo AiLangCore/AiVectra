@@ -168,6 +168,7 @@ See:
 
 - `SPEC/STYLE_AILANG.md`
 - `SPEC/STYLE_AIVECTRA.md`
+- `SPEC/VISUAL_CONTRACT.md`
 
 ---
 
@@ -227,6 +228,7 @@ Run the named greeting example:
 `ailang run ./samples/HelloName/`
 
 `HelloName` uses GUI text entry from key events and a clickable `Submit` button to switch to the greeting view.
+On macOS, `./scripts/aivectra run` uses direct `ailang` execution by default during development. Set `AIVECTRA_USE_MACOS_BUNDLE=1` to exercise the generated `.app` bundle path.
 
 Wrapper/CLI:
 
@@ -261,7 +263,7 @@ Wrapper/CLI:
   - `./tools/ailang debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal`
   - `./scripts/test-debug-ci-parity.sh`
   - Debug APIs in the SDK/CLI are generic only; sample-specific debug formats must stay out of `src/AiVectra`.
-- Golden checks:
+- Functional visual checks:
   - `./scripts/test-golden-ui.sh`
   - `./scripts/test-interactive-svg-mvp.sh`
   - `./scripts/test-screenshot-debug-reality.sh` (requires macOS Screen Recording permission)

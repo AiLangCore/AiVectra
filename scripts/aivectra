@@ -565,7 +565,7 @@ run_via_macos_bundle_if_possible() {
     "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi
-  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-1}" == "0" ]]; then
+  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-0}" != "1" ]]; then
     "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi

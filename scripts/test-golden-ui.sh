@@ -28,11 +28,7 @@ rc_replay=$?
 set -e
 
 if [[ $rc_snapshot -ne 0 || $rc_replay -ne 0 ]]; then
-  if rg -q 'code=RUN001' "$actual_snapshot" || rg -q 'code=RUN001' "$actual_replay"; then
-    echo "golden ui checks skipped: AiVectra.Cli debug sample currently fails under this runtime (RUN001)"
-    exit 0
-  fi
-  echo "golden ui checks failed: unexpected execution error" >&2
+  echo "golden visual contract failed: execution error" >&2
   cat "$actual_snapshot" >&2
   cat "$actual_replay" >&2
   exit 1
@@ -41,4 +37,4 @@ fi
 diff -u "$GOLDEN_DIR/snapshot.expected" "$actual_snapshot"
 diff -u "$GOLDEN_DIR/replay.expected" "$actual_replay"
 
-echo "golden ui checks passed"
+echo "golden visual contract passed"

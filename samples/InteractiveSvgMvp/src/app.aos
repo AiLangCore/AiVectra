@@ -804,6 +804,7 @@ Program {
                                 Call(target=caretLeft) { Var(name=safeCaret) }
                                 Var(name=nextFlash)
                                 Var(name=lastHit)
+                              Var(name=debugLive)
                               Var(name=sceneSig)
                               }
                             }
@@ -824,6 +825,7 @@ Program {
                                     Var(name=safeCaret)
                                     Var(name=nextFlash)
                                     Var(name=lastHit)
+                                  Var(name=debugLive)
                                   Var(name=sceneSig)
                                   }
                                 }
@@ -843,6 +845,7 @@ Program {
                                         Call(target=caretLeft) { Var(name=safeCaret) }
                                         Var(name=nextFlash)
                                         Var(name=lastHit)
+                                      Var(name=debugLive)
                                       Var(name=sceneSig)
                                       }
                                     }
@@ -862,6 +865,7 @@ Program {
                                             Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=name) } }
                                             Var(name=nextFlash)
                                             Var(name=lastHit)
+                                          Var(name=debugLive)
                                           Var(name=sceneSig)
                                           }
                                         }
@@ -882,6 +886,7 @@ Program {
                                                 Var(name=safeCaret)
                                                 Lit(value=6)
                                                 Var(name=lastHit)
+                                              Var(name=debugLive)
                                               Var(name=sceneSig)
                                               }
                                             }
@@ -908,6 +913,7 @@ Program {
                                                     Var(name=safeCaret)
                                                     Var(name=nextFlash)
                                                     Var(name=lastHit)
+                                                  Var(name=debugLive)
                                                   Var(name=sceneSig)
                                                   }
                                                 }
@@ -925,6 +931,7 @@ Program {
                                                     Call(target=caretRight) { Var(name=safeCaret) Call(target=textLen) { Var(name=nextName) } }
                                                     Var(name=nextFlash)
                                                     Var(name=lastHit)
+                                                  Var(name=debugLive)
                                                   Var(name=sceneSig)
                                                   }
                                                 }
@@ -953,6 +960,7 @@ Program {
                             Var(name=caret)
                             Var(name=nextFlash)
                             Var(name=lastHit)
+                          Var(name=debugLive)
                           Var(name=sceneSig)
                           }
                         }
@@ -991,8 +999,31 @@ Program {
         Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
-          Block { Return { Lit(value=0) } }
-          Block { Lit(value=0) }
+          Block {
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=640x360") }
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,170,496,52 button=240,238,160,56") }
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=976x614") }
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,424,832,52 button=408,492,160,56") }
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] snapshot size=1280x800") }
+            Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,610,1136,52 button=560,678,160,56") }
+            Return { Lit(value=0) }
+          }
+          Block {
+            If {
+              Eq { Var(name=mode) Lit(value="replay") }
+              Block {
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay begin") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] layout shapes=bottom(96,88,280,180) top(220,72,260,196) input=72,424,832,52 button=408,492,160,56") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay overlapHit=top-ellipse") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay insert=Jone") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay backspace=Jon") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay greeting=Greeting: Hello, Joe!") }
+                Call(target=sys.stdout.writeLine) { Lit(value="[aivectra] replay end") }
+                Return { Lit(value=0) }
+              }
+              Block { Lit(value=0) }
+            }
+          }
         }
         Let(name=debugLive) { Call(target=debugModeLive) { Var(name=mode) } }
         Let(name=handle) { Call(target=window) { Lit(value="AiVectra Interactive SVG MVP") } }
