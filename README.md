@@ -232,7 +232,7 @@ Wrapper/CLI:
 
 - `./scripts/aivectra` is a thin wrapper over `ailang` (no project-specific default).
 - Override runtime location with env or flag:
-  - `AIRUN_BIN=/path/to/ailang ./scripts/aivectra`
+  - `AILANG_BIN=/path/to/ailang ./scripts/aivectra`
   - `./scripts/aivectra --ailang /path/to/ailang`
 - Example:
   - `./scripts/aivectra doctor`

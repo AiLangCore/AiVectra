@@ -3,13 +3,13 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-AIRUN_BIN_DEFAULT="$ROOT_DIR/.tools/ailang"
-AIRUN_BIN="${AIRUN_BIN:-$AIRUN_BIN_DEFAULT}"
-if [[ ! -x "$AIRUN_BIN" ]]; then
+AILANG_BIN_DEFAULT="$ROOT_DIR/.tools/ailang"
+AILANG_BIN="${AILANG_BIN:-$AILANG_BIN_DEFAULT}"
+if [[ ! -x "$AILANG_BIN" ]]; then
   if [[ -x "${HOME}/.ailang/bin/ailang" ]]; then
-    AIRUN_BIN="${AIRUN_BIN_FALLBACK:-${HOME}/.ailang/bin/ailang}"
+    AILANG_BIN="${AILANG_BIN_FALLBACK:-${HOME}/.ailang/bin/ailang}"
   else
-    AIRUN_BIN="${AIRUN_BIN_FALLBACK:-ailang}"
+    AILANG_BIN="${AILANG_BIN_FALLBACK:-ailang}"
   fi
 fi
 
@@ -19,7 +19,7 @@ if [[ "${1:-}" == "--ailang" ]]; then
     echo "missing value for --ailang" >&2
     exit 2
   fi
-  AIRUN_BIN="$2"
+  AILANG_BIN="$2"
   shift 2
 fi
 
@@ -51,7 +51,7 @@ resolve_app_path() {
   local h
   local runtime_supports_source="false"
   local prefer_prebuilt="${AIVECTRA_PREFER_PREBUILT:-0}"
-  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  h="$("$AILANG_BIN" --help 2>&1 || true)"
   if [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]; then
     runtime_supports_source="true"
   fi
@@ -104,13 +104,13 @@ resolve_app_path() {
 
 is_native_c_runtime() {
   local v
-  v="$("$AIRUN_BIN" version 2>/dev/null || true)"
+  v="$("$AILANG_BIN" version 2>/dev/null || true)"
   [[ "$v" == ailang-native-c* ]]
 }
 
 supports_source_targets() {
   local h
-  h="$("$AIRUN_BIN" --help 2>&1 || true)"
+  h="$("$AILANG_BIN" --help 2>&1 || true)"
   [[ "$h" == *".aos"* && "$h" == *"project-dir"* ]]
 }
 
@@ -389,7 +389,7 @@ ensure_macos_run_bundle() {
   local resources="$contents/Resources"
   local plist="$contents/Info.plist"
   local bundle_exec="ailang"
-  local embedded_airun="$macos/$bundle_exec"
+  local embedded_ailang="$macos/$bundle_exec"
   local icon_svg="$project_dir/Assets/icons/app.svg"
   local icon_icns_src="$project_dir/Assets/icons/app.icns"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
@@ -397,8 +397,8 @@ ensure_macos_run_bundle() {
 
   rm -rf "$bundle_root"
   mkdir -p "$macos" "$resources"
-  cp "$AIRUN_BIN" "$embedded_airun"
-  chmod +x "$embedded_airun"
+  cp "$AILANG_BIN" "$embedded_ailang"
+  chmod +x "$embedded_ailang"
 
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
@@ -562,17 +562,17 @@ run_via_macos_bundle_if_possible() {
   local target_abs
   target_abs="$(abs_path "$target")"
   if [[ "$(uname -s)" != "Darwin" ]]; then
-    "$AIRUN_BIN" run "$target_abs" "$@"
+    "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi
   if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-1}" == "0" ]]; then
-    "$AIRUN_BIN" run "$target_abs" "$@"
+    "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi
   local project_dir
   project_dir="$(project_dir_from_target "$target_abs")"
   if [[ -z "$project_dir" || ! -f "$project_dir/project.aiproj" ]]; then
-    "$AIRUN_BIN" run "$target_abs" "$@"
+    "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi
   local app_name
@@ -605,7 +605,7 @@ normalize_debug_artifacts_to_toml() {
   done
 }
 
-run_airun_debug_with_toml_artifacts() {
+run_ailang_debug_with_toml_artifacts() {
   local app_path="$1"
   shift
   local out_dir=""
@@ -669,11 +669,11 @@ run_airun_debug_with_toml_artifacts() {
 
   native_runtime_guard "$app_path"
   ensure_dir "$out_dir"
-  "$AIRUN_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
+  "$AILANG_BIN" debug run "$app_path" "${wrapper_args[@]:-}" "${app_args[@]:-}"
   normalize_debug_artifacts_to_toml "$out_dir"
 }
 
-run_airun_debug_scenario_with_toml_artifacts() {
+run_ailang_debug_scenario_with_toml_artifacts() {
   local fixture_path="$1"
   shift
   local run_fixture="$fixture_path"
@@ -684,7 +684,7 @@ run_airun_debug_scenario_with_toml_artifacts() {
     toml_scenario_to_aos "$fixture_path" "$tmp_fixture"
     run_fixture="$tmp_fixture"
   fi
-  "$AIRUN_BIN" debug scenario "$run_fixture" "$@"
+  "$AILANG_BIN" debug scenario "$run_fixture" "$@"
   local rc=$?
   if [[ -n "$tmp_fixture" && -f "$tmp_fixture" ]]; then
     rm -f "$tmp_fixture"
@@ -887,8 +887,8 @@ ensure_macos_publish_bundle() {
 #!/usr/bin/env bash
 set -euo pipefail
 PROJECT_DIR="$project_dir"
-if [[ -x "${AIRUN_BIN:-}" ]]; then
-  exec "${AIRUN_BIN}" run "\$PROJECT_DIR" "\$@"
+if [[ -x "${AILANG_BIN:-}" ]]; then
+  exec "${AILANG_BIN}" run "\$PROJECT_DIR" "\$@"
 fi
 if [[ -x "./.tools/ailang" ]]; then
   exec "./.tools/ailang" run "\$PROJECT_DIR" "\$@"
@@ -1610,7 +1610,7 @@ if [[ "${1:-}" == "publish" ]]; then
   if ! preflight_publish_tools "$APP_PATH_RAW" "$TARGET_RID"; then
     exit 2
   fi
-  "$AIRUN_BIN" "$@"
+  "$AILANG_BIN" "$@"
   rc=$?
   if [[ $rc -eq 0 && -n "$APP_PATH_RAW" && -n "$OUT_DIR" && -d "$OUT_DIR" ]]; then
     if [[ "$(uname -s)" == "Darwin" ]]; then
@@ -1650,7 +1650,7 @@ if [[ "${1:-}" == "debug" ]]; then
     fi
     FIXTURE="$(normalize_path_arg "$2")"
     shift 2
-    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    run_ailang_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
     exit $?
   fi
 
@@ -1725,7 +1725,7 @@ if [[ "${1:-}" == "debug" ]]; then
   fi
 
   set +u
-  run_airun_debug_with_toml_artifacts "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
+  run_ailang_debug_with_toml_artifacts "$APP_PATH" "${WRAPPER_ARGS[@]}" -- "${APP_ARGS[@]}"
   RC=$?
   set -u
   exit $RC
@@ -1738,12 +1738,12 @@ if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
   if [[ "${1:-}" == "scenario" ]]; then
     FIXTURE="$(normalize_path_arg "${2:-}")"
     shift 2 || true
-    run_airun_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
+    run_ailang_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
     exit $?
   fi
   APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/samples/HelloName/src/app.aos}")"
   shift || true
-  run_airun_debug_with_toml_artifacts "$APP_PATH" -- "$@"
+  run_ailang_debug_with_toml_artifacts "$APP_PATH" -- "$@"
   exit $?
 fi
 
@@ -1752,4 +1752,4 @@ if [[ "${1:-}" == "run" && "${2:-}" == ".debug" ]]; then
   exit 2
 fi
 
-exec "$AIRUN_BIN" "$@"
+exec "$AILANG_BIN" "$@"

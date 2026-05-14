@@ -152,7 +152,7 @@ Program {
         If {
           Eq { Var(name=debugMode) Lit(value="live") }
           Block {
-            Call(target=sys.stdout.writeLine) { Lit(value="Run: airun run ./samples/HelloName/") }
+            Call(target=sys.stdout.writeLine) { Lit(value="Run: ailang run ./samples/HelloName/") }
             Return { Lit(value=0) }
           }
           Block { Lit(value=0) }
