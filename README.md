@@ -191,6 +191,8 @@ This repository is an **AiLang workspace** with:
 
 - `src/AiVectra/project.aiproj` - AiVectra library
 - `src/AiVectra.Cli/project.aiproj` - AiVectra CLI
+- `templates/projects/` - package project templates
+- `templates/files/` - package file templates
 - `samples/HelloWorld/project.aiproj` - hello-world sample
 - `samples/HelloName/project.aiproj` - hello-name sample
 - `samples/InteractiveSvgMvp/project.aiproj` - interactive SVG sample
@@ -277,6 +279,16 @@ Wrapper/CLI:
   - `syscalls.toml`
   - `events.toml`
   - `diagnostics.toml`
+
+Package usage:
+
+- AiVectra is published as an AiLang package with library, tool, and template
+  content.
+- Add it to a project with `ailang package add aivectra`.
+- Restore packages with `ailang package restore`.
+- After restore, run the package tool with `ailang aivectra ...`.
+- Package project templates are under `templates/projects/`.
+- Package file templates are under `templates/files/`.
 
 Agent debug workflow:
 

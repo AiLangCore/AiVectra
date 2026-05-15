@@ -1,0 +1,13 @@
+Program#view1 {
+  Import#import_aivectra(package="aivectra" path="src/AiVectra/src/lib.aos")
+
+  Let#view_render(name=renderView) {
+    Fn#view_fn(params=handle,message) {
+      Block#view_block {
+        Call#view_rect(target=rect) { Var#view_handle1(name=handle) }
+        Call#view_text(target=text) { Var#view_handle2(name=handle) Var#view_message(name=message) }
+        Return#view_ok { Lit#view_zero(value=0) }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+Program#p1 {
+  Project#proj1(
+    name="{{projectName}}"
+    entryFile="src/app.aos"
+    entryExport="start"
+  ) {
+    Include#dep_aivectra(name="aivectra")
+  }
+}
