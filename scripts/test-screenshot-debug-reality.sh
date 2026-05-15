@@ -3,8 +3,51 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 AIVECTRA="$ROOT_DIR/scripts/aivectra"
-SHOT_TOOL="/Users/toddhenderson/.codex/skills/screenshot/scripts/take_screenshot.py"
-PERM_TOOL="/Users/toddhenderson/.codex/skills/screenshot/scripts/ensure_macos_permissions.sh"
+
+resolve_screenshot_tool() {
+  if [[ -n "${AIVECTRA_SCREENSHOT_TOOL:-}" ]]; then
+    if [[ ! -f "$AIVECTRA_SCREENSHOT_TOOL" ]]; then
+      echo "configured screenshot capture tool does not exist: $AIVECTRA_SCREENSHOT_TOOL" >&2
+      exit 2
+    fi
+    printf '%s\n' "$AIVECTRA_SCREENSHOT_TOOL"
+    return
+  fi
+
+  local codex_home="${CODEX_HOME:-$HOME/.codex}"
+  local candidate="$codex_home/skills/screenshot/scripts/take_screenshot.py"
+  if [[ -f "$candidate" ]]; then
+    printf '%s\n' "$candidate"
+    return
+  fi
+
+  echo "missing screenshot capture tool" >&2
+  echo "set AIVECTRA_SCREENSHOT_TOOL=/path/to/take_screenshot.py or install the Codex screenshot skill" >&2
+  exit 2
+}
+
+resolve_permission_tool() {
+  if [[ -n "${AIVECTRA_SCREENSHOT_PERMISSION_TOOL:-}" ]]; then
+    if [[ ! -f "$AIVECTRA_SCREENSHOT_PERMISSION_TOOL" ]]; then
+      echo "configured screenshot permission tool does not exist: $AIVECTRA_SCREENSHOT_PERMISSION_TOOL" >&2
+      exit 2
+    fi
+    printf '%s\n' "$AIVECTRA_SCREENSHOT_PERMISSION_TOOL"
+    return
+  fi
+
+  local codex_home="${CODEX_HOME:-$HOME/.codex}"
+  local candidate="$codex_home/skills/screenshot/scripts/ensure_macos_permissions.sh"
+  if [[ -f "$candidate" ]]; then
+    printf '%s\n' "$candidate"
+    return
+  fi
+
+  printf '%s\n' ""
+}
+
+SHOT_TOOL="$(resolve_screenshot_tool)"
+PERM_TOOL="$(resolve_permission_tool)"
 
 # Read canonical layout line from deterministic snapshot output.
 out_snapshot="$($AIVECTRA run "$ROOT_DIR/samples/HelloName/" snapshot)"
@@ -29,8 +72,11 @@ $AIVECTRA run "$ROOT_DIR/samples/HelloName/" >"$app_log" 2>&1 &
 APP_PID=$!
 sleep 2
 
-# Permission preflight (fails with clear message if Screen Recording is not enabled).
-bash "$PERM_TOOL" >/tmp/aivectra-screen-perm.log 2>&1
+# Permission preflight when a host-specific checker is available. The capture
+# step below still fails with diagnostics if the OS blocks screenshot access.
+if [[ -n "$PERM_TOOL" ]]; then
+  bash "$PERM_TOOL" >/tmp/aivectra-screen-perm.log 2>&1
+fi
 
 capture_ok=0
 

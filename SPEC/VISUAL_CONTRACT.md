@@ -30,6 +30,9 @@ prove those two views describe the same image.
   platform window matches the deterministic debug/render contract.
 - `scripts/test-all.sh` runs the functional suite. Set
   `AIVECTRA_SCREENSHOT_TEST=1` to include host screenshot parity.
+- Host screenshot parity requires a capture helper. Set
+  `AIVECTRA_SCREENSHOT_TOOL=/path/to/take_screenshot.py`, or install the Codex
+  screenshot skill under `$CODEX_HOME/skills/screenshot`.
 - Set `AIVECTRA_ARCHITECTURE_TEST=1` to include architectural lint checks that
   reject direct sample syscalls. Current migration work still needs samples
   rewritten to the public AiVectra API before that lint can be required by
