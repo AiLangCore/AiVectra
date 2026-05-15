@@ -26,6 +26,9 @@ echo "[test-all] hello-name behavior"
 echo "[test-all] debug ci parity"
 "$ROOT_DIR/scripts/test-debug-ci-parity.sh"
 
+echo "[test-all] package surface"
+"$ROOT_DIR/scripts/test-package-surface.sh"
+
 if [[ "${AIVECTRA_ARCHITECTURE_TEST:-0}" == "1" ]]; then
   echo "[test-all] architecture lint"
   "$ROOT_DIR/scripts/test-no-direct-syscalls-in-samples.sh"
