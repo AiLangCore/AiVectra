@@ -11,6 +11,7 @@ It renders it.
 
 Curated public examples are in
 [AiLangCore/ailang-examples](https://github.com/AiLangCore/ailang-examples).
+For contributor setup and verification, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
