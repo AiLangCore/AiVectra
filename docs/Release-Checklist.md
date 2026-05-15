@@ -35,7 +35,7 @@ AiVectra API.
 ## Release
 
 - Push the release branch and confirm GitHub Actions pass.
-- Tag with `v<version>`, for example `v0.0.1-alpha.11`.
+- Tag with `v<version>`, for example `v0.0.1-alpha.13`.
 - Confirm the GitHub release is marked as a prerelease for `-alpha`, `-beta`,
   `-rc`, and `-local` tags.
 - Confirm `.tar.gz` and `.zip` artifacts are attached.
