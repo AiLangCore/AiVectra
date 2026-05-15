@@ -9,6 +9,9 @@ It provides deterministic, resolution-independent rendering across platforms whi
 AiVectra does not define language behavior.
 It renders it.
 
+Curated public examples are in
+[AiLangCore/ailang-examples](https://github.com/AiLangCore/ailang-examples).
+
 ---
 
 ## Purpose
