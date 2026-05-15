@@ -45,6 +45,16 @@ abs_path() {
   (cd "$d" 2>/dev/null && printf "%s/%s" "$(pwd)" "$b") || printf "%s" "$p"
 }
 
+display_path() {
+  local p
+  p="$(abs_path "$1")"
+  if [[ "$p" == "$ROOT_DIR"/* ]]; then
+    printf "./%s" "${p#"$ROOT_DIR"/}"
+    return 0
+  fi
+  printf "%s" "$p"
+}
+
 resolve_app_path() {
   local p="$1"
   local n
@@ -1525,13 +1535,15 @@ if [[ "${1:-}" == "icon" ]]; then
     echo "usage: ./scripts/aivectra icon <project-path> [label]" >&2
     exit 2
   fi
-  PROJECT="$(normalize_path_arg "$1")"
+  PROJECT="$(abs_path "$(normalize_path_arg "$1")")"
   shift || true
   LABEL="${1:-}"
   ICON_DIR="$PROJECT/Assets/icons"
   ICON_OUT="$ICON_DIR/app.svg"
   MANIFEST_OUT="$ICON_DIR/manifest.txt"
   DEFAULT_ICON="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
+  ICON_OUT_DISPLAY="$(display_path "$ICON_OUT")"
+  DEFAULT_ICON_DISPLAY="$(display_path "$DEFAULT_ICON")"
 
   if [[ ! -d "$PROJECT" ]]; then
     echo "project path not found: $PROJECT" >&2
@@ -1549,15 +1561,15 @@ if [[ "${1:-}" == "icon" ]]; then
     cat > "$MANIFEST_OUT" <<EOF
 style=label_monogram
 label=$LABEL
-source=$DEFAULT_ICON
-output=$ICON_OUT
+source=$DEFAULT_ICON_DISPLAY
+output=$ICON_OUT_DISPLAY
 note=label override requested; default logo SVG copied until label renderer lands
 EOF
   else
     cat > "$MANIFEST_OUT" <<EOF
 style=ailang_logo
-source=$DEFAULT_ICON
-output=$ICON_OUT
+source=$DEFAULT_ICON_DISPLAY
+output=$ICON_OUT_DISPLAY
 EOF
   fi
 

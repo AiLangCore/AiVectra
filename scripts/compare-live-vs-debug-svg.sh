@@ -3,7 +3,30 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 AIVECTRA="$ROOT_DIR/scripts/aivectra"
-SHOT_TOOL="/Users/toddhenderson/.codex/skills/screenshot/scripts/take_screenshot.py"
+
+resolve_screenshot_tool() {
+  if [[ -n "${AIVECTRA_SCREENSHOT_TOOL:-}" ]]; then
+    if [[ ! -f "$AIVECTRA_SCREENSHOT_TOOL" ]]; then
+      echo "configured screenshot capture tool does not exist: $AIVECTRA_SCREENSHOT_TOOL" >&2
+      exit 2
+    fi
+    printf '%s\n' "$AIVECTRA_SCREENSHOT_TOOL"
+    return
+  fi
+
+  local codex_home="${CODEX_HOME:-$HOME/.codex}"
+  local candidate="$codex_home/skills/screenshot/scripts/take_screenshot.py"
+  if [[ -f "$candidate" ]]; then
+    printf '%s\n' "$candidate"
+    return
+  fi
+
+  echo "missing screenshot capture tool" >&2
+  echo "set AIVECTRA_SCREENSHOT_TOOL=/path/to/take_screenshot.py or install the Codex screenshot skill" >&2
+  exit 2
+}
+
+SHOT_TOOL="$(resolve_screenshot_tool)"
 
 OUT_DIR="${1:-$ROOT_DIR/artifacts}"
 mkdir -p "$OUT_DIR"

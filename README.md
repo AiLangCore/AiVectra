@@ -319,7 +319,7 @@ App icon generation:
   - `<project-path>/Assets/icons/app.svg`
   - `<project-path>/Assets/icons/manifest.txt`
 - Default logo source asset in this repo:
-  - `/Users/toddhenderson/RiderProjects/AiVectra/Assets/icons/ailang_default_appicon.svg`
+  - `./Assets/icons/ailang_default_appicon.svg`
 
 Run the library project directly (sanity check):
 
