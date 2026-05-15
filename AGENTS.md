@@ -350,3 +350,5 @@ Agent-optimized
 Host-independent
 
 If a proposed change violates any of these properties, it must not be implemented.
+
+Additional normative threading details are defined in `SPEC/THREADING.md`.
