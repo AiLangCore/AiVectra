@@ -166,8 +166,9 @@ Authoring style must optimize for:
 
 See:
 
-- `SPEC/STYLE_AILANG.md`
-- `SPEC/STYLE_AIVECTRA.md`
+- [AiLang `SPEC/STYLE_AILANG.md`](https://github.com/AiLangCore/AiLang/blob/develop/SPEC/STYLE_AILANG.md) for canonical AiLang source style.
+- `SPEC/STYLE_AILANG.md` for the local pointer to that canonical guide.
+- `SPEC/STYLE_AIVECTRA.md` for AiVectra-specific UI and rendering style.
 - `SPEC/VISUAL_CONTRACT.md`
 
 ---
