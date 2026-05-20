@@ -13,6 +13,22 @@ Curated public examples are in
 [AiLangCore/ailang-examples](https://github.com/AiLangCore/ailang-examples).
 For contributor setup and verification, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Current Status
+
+Current public beta: `v0.0.1-beta.1`.
+
+Install the public AiLangCore SDK, including `aivectra`:
+
+```bash
+curl -fsSL https://ailang.codes/install.sh | sh
+export PATH="$HOME/.ailang/bin:$PATH"
+aivectra help
+```
+
+AiVectra is published as an AiLang package with library, tool, and template
+content. Public examples live in
+[AiLangCore/ailang-examples](https://github.com/AiLangCore/ailang-examples).
+
 ---
 
 ## Purpose
@@ -177,9 +193,9 @@ See:
 
 ---
 
-## Status
+## Implementation Status
 
-Early architecture phase.
+Beta hardening phase.
 
 Current focus:
 
@@ -187,6 +203,7 @@ Current focus:
 - Layout determinism
 - Platform abstraction boundary
 - Golden test strategy
+- Functional UI testing and agent-readable debug artifacts
 
 ---
 
