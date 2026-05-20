@@ -29,6 +29,14 @@ AiVectra is published as an AiLang package with library, tool, and template
 content. Public examples live in
 [AiLangCore/ailang-examples](https://github.com/AiLangCore/ailang-examples).
 
+Branch status: `develop` is the public default branch while the AiVectra
+runtime, package, and templates are being hardened for beta. Release tags and
+GitHub prereleases are the public artifact source; `main` is not the current
+integration branch during this beta cycle.
+
+[AiLangCore roadmap](https://ailang.codes/docs/roadmap.html) tracks the
+Alpha -> Beta -> RC -> 1.0 direction across AiLang, AiVM, and AiVectra.
+
 ---
 
 ## Purpose
