@@ -1,6 +1,7 @@
 Program {
   Import(path="../../../src/AiVectra/src/lib.aos")
   Import(path="../../../.tools/sys/http.aos")
+  Import(path="../../../.tools/std/str.aos")
   Export(name=start)
 
   Let(name=strLen) {
@@ -20,7 +21,7 @@ Program {
           Block {
             If {
               Eq {
-                Call(target=sys.str.substring) { Var(name=text) Var(name=index) Var(name=patternLen) }
+                Call(target=substring) { Var(name=text) Var(name=index) Var(name=patternLen) }
                 Var(name=pattern)
               }
               Block { Return { Var(name=index) } }
@@ -86,7 +87,7 @@ Program {
           Block {
             Let(name=bodyStart) { Add { Var(name=sep) Lit(value=4) } }
             Return {
-              Call(target=sys.str.substring) {
+              Call(target=substring) {
                 Var(name=response)
                 Var(name=bodyStart)
                 Call(target=sub) { Call(target=strLen) { Var(name=response) } Var(name=bodyStart) }
@@ -106,10 +107,10 @@ Program {
           Call(target=intLt) { Var(name=pos) Lit(value=0) }
           Block { Return { Var(name=text) } }
           Block {
-            Let(name=prefix) { Call(target=sys.str.substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
+            Let(name=prefix) { Call(target=substring) { Var(name=text) Lit(value=0) Var(name=pos) } }
             Let(name=suffixStart) { Add { Var(name=pos) Lit(value=1) } }
             Let(name=suffix) {
-              Call(target=sys.str.substring) {
+              Call(target=substring) {
                 Var(name=text)
                 Var(name=suffixStart)
                 Call(target=sub) { Call(target=strLen) { Var(name=text) } Var(name=suffixStart) }
@@ -174,7 +175,7 @@ Program {
               Call(target=intLt) { Var(name=valueEnd) Lit(value=0) }
               Block { Return { Lit(value="") } }
               Block {
-                Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=valueEnd) Var(name=valueStart) } } }
+                Return { Call(target=substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=valueEnd) Var(name=valueStart) } } }
               }
             }
           }
@@ -197,7 +198,7 @@ Program {
             Let(name=bracketPos) { Call(target=findFrom) { Var(name=text) Lit(value="]") Var(name=valueStart) } }
             Let(name=end1) { Call(target=minPositive) { Var(name=commaPos) Var(name=bracePos) Call(target=strLen) { Var(name=text) } } }
             Let(name=end2) { Call(target=minPositive) { Var(name=end1) Var(name=bracketPos) Call(target=strLen) { Var(name=text) } } }
-            Return { Call(target=sys.str.substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=end2) Var(name=valueStart) } } }
+            Return { Call(target=substring) { Var(name=text) Var(name=valueStart) Call(target=sub) { Var(name=end2) Var(name=valueStart) } } }
           }
         }
       }
@@ -246,7 +247,7 @@ Program {
             If {
               Call(target=intLt) { Var(name=commaPos) Lit(value=0) }
               Block { Return { Var(name=listText) } }
-              Block { Return { Call(target=sys.str.substring) { Var(name=listText) Lit(value=0) Var(name=commaPos) } } }
+              Block { Return { Call(target=substring) { Var(name=listText) Lit(value=0) Var(name=commaPos) } } }
             }
           }
           Block {
@@ -256,7 +257,7 @@ Program {
               Block { Return { Lit(value="") } }
               Block {
                 Let(name=nextStart) { Add { Var(name=commaPos) Lit(value=1) } }
-                Let(name=tail) { Call(target=sys.str.substring) { Var(name=listText) Var(name=nextStart) Call(target=sub) { Call(target=strLen) { Var(name=listText) } Var(name=nextStart) } } }
+                Let(name=tail) { Call(target=substring) { Var(name=listText) Var(name=nextStart) Call(target=sub) { Call(target=strLen) { Var(name=listText) } Var(name=nextStart) } } }
                 Return { Call(target=csvNth) { Var(name=tail) Add { Var(name=n) Lit(value=-1) } } }
               }
             }
@@ -279,7 +280,7 @@ Program {
             If {
               Call(target=intLt) { Var(name=listEnd) Lit(value=0) }
               Block { Return { Lit(value="") } }
-              Block { Return { Call(target=sys.str.substring) { Var(name=json) Var(name=listStart) Call(target=sub) { Var(name=listEnd) Var(name=listStart) } } } }
+              Block { Return { Call(target=substring) { Var(name=json) Var(name=listStart) Call(target=sub) { Var(name=listEnd) Var(name=listStart) } } } }
             }
           }
         }
@@ -785,7 +786,7 @@ Program {
           Block {
             Let(name=len) { Call(target=strLen) { Var(name=textValue) } }
             Return {
-              Call(target=sys.str.substring) {
+              Call(target=substring) {
                 Var(name=textValue)
                 Lit(value=0)
                 Call(target=sub) { Var(name=len) Lit(value=1) }

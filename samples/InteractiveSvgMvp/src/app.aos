@@ -1,5 +1,6 @@
 Program {
   Import(path="../../../src/AiVectra/src/lib.aos")
+  Import(path="../../../.tools/std/str.aos")
   Export(name=start)
 
   Let(name=normalizeName) {
@@ -813,7 +814,7 @@ Program {
                             If {
                               Call(target=isDeleteKey) { Var(name=eventKey) }
                               Block {
-                                Let(name=nextName) { Call(target=sys.str.remove) { Var(name=name) Var(name=safeCaret) Lit(value=1) } }
+                                Let(name=nextName) { Call(target=remove) { Var(name=name) Var(name=safeCaret) Lit(value=1) } }
                                 Return {
                                   Call(target=loop) {
                                     Var(name=handle)

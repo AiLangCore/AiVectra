@@ -1,4 +1,6 @@
 Program {
+  Import(path="../../../.tools/std/str.aos")
+
   Let(name=version) {
     Fn(params=_) {
       Block { Return { Lit(value="0.0.1") } }
@@ -1106,7 +1108,7 @@ Program {
             Return {
               Add {
                 Lit(value=1)
-                Call(target=textLen) { Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+                Call(target=textLen) { Call(target=remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
               }
             }
           }
@@ -1144,7 +1146,7 @@ Program {
           Block {
             Return {
               Call(target=fitTextTail) {
-                Call(target=sys.str.remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
+                Call(target=remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
                 Var(name=maxChars)
               }
             }
@@ -1175,9 +1177,9 @@ Program {
       Block {
         Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
         Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
-        Let(name=prefix) { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
+        Let(name=prefix) { Call(target=substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
         Let(name=suffixLen) { Call(target=sub) { Var(name=len) Var(name=idx) } }
-        Let(name=suffix) { Call(target=sys.str.substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
+        Let(name=suffix) { Call(target=substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
         Return { StrConcat { ToString { Var(name=prefix) } StrConcat { ToString { Var(name=chunk) } ToString { Var(name=suffix) } } } }
       }
     }
@@ -1197,7 +1199,7 @@ Program {
               Block { Return { Var(name=textValue) } }
               Block {
                 Return {
-                  Call(target=sys.str.remove) {
+                  Call(target=remove) {
                     Var(name=textValue)
                     Add { Var(name=idx) Lit(value=-1) }
                     Lit(value=1)
@@ -1255,7 +1257,7 @@ Program {
 
   Let(name=textPrefix) {
     Fn(params=textValue,caret) {
-      Block { Return { Call(target=sys.str.substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
+      Block { Return { Call(target=substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
     }
   }
 
@@ -1277,7 +1279,7 @@ Program {
           Block { Return { Var(name=textValue) } }
           Block {
             Return {
-              Call(target=sys.str.remove) {
+              Call(target=remove) {
                 Var(name=textValue)
                 Add { Var(name=len) Lit(value=-1) }
                 Lit(value=1)
