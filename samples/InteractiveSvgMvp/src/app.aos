@@ -1,6 +1,6 @@
 Program {
   Import(path="../../../src/AiVectra/src/lib.aos")
-  Import(path="../../../.tools/std/str.aos")
+  Import(sdk="ailang" path="std/str.aos")
   Export(name=start)
 
   Let(name=normalizeName) {
