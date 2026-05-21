@@ -1,5 +1,5 @@
 Program {
-  Import(path="../../../.tools/std/str.aos")
+  Import(sdk="ailang" path="std/str.aos")
 
   Let(name=version) {
     Fn(params=_) {
