@@ -2,6 +2,21 @@
 
 All notable changes to AiVectra are documented in this file.
 
+## [0.0.1-beta.2] - 2026-05-27
+
+### Changed
+
+- Updated samples and package source files to use SDK-owned AiLang imports.
+- Moved AiVectra text helpers to the staged deterministic `std.str` surface.
+- Added the AiVectra package source descriptor for the beta package registry
+  flow.
+- Polished public README status for the beta branch/release story.
+
+### Notes
+
+- This is a beta UI SDK release. Pre-1.0 runtime behavior and project layout may
+  still change.
+
 ## [0.0.1-beta.1] - 2026-05-19
 
 ### Changed
