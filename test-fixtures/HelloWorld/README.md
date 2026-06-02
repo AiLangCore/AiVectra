@@ -7,7 +7,7 @@ Displays `Hello, World!` using AiVectra public API and standardized runtime flow
 
 ## Run
 ```bash
-./scripts/aivectra run ./samples/HelloWorld/
+./scripts/aivectra run ./test-fixtures/HelloWorld/
 ```
 
 ## Notes

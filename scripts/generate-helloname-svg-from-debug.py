@@ -81,7 +81,7 @@ def build_svg(panel, input_rect, button_rect, name, greeting_text):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="samples/HelloName/Assets/hello_name.debug.svg")
+    ap.add_argument("--out", default="test-fixtures/HelloName/Assets/hello_name.debug.svg")
     args = ap.parse_args()
 
     repo_root = Path(__file__).resolve().parents[1]

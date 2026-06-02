@@ -17,7 +17,7 @@ MyApp/
   AGENTS.md
   README.md
 
-  Src/
+  src/
     app.aos
 
   Assets/
@@ -45,7 +45,7 @@ MyApp/
 ```
 
 ## Naming Rules
-- Use `Src` (not `src`) for app source root.
+- Use `src` for app source root.
 - Use lowercase names for concrete asset buckets: `bundle`, `icons`, `splash`, `fonts`, `images`, `locale`.
 - Use lowercase `www` for web roots.
 - `Assets/bundle` contains generic files copied directly into target bundles.

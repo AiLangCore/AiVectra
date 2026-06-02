@@ -10,13 +10,13 @@ if [[ "$HELP_TEXT" != *".aos"* || "$HELP_TEXT" != *"project-dir"* ]]; then
   REQUIRES_PREBUILT=1
 fi
 
-if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/InteractiveSvgMvp/app.aibc1" ]]; then
-  echo "interactive svg run-mode checks skipped: runtime requires prebuilt /samples/InteractiveSvgMvp/app.aibc1"
+if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/test-fixtures/InteractiveSvgMvp/app.aibc1" ]]; then
+  echo "interactive svg run-mode checks skipped: runtime requires prebuilt /test-fixtures/InteractiveSvgMvp/app.aibc1"
   exit 0
 fi
 
 set +e
-out_snapshot="$("$AIVECTRA" run "$ROOT_DIR/samples/InteractiveSvgMvp/" snapshot 2>&1)"
+out_snapshot="$("$AIVECTRA" run "$ROOT_DIR/test-fixtures/InteractiveSvgMvp/" snapshot 2>&1)"
 rc_snapshot=$?
 set -e
 if [[ $rc_snapshot -ne 0 ]]; then
@@ -31,7 +31,7 @@ echo "$out_snapshot" | rg -q "Err#|vm_err" && {
 }
 
 set +e
-out_replay="$("$AIVECTRA" run "$ROOT_DIR/samples/InteractiveSvgMvp/" replay 2>&1)"
+out_replay="$("$AIVECTRA" run "$ROOT_DIR/test-fixtures/InteractiveSvgMvp/" replay 2>&1)"
 rc_replay=$?
 set -e
 if [[ $rc_replay -ne 0 ]]; then

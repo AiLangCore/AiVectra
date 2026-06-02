@@ -35,7 +35,7 @@ APP_LOG="$OUT_DIR/live_frame.log"
 SHOT_PATH_FILE="$OUT_DIR/live_window_shot.path"
 
 : > "$APP_LOG"
-"$AIVECTRA" debug --debug-mode live "$ROOT_DIR/samples/HelloName/" >"$APP_LOG" 2>&1 &
+"$AIVECTRA" debug --debug-mode live "$ROOT_DIR/test-fixtures/HelloName/" >"$APP_LOG" 2>&1 &
 APP_PID=$!
 sleep 1
 

@@ -50,7 +50,7 @@ SHOT_TOOL="$(resolve_screenshot_tool)"
 PERM_TOOL="$(resolve_permission_tool)"
 
 # Read canonical layout line from deterministic snapshot output.
-out_snapshot="$($AIVECTRA run "$ROOT_DIR/samples/HelloName/" snapshot)"
+out_snapshot="$($AIVECTRA run "$ROOT_DIR/test-fixtures/HelloName/" snapshot)"
 layout_line="$(printf '%s\n' "$out_snapshot" | rg '\[aivectra\] layout panel=' | head -n1)"
 if [[ -z "$layout_line" ]]; then
   echo "missing layout line from snapshot output" >&2
@@ -68,7 +68,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-$AIVECTRA run "$ROOT_DIR/samples/HelloName/" >"$app_log" 2>&1 &
+$AIVECTRA run "$ROOT_DIR/test-fixtures/HelloName/" >"$app_log" 2>&1 &
 APP_PID=$!
 sleep 2
 

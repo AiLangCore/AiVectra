@@ -13,10 +13,10 @@ fi
 tmp_dir="$ROOT_DIR/.artifacts/debug/cli-contract"
 mkdir -p "$tmp_dir"
 
-if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/HelloName/app.aibc1" ]]; then
+if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/test-fixtures/HelloName/app.aibc1" ]]; then
   echo "[cli-contract] native-c guard (explicit target)"
   set +e
-  out_guard="$("$AIVECTRA" debug --debug-mode live "$ROOT_DIR/samples/HelloName/" 2>&1)"
+  out_guard="$("$AIVECTRA" debug --debug-mode live "$ROOT_DIR/test-fixtures/HelloName/" 2>&1)"
   rc_guard=$?
   set -e
   if [[ $rc_guard -ne 2 ]]; then
@@ -32,11 +32,11 @@ else
   "$AIVECTRA" debug --debug-mode snapshot "$ROOT_DIR/src/AiVectra.Cli/" -- --debug-mode=bogus >/dev/null
 fi
 
-if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/samples/HelloWorld/app.aibc1" ]]; then
+if [[ $REQUIRES_PREBUILT -eq 1 && ! -f "$ROOT_DIR/test-fixtures/HelloWorld/app.aibc1" ]]; then
   echo "[cli-contract] native-c guard (implicit cwd project)"
   set +e
   out_cwd="$(
-    cd "$ROOT_DIR/samples/HelloWorld" && \
+    cd "$ROOT_DIR/test-fixtures/HelloWorld" && \
     ../../scripts/aivectra debug --debug-mode snapshot --out ../../.artifacts/debug/cli-contract-cwd 2>&1
   )"
   rc_cwd=$?
@@ -59,7 +59,7 @@ fi
 
 echo "[cli-contract] invalid source propagates RUN002 + exit 2"
 set +e
-out_missing="$("$AIVECTRA" run "$ROOT_DIR/samples/Nope/" 2>&1)"
+out_missing="$("$AIVECTRA" run "$ROOT_DIR/test-fixtures/Nope/" 2>&1)"
 rc_missing=$?
 set -e
 if [[ $rc_missing -ne 2 ]]; then
@@ -80,7 +80,7 @@ fi
 
 echo "[cli-contract] unknown debug option returns exit 2"
 set +e
-out_opt="$("$AIVECTRA" debug --badopt "$ROOT_DIR/samples/HelloWorld/" 2>&1)"
+out_opt="$("$AIVECTRA" debug --badopt "$ROOT_DIR/test-fixtures/HelloWorld/" 2>&1)"
 rc_opt=$?
 set -e
 if [[ $rc_opt -ne 2 ]]; then

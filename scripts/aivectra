@@ -23,9 +23,16 @@ if [[ "${1:-}" == "--ailang" ]]; then
   shift 2
 fi
 
+if [[ -z "${AILANG_SDK_ROOT:-}" && -x "$AILANG_BIN" ]]; then
+  AILANG_BIN_DIR="$(cd "$(dirname "$AILANG_BIN")" 2>/dev/null && pwd || true)"
+  if [[ -n "$AILANG_BIN_DIR" && -d "$AILANG_BIN_DIR/std" ]]; then
+    export AILANG_SDK_ROOT="$AILANG_BIN_DIR"
+  fi
+fi
+
 normalize_path_arg() {
   local p="$1"
-  if [[ "$p" == /samples/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* || "$p" == /.artifacts/* ]]; then
+  if [[ "$p" == /test-fixtures/* || "$p" == /examples/* || "$p" == /src/* || "$p" == /scripts/* || "$p" == /.artifacts/* ]]; then
     printf "%s%s" "$ROOT_DIR" "$p"
     return 0
   fi
@@ -969,18 +976,18 @@ example:
   ./scripts/aivectra doctor
   ./scripts/aivectra test
   ./scripts/aivectra init MyApp
-  ./scripts/aivectra init ./samples/MyApp --force
+  ./scripts/aivectra init ./test-fixtures/MyApp --force
   ./scripts/aivectra init MyNativeApp --targets apple-macos,windows,linux
   ./scripts/aivectra init MyFocusedApp --targets default,wasm-spa
   ./scripts/aivectra init MyFocusedApp --targets +wasm-spa
-  ./scripts/aivectra targets add ./samples/MyApp --targets +wasm-fullstack
-  ./scripts/aivectra run ./samples/HelloWorld/
-  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./samples/HelloName/src/app.aos -- todd
+  ./scripts/aivectra targets add ./test-fixtures/MyApp --targets +wasm-fullstack
+  ./scripts/aivectra run ./test-fixtures/HelloWorld/
+  ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/hello-name ./test-fixtures/HelloName/src/app.aos -- todd
   ./scripts/aivectra debug --debug-mode live --out ./.artifacts/debug/cwd -- todd
   ./scripts/aivectra debug scenario ./examples/debug/scenarios/minimal.scenario.toml --name minimal
-  AIVECTRA_MAC_REQUIRE_ICON=1 ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
-  AIVECTRA_MAC_SIGN_IDENTITY="Developer ID Application: YOUR TEAM" ./scripts/aivectra publish ./samples/HelloWorld/ --out ./dist
-  ./scripts/aivectra icon ./samples/HelloWorld/ HW
+  AIVECTRA_MAC_REQUIRE_ICON=1 ./scripts/aivectra publish ./test-fixtures/HelloWorld/ --out ./dist
+  AIVECTRA_MAC_SIGN_IDENTITY="Developer ID Application: YOUR TEAM" ./scripts/aivectra publish ./test-fixtures/HelloWorld/ --out ./dist
+  ./scripts/aivectra icon ./test-fixtures/HelloWorld/ HW
   ./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"
 EOF
   exit 0
@@ -1148,7 +1155,7 @@ if [[ "${1:-}" == "init" ]]; then
   if [[ "$TARGET_RAW" == */* || "$TARGET_RAW" == .* || "$TARGET_RAW" == /* ]]; then
     APP_DIR="$(normalize_path_arg "$TARGET_RAW")"
   else
-    APP_DIR="$ROOT_DIR/samples/$TARGET_RAW"
+    APP_DIR="$ROOT_DIR/test-fixtures/$TARGET_RAW"
   fi
   APP_DIR="${APP_DIR%/}"
   APP_NAME="$(basename "$APP_DIR")"
@@ -1472,7 +1479,7 @@ Program {
 EOF
 
   # Use the known-good multithreaded scaffold as template source.
-  cp "$ROOT_DIR/samples/WorkerDemo/src/app.aos" "$APP_DIR/src/app.aos"
+  cp "$ROOT_DIR/test-fixtures/WorkerDemo/src/app.aos" "$APP_DIR/src/app.aos"
   perl -0pi -e 's|\QImport(path="../../../src/AiVectra/src/lib.aos")\E|Import(path="'"$LIB_IMPORT_PATH"'")|g' "$APP_DIR/src/app.aos"
   perl -0pi -e 's|\QLit(value="AiVectra WorkerDemo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
   perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
@@ -1744,7 +1751,7 @@ if [[ "${1:-}" == "debug" ]]; then
 fi
 
 # Compatibility shim for wrapper-style debug commands:
-#   ./scripts/aivectra run debug snapshot /samples/HelloWorld/
+#   ./scripts/aivectra run debug snapshot /test-fixtures/HelloWorld/
 if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
   shift 2
   if [[ "${1:-}" == "scenario" ]]; then
@@ -1753,7 +1760,7 @@ if [[ "${1:-}" == "run" && "${2:-}" == "debug" ]]; then
     run_ailang_debug_scenario_with_toml_artifacts "$FIXTURE" "$@"
     exit $?
   fi
-  APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/samples/HelloName/src/app.aos}")"
+  APP_PATH="$(resolve_app_path "${1:-$ROOT_DIR/test-fixtures/HelloName/src/app.aos}")"
   shift || true
   run_ailang_debug_with_toml_artifacts "$APP_PATH" -- "$@"
   exit $?

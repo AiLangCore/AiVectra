@@ -223,16 +223,19 @@ This repository is an **AiLang workspace** with:
 - `src/AiVectra.Cli/project.aiproj` - AiVectra CLI
 - `templates/projects/` - package project templates
 - `templates/files/` - package file templates
-- `samples/HelloWorld/project.aiproj` - hello-world sample
-- `samples/HelloName/project.aiproj` - hello-name sample
-- `samples/InteractiveSvgMvp/project.aiproj` - interactive SVG sample
-- `samples/WeatherApp/project.aiproj` - weather sample (in progress)
+- `test-fixtures/HelloWorld/project.aiproj` - hello-world regression fixture
+- `test-fixtures/HelloName/project.aiproj` - text-input regression fixture
+- `test-fixtures/InteractiveSvgMvp/project.aiproj` - interactive SVG regression fixture
+- `test-fixtures/WeatherApp/project.aiproj` - deferred network fixture
+
+Public AiVectra examples live in the sibling `ailang-examples` repository under
+`examples/aivectra/`.
 
 Canonical AiVectra app structure:
 
 - `project.aiproj`
 - `AGENTS.md` (required)
-- `Src/app.aos`
+- `src/app.aos`
 - `Assets/icons/app.svg` (single canonical icon source)
 - `Assets/images/` (optional)
 - `Assets/fonts/` (optional)
@@ -251,13 +254,13 @@ Canonical AiVectra app structure:
 Use `ailang` from your installed AiLang toolchain (`PATH`).
 If you have a temporary local binary in this repo, replace `ailang` with `./.tools/ailang`.
 
-Run the sample app from repo root:
+Run the local fixture app from repo root:
 
-`ailang run ./samples/HelloWorld/`
+`ailang run ./test-fixtures/HelloWorld/`
 
-Run the named greeting example:
+Run the named greeting fixture:
 
-`ailang run ./samples/HelloName/`
+`ailang run ./test-fixtures/HelloName/`
 
 `HelloName` uses GUI text entry from key events and a clickable `Submit` button to switch to the greeting view.
 On macOS, `./scripts/aivectra run` uses direct `ailang` execution by default during development. Set `AIVECTRA_USE_MACOS_BUNDLE=1` to exercise the generated `.app` bundle path.
@@ -272,9 +275,9 @@ Wrapper/CLI:
   - `./scripts/aivectra doctor`
   - `./scripts/aivectra test`
   - `./scripts/aivectra init MyApp`
-  - `./scripts/aivectra run ./samples/HelloWorld/`
-  - `./scripts/aivectra run ./samples/InteractiveSvgMvp/`
-  - `./scripts/aivectra icon ./samples/HelloWorld/`
+  - `./scripts/aivectra run ./test-fixtures/HelloWorld/`
+  - `./scripts/aivectra run ./test-fixtures/InteractiveSvgMvp/`
+  - `./scripts/aivectra icon ./test-fixtures/HelloWorld/`
   - `./scripts/aivectra input --window "AiVectra Weather" --events "clickr:56,110;text:10001;key:enter"`
 - Tool-side input injection (no sample/app instrumentation required):
   - `./scripts/aivectra input --window "<title-substring>" --events "<tokens>"`
@@ -359,7 +362,7 @@ Native runtime note:
 
 Windowed hello world baseline:
 
-- `samples/HelloWorld/src/app.aos` demonstrates direct syscall-backed rendering through AiVectra library primitives.
+- `test-fixtures/HelloWorld/src/app.aos` demonstrates direct syscall-backed rendering through AiVectra library primitives.
 
 ---
 

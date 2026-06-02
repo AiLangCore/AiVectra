@@ -4,7 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 export AIVECTRA_USE_MACOS_BUNDLE="${AIVECTRA_USE_MACOS_BUNDLE:-0}"
 if [[ -z "${AILANG_BIN:-}" ]]; then
-  if [[ -x "$ROOT_DIR/.tools/ailang" ]]; then
+  if [[ -x "$ROOT_DIR/../AiLang/tools/ailang" ]]; then
+    export AILANG_BIN="$ROOT_DIR/../AiLang/tools/ailang"
+  elif [[ -x "$ROOT_DIR/.tools/ailang" ]]; then
     export AILANG_BIN="$ROOT_DIR/.tools/ailang"
   elif [[ -x "${HOME}/.ailang/bin/ailang" ]]; then
     export AILANG_BIN="${HOME}/.ailang/bin/ailang"
@@ -19,6 +21,9 @@ echo "[test-all] golden visual contract"
 
 echo "[test-all] interactive svg"
 "$ROOT_DIR/scripts/test-interactive-svg-mvp.sh"
+
+echo "[test-all] sample structure"
+"$ROOT_DIR/scripts/test-sample-structure.sh"
 
 echo "[test-all] hello-name behavior"
 "$ROOT_DIR/scripts/test-hello-name-behavior.sh"

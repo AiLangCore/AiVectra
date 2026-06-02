@@ -9,7 +9,7 @@ usage() {
 usage: ./scripts/capture-debug-scene.sh <app-path> <out-dir> [window-title] [timeout-ms]
 
 example:
-  ./scripts/capture-debug-scene.sh ./samples/HelloWorld/ ./.artifacts/debug/hw_scene_cap "AiVectra Hello" 2000
+  ./scripts/capture-debug-scene.sh ./test-fixtures/HelloWorld/ ./.artifacts/debug/hw_scene_cap "AiVectra Hello" 2000
 EOF
 }
 

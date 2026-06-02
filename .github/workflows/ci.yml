@@ -40,12 +40,12 @@ jobs:
           set -euo pipefail
           package_dir=".tmp/aivectra-ci-package"
           rm -rf "$package_dir"
-          mkdir -p "$package_dir/bin" "$package_dir/src" "$package_dir/SPEC" "$package_dir/samples"
+          mkdir -p "$package_dir/bin" "$package_dir/src" "$package_dir/SPEC" "$package_dir/test-fixtures"
           cp ./scripts/aivectra "$package_dir/bin/aivectra"
           chmod +x "$package_dir/bin/aivectra"
           cp -R ./src/AiVectra "$package_dir/src/AiVectra"
           cp -R ./src/AiVectra.Cli "$package_dir/src/AiVectra.Cli"
           cp -R ./SPEC/. "$package_dir/SPEC/"
-          cp -R ./samples/. "$package_dir/samples/"
+          cp -R ./test-fixtures/. "$package_dir/test-fixtures/"
           cp ./README.md ./LICENSE "$package_dir/"
           "$package_dir/bin/aivectra" --help >/dev/null

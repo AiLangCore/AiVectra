@@ -1,4 +1,4 @@
 name = "HelloWorld"
-exec = "ailang run ./samples/HelloWorld/"
+exec = "ailang run ./test-fixtures/HelloWorld/"
 icon = "app"
 categories = ["Utility"]
