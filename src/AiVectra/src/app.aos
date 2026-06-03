@@ -1,7 +1,11 @@
 Program {
   Import(sdk="ailang" path="std/core.aos")
   Import(package="std-app" path="src/app/app.aos")
+  Import(package="std-app" path="src/app/event.aos")
   Import(package="std-app" path="src/app/global.aos")
+  Import(package="std-app" path="src/app/next.aos")
+  Import(path="app_mode.aos")
+  Import(path="events.aos")
 
   Export(name=aivectraApp)
   Export(name=aivectraAppName)
@@ -9,6 +13,13 @@ Program {
   Export(name=aivectraAppInit)
   Export(name=aivectraAppUpdate)
   Export(name=aivectraAppRender)
+  Export(name=aivectraStartEvent)
+  Export(name=aivectraRunContext)
+  Export(name=aivectraRunMode)
+  Export(name=aivectraRunState)
+  Export(name=aivectraRunShouldSnapshot)
+  Export(name=aivectraRunWindow)
+  Export(name=aivectraRun)
 
   Let(name=aivectraApp) {
     Fn(params=name,initName,updateName,renderName) {
@@ -98,6 +109,157 @@ Program {
             Lit(value="")
           }
         }
+      }
+    }
+  }
+
+  Let(name=aivectraStartEvent) {
+    Fn(params=args) {
+      Block {
+        Return { Call(target=startEvent) { Var(name=args) } }
+      }
+    }
+  }
+
+  Let(name=aivectraRunContext) {
+    Fn(params=app,args,nextValue) {
+      Block {
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraRunContext") }
+            Field(key="app") { Var(name=app) }
+            Field(key="mode") { Call(target=guiModeFromArgs) { Var(name=args) } }
+            Field(key="state") { Call(target=nextState) { Var(name=nextValue) } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraRunMode) {
+    Fn(params=ctx) {
+      Block {
+        Return {
+          Call(target=mapGetStringOr) {
+            Var(name=ctx)
+            Lit(value="mode")
+            Lit(value="")
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraRunState) {
+    Fn(params=ctx) {
+      Block {
+        Return {
+          Call(target=mapGetNodeOr) {
+            Var(name=ctx)
+            Lit(value="state")
+            Map { }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraRunShouldSnapshot) {
+    Fn(params=ctx) {
+      Block {
+        Return {
+          Eq {
+            Call(target=aivectraRunMode) { Var(name=ctx) }
+            Lit(value="snapshot")
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraRunWindow) {
+    Fn(params=ctx) {
+      Block {
+        Return {
+          Call(target=sys.ui.createWindow) {
+            Call(target=aivectraAppName) {
+              Call(target=mapGetNodeOr) {
+                Var(name=ctx)
+                Lit(value="app")
+                Map { }
+              }
+            }
+            Lit(value=640)
+            Lit(value=360)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraRun) {
+    Fn(params=app,args) {
+      Block {
+        Let(name=initName) { Call(target=aivectraAppInit) { Var(name=app) } }
+        Let(name=updateName) { Call(target=aivectraAppUpdate) { Var(name=app) } }
+        Let(name=renderName) { Call(target=aivectraAppRender) { Var(name=app) } }
+        Let(name=initialState) {
+          CallDynamic {
+            Var(name=initName)
+            Var(name=args)
+          }
+        }
+        Let(name=firstStep) {
+          CallDynamic {
+            Var(name=updateName)
+            Var(name=initialState)
+            Call(target=aivectraStartEvent) { Var(name=args) }
+          }
+        }
+        Let(name=run) {
+          Call(target=aivectraRunContext) {
+            Var(name=app)
+            Var(name=args)
+            Var(name=firstStep)
+          }
+        }
+        If {
+          Call(target=aivectraRunShouldSnapshot) { Var(name=run) }
+          Block { Return { Lit(value=0) } }
+          Block { Lit(value=0) }
+        }
+        Let(name=handle) { Call(target=aivectraRunWindow) { Var(name=run) } }
+        Let(name=currentState) { Call(target=aivectraRunState) { Var(name=run) } }
+        Loop {
+          Block {
+            CallDynamic {
+              Var(name=renderName)
+              Var(name=handle)
+              Var(name=currentState)
+            }
+            Let(name=evt) { Call(target=frameEvent) { Var(name=handle) } }
+            If {
+              Call(target=eventIsNone) { Var(name=evt) }
+              Block { Continue { } }
+              Block { Lit(value=0) }
+            }
+            If {
+              Call(target=eventIsClosed) { Var(name=evt) }
+              Block { Break { } }
+              Block { Lit(value=0) }
+            }
+            Let(name=step) {
+              CallDynamic {
+                Var(name=updateName)
+                Var(name=currentState)
+                Call(target=uiEvent) { Var(name=evt) }
+              }
+            }
+            Let(name=currentState) { Call(target=nextState) { Var(name=step) } }
+            Continue { }
+          }
+        }
+        Return { Lit(value=0) }
       }
     }
   }

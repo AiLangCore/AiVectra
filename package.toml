@@ -16,6 +16,13 @@ exports = [
   "aivectraAppInit",
   "aivectraAppUpdate",
   "aivectraAppRender",
+  "aivectraStartEvent",
+  "aivectraRunContext",
+  "aivectraRunMode",
+  "aivectraRunState",
+  "aivectraRunShouldSnapshot",
+  "aivectraRunWindow",
+  "aivectraRun",
 ]
 
 [libraries.ui]
