@@ -4,7 +4,10 @@ Program {
   Import(package="std-app" path="src/app/global.aos")
 
   Export(name=aivectraApp)
+  Export(name=aivectraAppName)
   Export(name=aivectraAppSpec)
+  Export(name=aivectraAppInit)
+  Export(name=aivectraAppUpdate)
   Export(name=aivectraAppRender)
 
   Let(name=aivectraApp) {
@@ -37,6 +40,48 @@ Program {
             Var(name=app)
             Lit(value="app")
             Map { }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppName) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetStringOr) {
+            Call(target=aivectraAppSpec) { Var(name=app) }
+            Lit(value="name")
+            Lit(value="")
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppInit) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetStringOr) {
+            Call(target=aivectraAppSpec) { Var(name=app) }
+            Lit(value="init")
+            Lit(value="")
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppUpdate) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetStringOr) {
+            Call(target=aivectraAppSpec) { Var(name=app) }
+            Lit(value="update")
+            Lit(value="")
           }
         }
       }

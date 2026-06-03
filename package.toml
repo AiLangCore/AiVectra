@@ -11,7 +11,10 @@ namespace = "aivectra.app"
 entry = "src/AiVectra/src/app.aos"
 exports = [
   "aivectraApp",
+  "aivectraAppName",
   "aivectraAppSpec",
+  "aivectraAppInit",
+  "aivectraAppUpdate",
   "aivectraAppRender",
 ]
 
