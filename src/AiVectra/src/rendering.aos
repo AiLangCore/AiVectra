@@ -1,0 +1,402 @@
+Program {
+  Export(name=drawPanel)
+  Export(name=drawGaussianBlurRect)
+  Export(name=drawLinearGradientRect)
+  Export(name=drawRectTransform)
+  Export(name=drawEllipseTransform)
+  Export(name=drawPathTransform)
+  Export(name=drawTextTransform)
+  Export(name=interactiveFillForState)
+  Export(name=interactiveVectorState)
+
+  Let(name=drawPanel) {
+    Fn(params=handle,windowWidth,windowHeight) {
+      Block {
+        Call(target=drawGaussianBlurRect) {
+          Var(name=handle)
+          Lit(value=20)
+          Lit(value=20)
+          Add { Var(name=windowWidth) Lit(value=-40) }
+          Add { Var(name=windowHeight) Lit(value=-40) }
+          Lit(value=12)
+        }
+        Call(target=drawLinearGradientRect) {
+          Var(name=handle)
+          Lit(value=20)
+          Lit(value=20)
+          Add { Var(name=windowWidth) Lit(value=-40) }
+          Add { Var(name=windowHeight) Lit(value=-40) }
+          Lit(value="#1e293b")
+          Lit(value="#334155")
+          Lit(value="#1e293b")
+          Lit(value=8)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=blurBandColor) {
+    Fn(params=current,maxRadius) {
+      Block {
+        Let(name=half) { Call(target=halfFloor) { Var(name=maxRadius) Lit(value=0) } }
+        Let(name=quarter) { Call(target=halfFloor) { Var(name=half) Lit(value=0) } }
+        If {
+          Eq { Var(name=current) Var(name=maxRadius) }
+          Block { Return { Lit(value="#020617") } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=half) Var(name=current) }
+              Block { Return { Lit(value="#0f172a") } }
+              Block {
+                If {
+                  Call(target=intLt) { Var(name=quarter) Var(name=current) }
+                  Block { Return { Lit(value="#172554") } }
+                  Block { Return { Lit(value="#1e293b") } }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawGaussianBlurRect) {
+    Fn(params=handle,x,y,w,h,radius) {
+      Block {
+        Let(name=effectiveRadius) {
+          If {
+            Call(target=intLt) { Var(name=radius) Lit(value=1) }
+            Block { Lit(value=1) }
+            Block {
+              If {
+                Call(target=intLt) { Lit(value=12) Var(name=radius) }
+                Block { Lit(value=12) }
+                Block { Var(name=radius) }
+              }
+            }
+          }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=1) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=1) } Call(target=sub) { Var(name=y) Lit(value=1) } Add { Var(name=w) Lit(value=2) } Add { Var(name=h) Lit(value=2) } Call(target=blurBandColor) { Lit(value=1) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=2) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=2) } Call(target=sub) { Var(name=y) Lit(value=2) } Add { Var(name=w) Lit(value=4) } Add { Var(name=h) Lit(value=4) } Call(target=blurBandColor) { Lit(value=2) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=3) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=3) } Call(target=sub) { Var(name=y) Lit(value=3) } Add { Var(name=w) Lit(value=6) } Add { Var(name=h) Lit(value=6) } Call(target=blurBandColor) { Lit(value=3) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=4) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=4) } Call(target=sub) { Var(name=y) Lit(value=4) } Add { Var(name=w) Lit(value=8) } Add { Var(name=h) Lit(value=8) } Call(target=blurBandColor) { Lit(value=4) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=5) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=5) } Call(target=sub) { Var(name=y) Lit(value=5) } Add { Var(name=w) Lit(value=10) } Add { Var(name=h) Lit(value=10) } Call(target=blurBandColor) { Lit(value=5) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=6) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=6) } Call(target=sub) { Var(name=y) Lit(value=6) } Add { Var(name=w) Lit(value=12) } Add { Var(name=h) Lit(value=12) } Call(target=blurBandColor) { Lit(value=6) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=7) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=7) } Call(target=sub) { Var(name=y) Lit(value=7) } Add { Var(name=w) Lit(value=14) } Add { Var(name=h) Lit(value=14) } Call(target=blurBandColor) { Lit(value=7) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=8) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=8) } Call(target=sub) { Var(name=y) Lit(value=8) } Add { Var(name=w) Lit(value=16) } Add { Var(name=h) Lit(value=16) } Call(target=blurBandColor) { Lit(value=8) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=9) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=9) } Call(target=sub) { Var(name=y) Lit(value=9) } Add { Var(name=w) Lit(value=18) } Add { Var(name=h) Lit(value=18) } Call(target=blurBandColor) { Lit(value=9) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=10) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=10) } Call(target=sub) { Var(name=y) Lit(value=10) } Add { Var(name=w) Lit(value=20) } Add { Var(name=h) Lit(value=20) } Call(target=blurBandColor) { Lit(value=10) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=11) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=11) } Call(target=sub) { Var(name=y) Lit(value=11) } Add { Var(name=w) Lit(value=22) } Add { Var(name=h) Lit(value=22) } Call(target=blurBandColor) { Lit(value=11) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        If {
+          Call(target=intGte) { Var(name=effectiveRadius) Lit(value=12) }
+          Block { Call(target=sys.ui.drawRect) { Var(name=handle) Call(target=sub) { Var(name=x) Lit(value=12) } Call(target=sub) { Var(name=y) Lit(value=12) } Add { Var(name=w) Lit(value=24) } Add { Var(name=h) Lit(value=24) } Call(target=blurBandColor) { Lit(value=12) Var(name=effectiveRadius) } } }
+          Block { Lit(value=0) }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=gradientColor3) {
+    Fn(params=offset,size,startColor,midColor,endColor) {
+      Block {
+        Let(name=half) { Call(target=halfFloor) { Var(name=size) Lit(value=0) } }
+        Let(name=quarter) { Call(target=halfFloor) { Var(name=half) Lit(value=0) } }
+        Let(name=threeQuarter) { Add { Var(name=half) Var(name=quarter) } }
+        If {
+          Call(target=intLt) { Var(name=offset) Var(name=quarter) }
+          Block { Return { Var(name=startColor) } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=offset) Var(name=threeQuarter) }
+              Block { Return { Var(name=midColor) } }
+              Block { Return { Var(name=endColor) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawLinearGradientRectLoop) {
+    Fn(params=handle,x,y,w,h,startColor,midColor,endColor,row,step) {
+      Block {
+        If {
+          Call(target=intGte) { Var(name=row) Var(name=h) }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Let(name=color) {
+              Call(target=gradientColor3) {
+                Var(name=row)
+                Var(name=h)
+                Var(name=startColor)
+                Var(name=midColor)
+                Var(name=endColor)
+              }
+            }
+            Call(target=sys.ui.drawRect) {
+              Var(name=handle)
+              Var(name=x)
+              Add { Var(name=y) Var(name=row) }
+              Var(name=w)
+              Var(name=step)
+              Var(name=color)
+            }
+            Return {
+              Call(target=drawLinearGradientRectLoop) {
+                Var(name=handle)
+                Var(name=x)
+                Var(name=y)
+                Var(name=w)
+                Var(name=h)
+                Var(name=startColor)
+                Var(name=midColor)
+                Var(name=endColor)
+                Add { Var(name=row) Var(name=step) }
+                Var(name=step)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=drawLinearGradientRect) {
+    Fn(params=handle,x,y,w,h,startColor,midColor,endColor,step) {
+      Block {
+        Let(name=topBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=midBand) { Call(target=halfFloor) { Var(name=h) Lit(value=0) } }
+        Let(name=bottomBand) {
+          Call(target=sub) {
+            Var(name=h)
+            Add { Var(name=topBand) Var(name=midBand) }
+          }
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Var(name=y)
+          Var(name=w)
+          Var(name=topBand)
+          Var(name=startColor)
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Var(name=y) Var(name=topBand) }
+          Var(name=w)
+          Var(name=midBand)
+          Var(name=midColor)
+        }
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Var(name=x)
+          Add { Add { Var(name=y) Var(name=topBand) } Var(name=midBand) }
+          Var(name=w)
+          Var(name=bottomBand)
+          Var(name=endColor)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=translateCoord) {
+    Fn(params=value,delta) {
+      Block { Return { Add { Var(name=value) Var(name=delta) } } }
+    }
+  }
+
+  Let(name=drawRectTransform) {
+    Fn(params=handle,x,y,w,h,color,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawRect) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=w)
+          Var(name=h)
+          Var(name=color)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawEllipseTransform) {
+    Fn(params=handle,x,y,w,h,color,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawEllipse) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=w)
+          Var(name=h)
+          Var(name=color)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawPathTransform) {
+    Fn(params=handle,pathData,color,strokeWidth) {
+      Block {
+        Call(target=sys.ui.drawPath) {
+          Var(name=handle)
+          Var(name=pathData)
+          Var(name=color)
+          Var(name=strokeWidth)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawTextTransform) {
+    Fn(params=handle,x,y,value,color,size,tx,ty) {
+      Block {
+        Call(target=sys.ui.drawText) {
+          Var(name=handle)
+          Call(target=translateCoord) { Var(name=x) Var(name=tx) }
+          Call(target=translateCoord) { Var(name=y) Var(name=ty) }
+          Var(name=value)
+          Var(name=color)
+          Var(name=size)
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=interactiveFillForState) {
+    Fn(params=state,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
+      Block {
+        If {
+          Eq { Var(name=state) Lit(value="pressed") }
+          Block { Return { Var(name=pressedFill) } }
+          Block {
+            If {
+              Eq { Var(name=state) Lit(value="hover") }
+              Block { Return { Var(name=hoverFill) } }
+              Block {
+                If {
+                  Eq { Var(name=state) Lit(value="focused") }
+                  Block { Return { Var(name=focusedFill) } }
+                  Block {
+                    If {
+                      Eq { Var(name=state) Lit(value="disabled") }
+                      Block { Return { Var(name=disabledFill) } }
+                      Block { Return { Var(name=normalFill) } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=interactiveVectorState) {
+    Fn(params=handle,x,y,w,h,state,shapeKind,pathData,normalFill,pressedFill,hoverFill,focusedFill,disabledFill) {
+      Block {
+        Let(name=fillColor) {
+          Call(target=interactiveFillForState) {
+            Var(name=state)
+            Var(name=normalFill)
+            Var(name=pressedFill)
+            Var(name=hoverFill)
+            Var(name=focusedFill)
+            Var(name=disabledFill)
+          }
+        }
+        If {
+          Eq { Var(name=shapeKind) Lit(value="ellipse") }
+          Block {
+            Call(target=sys.ui.drawEllipse) {
+              Var(name=handle)
+              Var(name=x)
+              Var(name=y)
+              Var(name=w)
+              Var(name=h)
+              Var(name=fillColor)
+            }
+          }
+          Block {
+            If {
+              Eq { Var(name=shapeKind) Lit(value="path") }
+              Block {
+                Call(target=sys.ui.drawPath) {
+                  Var(name=handle)
+                  Var(name=pathData)
+                  Var(name=fillColor)
+                  Lit(value=0)
+                }
+              }
+              Block {
+                Call(target=sys.ui.drawRect) {
+                  Var(name=handle)
+                  Var(name=x)
+                  Var(name=y)
+                  Var(name=w)
+                  Var(name=h)
+                  Var(name=fillColor)
+                }
+              }
+            }
+          }
+        }
+        Return { Lit(value=0) }
+      }
+    }
+  }
+}

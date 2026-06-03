@@ -28,8 +28,13 @@
 ## Runtime Ownership
 - AiVectra owns UI mechanics.
 - App code owns state and pure behavior.
+- `std-app` owns generic application lifecycle semantics.
 - Host code is mechanical only.
-- There must be one obvious runtime path for window creation, event delivery, rendering, and shutdown.
+- There must be one obvious GUI adapter path for window creation, event
+  delivery, rendering, and shutdown while the adapter lives in AiVectra.
+- Long-term reusable app lifecycle ownership belongs to `std-app`. AiVectra is
+  the GUI runtime profile and must adapt GUI events into `std-app` events and
+  consume `std-app` commands.
 
 ## App Shape
 - Canonical app modules should expose a small, standard surface:
@@ -38,7 +43,11 @@
   - `appUpdate`
   - `start`
 - Samples should consume the public runtime rather than re-implementing loop mechanics.
-- Direct `sys.*` usage in sample code is only acceptable at explicitly allowed bootstrap boundaries until the runtime is fully converged.
+- Direct `sys.*` usage in sample code is only acceptable at explicitly allowed
+  bootstrap boundaries until the runtime is fully converged.
+- Use AiVectra `gui*` names for GUI adapter helpers. Do not use generic `app*`
+  helper names for UI runtime internals; reserve generic app lifecycle concepts
+  for `std-app`.
 
 ## Scene Authoring
 - Compose UI from vector primitives only.

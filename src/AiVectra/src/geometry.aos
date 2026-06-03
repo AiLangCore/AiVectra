@@ -1,0 +1,76 @@
+Program {
+  Export(name=pointInRect)
+  Export(name=pointInEllipse)
+  Export(name=pointInPathBounds)
+
+  Let(name=pointInRect) {
+    Fn(params=x,y,rx,ry,rw,rh) {
+      Block {
+        If {
+          Call(target=intGte) { Var(name=x) Var(name=rx) }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=x) Add { Var(name=rx) Var(name=rw) } }
+              Block {
+                If {
+                  Call(target=intGte) { Var(name=y) Var(name=ry) }
+                  Block { Return { Call(target=intLt) { Var(name=y) Add { Var(name=ry) Var(name=rh) } } } }
+                  Block { Return { Lit(value=false) } }
+                }
+              }
+              Block { Return { Lit(value=false) } }
+            }
+          }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=pointInEllipse) {
+    Fn(params=x,y,ex,ey,ew,eh) {
+      Block {
+        Let(name=insideBounds) { Call(target=pointInRect) { Var(name=x) Var(name=y) Var(name=ex) Var(name=ey) Var(name=ew) Var(name=eh) } }
+        If {
+          Var(name=insideBounds)
+          Block {
+            Let(name=quarterX) { Call(target=halfFloor) { Call(target=halfFloor) { Var(name=ew) Lit(value=0) } Lit(value=0) } }
+            Let(name=quarterY) { Call(target=halfFloor) { Call(target=halfFloor) { Var(name=eh) Lit(value=0) } Lit(value=0) } }
+            Let(name=leftBand) { Add { Var(name=ex) Var(name=quarterX) } }
+            Let(name=rightBand) { Add { Var(name=ex) Add { Var(name=quarterX) Add { Var(name=quarterX) Var(name=quarterX) } } } }
+            Let(name=topBand) { Add { Var(name=ey) Var(name=quarterY) } }
+            Let(name=bottomBand) { Add { Var(name=ey) Add { Var(name=quarterY) Add { Var(name=quarterY) Var(name=quarterY) } } } }
+            Let(name=inMidX) {
+              If {
+                Call(target=intGte) { Var(name=x) Var(name=leftBand) }
+                Block { Call(target=intLt) { Var(name=x) Var(name=rightBand) } }
+                Block { Lit(value=false) }
+              }
+            }
+            Let(name=inMidY) {
+              If {
+                Call(target=intGte) { Var(name=y) Var(name=topBand) }
+                Block { Call(target=intLt) { Var(name=y) Var(name=bottomBand) } }
+                Block { Lit(value=false) }
+              }
+            }
+            If {
+              Var(name=inMidX)
+              Block { Return { Lit(value=true) } }
+              Block { Return { Var(name=inMidY) } }
+            }
+          }
+          Block { Return { Lit(value=false) } }
+        }
+      }
+    }
+  }
+
+  Let(name=pointInPathBounds) {
+    Fn(params=x,y,px,py,pw,ph) {
+      Block {
+        Return { Call(target=pointInRect) { Var(name=x) Var(name=y) Var(name=px) Var(name=py) Var(name=pw) Var(name=ph) } }
+      }
+    }
+  }
+}

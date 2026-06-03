@@ -1,0 +1,472 @@
+Program {
+  Import(sdk="ailang" path="std/str.aos")
+
+  Export(name=textLen)
+  Export(name=divFloor)
+  Export(name=fitTextTail)
+  Export(name=visibleTextTail)
+  Export(name=textInsertAt)
+  Export(name=textDeleteAt)
+  Export(name=caretClamp)
+  Export(name=caretLeft)
+  Export(name=caretRight)
+  Export(name=caretPixelOffset)
+  Export(name=removeLastChar)
+  Export(name=mapGetString)
+  Export(name=keyTextMap)
+  Export(name=keyToText)
+  Export(name=controlKeyName)
+
+  Let(name=textLen) {
+    Fn(params=textValue) {
+      Block {
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            Return {
+              Add {
+                Lit(value=1)
+                Call(target=textLen) { Call(target=remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=divFloor) {
+    Fn(params=value,step,acc) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=value) Var(name=step) }
+          Block { Return { Var(name=acc) } }
+          Block {
+            Return {
+              Call(target=divFloor) {
+                Call(target=sub) { Var(name=value) Var(name=step) }
+                Var(name=step)
+                Add { Var(name=acc) Lit(value=1) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=fitTextTail) {
+    Fn(params=textValue,maxChars) {
+      Block {
+        If {
+          Call(target=intLte) { Call(target=textLen) { Var(name=textValue) } Var(name=maxChars) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Return {
+              Call(target=fitTextTail) {
+                Call(target=remove) { Var(name=textValue) Lit(value=0) Lit(value=1) }
+                Var(name=maxChars)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=visibleTextTail) {
+    Fn(params=textValue,fieldWidth) {
+      Block {
+        Let(name=contentWidth) {
+          If {
+            Call(target=intLt) { Var(name=fieldWidth) Lit(value=33) }
+            Block { Lit(value=0) }
+            Block { Call(target=sub) { Var(name=fieldWidth) Lit(value=32) } }
+          }
+        }
+        Let(name=maxChars) { Call(target=divFloor) { Var(name=contentWidth) Lit(value=12) Lit(value=0) } }
+        Return { Call(target=fitTextTail) { Var(name=textValue) Var(name=maxChars) } }
+      }
+    }
+  }
+
+  Let(name=textInsertAt) {
+    Fn(params=textValue,index,chunk) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
+        Let(name=prefix) { Call(target=substring) { Var(name=textValue) Lit(value=0) Var(name=idx) } }
+        Let(name=suffixLen) { Call(target=sub) { Var(name=len) Var(name=idx) } }
+        Let(name=suffix) { Call(target=substring) { Var(name=textValue) Var(name=idx) Var(name=suffixLen) } }
+        Return { StrConcat { ToString { Var(name=prefix) } StrConcat { ToString { Var(name=chunk) } ToString { Var(name=suffix) } } } }
+      }
+    }
+  }
+
+  Let(name=textDeleteAt) {
+    Fn(params=textValue,index) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        If {
+          Eq { Var(name=len) Lit(value=0) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Let(name=idx) { Call(target=caretClamp) { Var(name=index) Var(name=len) } }
+            If {
+              Eq { Var(name=idx) Lit(value=0) }
+              Block { Return { Var(name=textValue) } }
+              Block {
+                Return {
+                  Call(target=remove) {
+                    Var(name=textValue)
+                    Add { Var(name=idx) Lit(value=-1) }
+                    Lit(value=1)
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=caretClamp) {
+    Fn(params=caret,textLength) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=caret) Lit(value=0) }
+          Block { Return { Lit(value=0) } }
+          Block {
+            If {
+              Call(target=intLt) { Var(name=textLength) Var(name=caret) }
+              Block { Return { Var(name=textLength) } }
+              Block { Return { Var(name=caret) } }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=caretLeft) {
+    Fn(params=caret) {
+      Block {
+        If {
+          Eq { Var(name=caret) Lit(value=0) }
+          Block { Return { Lit(value=0) } }
+          Block { Return { Add { Var(name=caret) Lit(value=-1) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=caretRight) {
+    Fn(params=caret,textLength) {
+      Block {
+        If {
+          Call(target=intLt) { Var(name=caret) Var(name=textLength) }
+          Block { Return { Add { Var(name=caret) Lit(value=1) } } }
+          Block { Return { Var(name=textLength) } }
+        }
+      }
+    }
+  }
+
+  Let(name=textPrefix) {
+    Fn(params=textValue,caret) {
+      Block { Return { Call(target=substring) { Var(name=textValue) Lit(value=0) Var(name=caret) } } }
+    }
+  }
+
+  Let(name=caretPixelOffset) {
+    Fn(params=textValue,caret,charWidth) {
+      Block {
+        Let(name=prefix) { Call(target=textPrefix) { Var(name=textValue) Var(name=caret) } }
+        Return { Call(target=mul) { Var(name=charWidth) Call(target=textLen) { Var(name=prefix) }} }
+      }
+    }
+  }
+
+  Let(name=removeLastChar) {
+    Fn(params=textValue) {
+      Block {
+        Let(name=len) { Call(target=textLen) { Var(name=textValue) } }
+        If {
+          Eq { Var(name=len) Lit(value=0) }
+          Block { Return { Var(name=textValue) } }
+          Block {
+            Return {
+              Call(target=remove) {
+                Var(name=textValue)
+                Add { Var(name=len) Lit(value=-1) }
+                Lit(value=1)
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=mapGetString) {
+    Fn(params=map,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=map) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=field) { ChildAt { Var(name=map) Var(name=index) } }
+            If {
+              Eq { AttrValueString { Var(name=field) Lit(value=0) } Var(name=key) }
+              Block { Return { AttrValueString { ChildAt { Var(name=field) Lit(value=0) } Lit(value=0) } } }
+              Block {
+                Return {
+                  Call(target=mapGetString) {
+                    Var(name=map)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=keyTextMap) {
+    Fn(params=_) {
+      Block {
+        Return {
+          Map {
+            Field(key="a") { Lit(value="a") }
+            Field(key="b") { Lit(value="b") }
+            Field(key="c") { Lit(value="c") }
+            Field(key="d") { Lit(value="d") }
+            Field(key="e") { Lit(value="e") }
+            Field(key="f") { Lit(value="f") }
+            Field(key="g") { Lit(value="g") }
+            Field(key="h") { Lit(value="h") }
+            Field(key="i") { Lit(value="i") }
+            Field(key="j") { Lit(value="j") }
+            Field(key="k") { Lit(value="k") }
+            Field(key="l") { Lit(value="l") }
+            Field(key="m") { Lit(value="m") }
+            Field(key="n") { Lit(value="n") }
+            Field(key="o") { Lit(value="o") }
+            Field(key="p") { Lit(value="p") }
+            Field(key="q") { Lit(value="q") }
+            Field(key="r") { Lit(value="r") }
+            Field(key="s") { Lit(value="s") }
+            Field(key="t") { Lit(value="t") }
+            Field(key="u") { Lit(value="u") }
+            Field(key="v") { Lit(value="v") }
+            Field(key="w") { Lit(value="w") }
+            Field(key="x") { Lit(value="x") }
+            Field(key="y") { Lit(value="y") }
+            Field(key="z") { Lit(value="z") }
+            Field(key="A") { Lit(value="A") }
+            Field(key="B") { Lit(value="B") }
+            Field(key="C") { Lit(value="C") }
+            Field(key="D") { Lit(value="D") }
+            Field(key="E") { Lit(value="E") }
+            Field(key="F") { Lit(value="F") }
+            Field(key="G") { Lit(value="G") }
+            Field(key="H") { Lit(value="H") }
+            Field(key="I") { Lit(value="I") }
+            Field(key="J") { Lit(value="J") }
+            Field(key="K") { Lit(value="K") }
+            Field(key="L") { Lit(value="L") }
+            Field(key="M") { Lit(value="M") }
+            Field(key="N") { Lit(value="N") }
+            Field(key="O") { Lit(value="O") }
+            Field(key="P") { Lit(value="P") }
+            Field(key="Q") { Lit(value="Q") }
+            Field(key="R") { Lit(value="R") }
+            Field(key="S") { Lit(value="S") }
+            Field(key="T") { Lit(value="T") }
+            Field(key="U") { Lit(value="U") }
+            Field(key="V") { Lit(value="V") }
+            Field(key="W") { Lit(value="W") }
+            Field(key="X") { Lit(value="X") }
+            Field(key="Y") { Lit(value="Y") }
+            Field(key="Z") { Lit(value="Z") }
+            Field(key="0") { Lit(value="0") }
+            Field(key="1") { Lit(value="1") }
+            Field(key="2") { Lit(value="2") }
+            Field(key="3") { Lit(value="3") }
+            Field(key="4") { Lit(value="4") }
+            Field(key="5") { Lit(value="5") }
+            Field(key="6") { Lit(value="6") }
+            Field(key="7") { Lit(value="7") }
+            Field(key="8") { Lit(value="8") }
+            Field(key="9") { Lit(value="9") }
+            Field(key="digit0") { Lit(value="0") }
+            Field(key="digit1") { Lit(value="1") }
+            Field(key="digit2") { Lit(value="2") }
+            Field(key="digit3") { Lit(value="3") }
+            Field(key="digit4") { Lit(value="4") }
+            Field(key="digit5") { Lit(value="5") }
+            Field(key="digit6") { Lit(value="6") }
+            Field(key="digit7") { Lit(value="7") }
+            Field(key="digit8") { Lit(value="8") }
+            Field(key="digit9") { Lit(value="9") }
+            Field(key="numpad0") { Lit(value="0") }
+            Field(key="numpad1") { Lit(value="1") }
+            Field(key="numpad2") { Lit(value="2") }
+            Field(key="numpad3") { Lit(value="3") }
+            Field(key="numpad4") { Lit(value="4") }
+            Field(key="numpad5") { Lit(value="5") }
+            Field(key="numpad6") { Lit(value="6") }
+            Field(key="numpad7") { Lit(value="7") }
+            Field(key="numpad8") { Lit(value="8") }
+            Field(key="numpad9") { Lit(value="9") }
+            Field(key="kp_0") { Lit(value="0") }
+            Field(key="kp_1") { Lit(value="1") }
+            Field(key="kp_2") { Lit(value="2") }
+            Field(key="kp_3") { Lit(value="3") }
+            Field(key="kp_4") { Lit(value="4") }
+            Field(key="kp_5") { Lit(value="5") }
+            Field(key="kp_6") { Lit(value="6") }
+            Field(key="kp_7") { Lit(value="7") }
+            Field(key="kp_8") { Lit(value="8") }
+            Field(key="kp_9") { Lit(value="9") }
+            Field(key="space") { Lit(value=" ") }
+            Field(key=" ") { Lit(value=" ") }
+            Field(key="tab") { Lit(value="\t") }
+            Field(key="Tab") { Lit(value="\t") }
+            Field(key="\t") { Lit(value="\t") }
+            Field(key=".") { Lit(value=".") }
+            Field(key=",") { Lit(value=",") }
+            Field(key="-") { Lit(value="-") }
+            Field(key="_") { Lit(value="_") }
+            Field(key="`") { Lit(value="`") }
+            Field(key="~") { Lit(value="~") }
+            Field(key="'") { Lit(value="'") }
+            Field(key="\"") { Lit(value="\"") }
+            Field(key=":") { Lit(value=":") }
+            Field(key=";") { Lit(value=";") }
+            Field(key="!") { Lit(value="!") }
+            Field(key="?") { Lit(value="?") }
+            Field(key="@") { Lit(value="@") }
+            Field(key="#") { Lit(value="#") }
+            Field(key="$") { Lit(value="$") }
+            Field(key="%") { Lit(value="%") }
+            Field(key="&") { Lit(value="&") }
+            Field(key="+") { Lit(value="+") }
+            Field(key="=") { Lit(value="=") }
+            Field(key="/") { Lit(value="/") }
+            Field(key="\\") { Lit(value="\\") }
+            Field(key="(") { Lit(value="(") }
+            Field(key=")") { Lit(value=")") }
+            Field(key="[") { Lit(value="[") }
+            Field(key="]") { Lit(value="]") }
+            Field(key="{") { Lit(value="{") }
+            Field(key="}") { Lit(value="}") }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=keyToText) {
+    Fn(params=keyName) {
+      Block {
+        Return {
+          Call(target=mapGetString) {
+            Call(target=keyTextMap) { Lit(value=0) }
+            Var(name=keyName)
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=controlKeyName) {
+    Fn(params=value) {
+      Block {
+        If {
+          Eq { Var(name=value) Lit(value="backspace") }
+          Block { Return { Lit(value="backspace") } }
+          Block {
+            If {
+              Eq { Var(name=value) Lit(value="Backspace") }
+              Block { Return { Lit(value="backspace") } }
+              Block {
+                If {
+                  Eq { Var(name=value) Lit(value="DeleteBackward") }
+                  Block { Return { Lit(value="backspace") } }
+                  Block {
+                    If {
+                      Eq { Var(name=value) Lit(value="delete_backward") }
+                      Block { Return { Lit(value="backspace") } }
+                      Block {
+                        If {
+                          Eq { Var(name=value) Lit(value="x11:22") }
+                          Block { Return { Lit(value="backspace") } }
+                          Block {
+                            If {
+                              Eq { Var(name=value) Lit(value="x11:107") }
+                              Block { Return { Lit(value="backspace") } }
+                              Block {
+                                If {
+                                  Eq { Var(name=value) Lit(value="enter") }
+                                  Block { Return { Lit(value="enter") } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=value) Lit(value="Enter") }
+                                      Block { Return { Lit(value="enter") } }
+                                      Block {
+                                        If {
+                                          Eq { Var(name=value) Lit(value="return") }
+                                          Block { Return { Lit(value="enter") } }
+                                          Block {
+                                            If {
+                                              Eq { Var(name=value) Lit(value="Return") }
+                                              Block { Return { Lit(value="enter") } }
+                                              Block {
+                                                If {
+                                                  Eq { Var(name=value) Lit(value="kp_enter") }
+                                                  Block { Return { Lit(value="enter") } }
+                                                  Block {
+                                                    If {
+                                                      Eq { Var(name=value) Lit(value="Delete") }
+                                                      Block { Return { Lit(value="delete") } }
+                                                      Block {
+                                                        If {
+                                                          Eq { Var(name=value) Lit(value="delete") }
+                                                          Block { Return { Lit(value="delete") } }
+                                                          Block { Return { Lit(value="") } }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

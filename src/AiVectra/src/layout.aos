@@ -1,0 +1,129 @@
+Program {
+  Export(name=uiWidth)
+  Export(name=uiHeight)
+  Export(name=buttonX)
+  Export(name=buttonY)
+  Export(name=inputWidth)
+  Export(name=hintY)
+  Export(name=statusY)
+  Export(name=layoutSignature)
+
+  Let(name=uiWidth) {
+    Fn(params=handle) {
+      Block {
+        Return {
+          Call(target=attrInt) {
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
+            Lit(value="width")
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=uiHeight) {
+    Fn(params=handle) {
+      Block {
+        Return {
+          Call(target=attrInt) {
+            Call(target=sys.ui.getWindowSize) { Var(name=handle) }
+            Lit(value="height")
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=buttonX) {
+    Fn(params=windowWidth) {
+      Block {
+        Return {
+          Call(target=halfFloor) {
+            Add { Var(name=windowWidth) Lit(value=-140) }
+            Lit(value=0)
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=buttonY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-160) } } }
+    }
+  }
+
+  Let(name=inputWidth) {
+    Fn(params=windowWidth) {
+      Block { Return { Add { Var(name=windowWidth) Lit(value=-144) } } }
+    }
+  }
+
+  Let(name=hintY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-92) } } }
+    }
+  }
+
+  Let(name=statusY) {
+    Fn(params=windowHeight) {
+      Block { Return { Add { Var(name=windowHeight) Lit(value=-46) } } }
+    }
+  }
+
+  Let(name=layoutSignature) {
+    Fn(params=windowWidth,windowHeight) {
+      Block {
+        Let(name=entryWidth) { Call(target=inputWidth) { Var(name=windowWidth) } }
+        Let(name=submitX) { Call(target=buttonX) { Var(name=windowWidth) } }
+        Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
+        Let(name=hintTextY) { Call(target=hintY) { Var(name=windowHeight) } }
+        Let(name=statusTextY) { Call(target=statusY) { Var(name=windowHeight) } }
+        Return {
+          StrConcat {
+            Lit(value="[aivectra] layout panel=20,20,")
+            StrConcat {
+              ToString { Add { Var(name=windowWidth) Lit(value=-40) } }
+              StrConcat {
+                Lit(value=",")
+                StrConcat {
+                  ToString { Add { Var(name=windowHeight) Lit(value=-40) } }
+                  StrConcat {
+                    Lit(value=" input=72,112,")
+                    StrConcat {
+                      ToString { Var(name=entryWidth) }
+                      StrConcat {
+                        Lit(value=",52 button=")
+                        StrConcat {
+                          ToString { Var(name=submitX) }
+                          StrConcat {
+                            Lit(value=",")
+                            StrConcat {
+                              ToString { Var(name=submitY) }
+                              StrConcat {
+                                Lit(value=",140,52 hintY=")
+                                StrConcat {
+                                  ToString { Var(name=hintTextY) }
+                                  StrConcat {
+                                    Lit(value=" statusY=")
+                                    ToString { Var(name=statusTextY) }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

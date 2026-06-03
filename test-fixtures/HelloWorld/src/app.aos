@@ -5,7 +5,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Let(name=mode) { Call(target=guiModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block { Return { Lit(value=0) } }

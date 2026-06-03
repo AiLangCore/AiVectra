@@ -1,0 +1,89 @@
+Program {
+  Export(name=guiModeFromArgs)
+
+  Let(name=argStringAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block { Return { AttrValueString { ChildAt { Var(name=args) Var(name=index) } Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=guiModeFromArgsAt) {
+    Fn(params=args,index) {
+      Block {
+        If {
+          Eq { Var(name=index) ChildCount { Var(name=args) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            Let(name=candidate) { Call(target=argStringAt) { Var(name=args) Var(name=index) } }
+            If {
+              Eq { Var(name=candidate) Lit(value="live") }
+              Block { Return { Lit(value="live") } }
+              Block {
+                If {
+                  Eq { Var(name=candidate) Lit(value="--live") }
+                  Block { Return { Lit(value="live") } }
+                  Block {
+                    If {
+                      Eq { Var(name=candidate) Lit(value="snapshot") }
+                      Block { Return { Lit(value="snapshot") } }
+                      Block {
+                        If {
+                          Eq { Var(name=candidate) Lit(value="--snapshot") }
+                          Block { Return { Lit(value="snapshot") } }
+                          Block {
+                            If {
+                              Eq { Var(name=candidate) Lit(value="replay") }
+                              Block { Return { Lit(value="replay") } }
+                              Block {
+                                If {
+                                  Eq { Var(name=candidate) Lit(value="--replay") }
+                                  Block { Return { Lit(value="replay") } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=candidate) Lit(value="scene") }
+                                      Block { Return { Lit(value="scene") } }
+                                      Block {
+                                        If {
+                                          Eq { Var(name=candidate) Lit(value="--scene") }
+                                          Block { Return { Lit(value="scene") } }
+                                          Block {
+                                            Return {
+                                              Call(target=guiModeFromArgsAt) {
+                                                Var(name=args)
+                                                Add { Var(name=index) Lit(value=1) }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=guiModeFromArgs) {
+    Fn(params=args) {
+      Block { Return { Call(target=guiModeFromArgsAt) { Var(name=args) Lit(value=0) } } }
+    }
+  }
+}

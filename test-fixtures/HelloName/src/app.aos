@@ -63,7 +63,7 @@ Program {
         Let(name=entryWidth) { Call(target=inputWidth) { Var(name=windowWidth) } }
         Let(name=submitX) { Call(target=buttonX) { Var(name=windowWidth) } }
         Let(name=submitY) { Call(target=buttonY) { Var(name=windowHeight) } }
-        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") } Lit(value=0) } }
+        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") }} }
         Let(name=submitLabelPad) { Call(target=halfFloor) { Call(target=sub) { Lit(value=140) Var(name=submitLabelWidth) } Lit(value=0) } }
         Let(name=submitLabelX) { Add { Var(name=submitX) Var(name=submitLabelPad) } }
         Let(name=submitLabelY) { Add { Var(name=submitY) Add { Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=22) } Lit(value=0) } Lit(value=-1) } } }
@@ -88,7 +88,7 @@ Program {
             Block { Var(name=caretInVisibleRaw) }
           }
         }
-        Let(name=caretX) { Add { Lit(value=88) Call(target=mul) { Lit(value=12) Var(name=caretInVisible) Lit(value=0) } } }
+        Let(name=caretX) { Add { Lit(value=88) Call(target=mul) { Lit(value=12) Var(name=caretInVisible)} } }
         Let(name=caretY) { Add { Lit(value=112) Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=24) } Lit(value=0) } } }
 
         Call(target=sys.ui.beginFrame) { Var(name=handle) }
@@ -408,7 +408,7 @@ Program {
         Let(name=hintTextY) { Call(target=hintY) { Var(name=windowHeight) } }
         Let(name=statusTextY) { Call(target=statusY) { Var(name=windowHeight) } }
 
-        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") } Lit(value=0) } }
+        Let(name=submitLabelWidth) { Call(target=mul) { Lit(value=12) Call(target=textLen) { Lit(value="Submit") }} }
         Let(name=submitLabelPad) { Call(target=halfFloor) { Call(target=sub) { Lit(value=140) Var(name=submitLabelWidth) } Lit(value=0) } }
         Let(name=submitLabelX) { Add { Var(name=submitX) Var(name=submitLabelPad) } }
         Let(name=submitLabelY) { Add { Var(name=submitY) Add { Call(target=halfFloor) { Call(target=sub) { Lit(value=52) Lit(value=22) } Lit(value=0) } Lit(value=-1) } } }
@@ -827,7 +827,7 @@ Program {
           Eq { Call(target=textLen) { Var(name=textValue) } Lit(value=1) }
           Block {
             If {
-              Eq { Call(target=debugControlName) { Var(name=textValue) } Lit(value="") }
+              Eq { Call(target=controlKeyName) { Var(name=textValue) } Lit(value="") }
               Block {
                 If {
                   Call(target=isForbiddenInputChar) { Var(name=textValue) }
@@ -1430,7 +1430,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Let(name=mode) { Call(target=guiModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block {

@@ -75,6 +75,21 @@ AiVectra does NOT own:
 
 If a feature could logically exist without UI, it belongs in AiLang or AiVM.
 
+Module discipline:
+• Agents must prefer creating focused semantic `.aos` modules over expanding
+  large facade, host, runtime, CLI, or sample files.
+• `src/AiVectra/src/lib.aos` is a public facade, not the implementation home
+  for every SDK feature.
+• Organize SDK implementation by responsibility: event/frame lifecycle,
+  geometry and hit testing, layout sizing, text/input helpers, rendering
+  primitives, debug/profiling helpers, and facade exports.
+• Host/runtime changes must remain mechanical and must not introduce language,
+  library, UI package, parsing, validation, formatting, or application
+  semantics.
+• Do not create or continue "blob" files. When a file starts accumulating
+  unrelated responsibilities, split it by semantic ownership before adding more
+  behavior.
+
 ⸻
 
 	2.	Determinism Is Mandatory

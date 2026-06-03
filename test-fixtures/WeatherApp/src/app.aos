@@ -607,7 +607,7 @@ Program {
               Block {
                 Call(target=sys.ui.drawRect) {
                   Var(name=handle)
-                  Add { Lit(value=56) Call(target=mul) { Lit(value=11) Call(target=strLen) { Var(name=query) } Lit(value=0) } }
+                  Add { Lit(value=56) Call(target=mul) { Lit(value=11) Call(target=strLen) { Var(name=query) }} }
                   Lit(value=103) Lit(value=2) Lit(value=20) Lit(value="#e2e8f0")
                 }
                 Lit(value=0)
@@ -658,7 +658,7 @@ Program {
           Block {
             Call(target=interactiveVectorState) {
               Var(name=handle) Lit(value=40) Lit(value=138) Var(name=entryW)
-              Add { Lit(value=8) Call(target=mul) { Lit(value=32) Var(name=dropdownCount) Lit(value=0) } }
+              Add { Lit(value=8) Call(target=mul) { Lit(value=32) Var(name=dropdownCount)} }
               Lit(value="normal") Lit(value="rect") Lit(value="") Lit(value="#1e293b") Lit(value="#1e293b") Lit(value="#334155") Lit(value="#1e293b") Lit(value="#0f172a")
             }
             If { Call(target=intGte) { Var(name=dropdownCount) Lit(value=1) } Block { Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=56) Lit(value=148) Call(target=geoLabelAt) { Var(name=geoBody) Lit(value=1) } Lit(value="#e2e8f0") Lit(value=16) } Lit(value=0) } Block { Lit(value=0) } }
@@ -755,13 +755,13 @@ Program {
 
   Let(name=isBackKey) {
     Fn(params=keyName) {
-      Block { Return { Eq { Call(target=debugControlName) { Var(name=keyName) } Lit(value="backspace") } } }
+      Block { Return { Eq { Call(target=controlKeyName) { Var(name=keyName) } Lit(value="backspace") } } }
     }
   }
 
   Let(name=isEnterKey) {
     Fn(params=keyName) {
-      Block { Return { Eq { Call(target=debugControlName) { Var(name=keyName) } Lit(value="enter") } } }
+      Block { Return { Eq { Call(target=controlKeyName) { Var(name=keyName) } Lit(value="enter") } } }
     }
   }
 
@@ -1358,7 +1358,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Let(name=mode) { Call(target=guiModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block { Return { Lit(value=0) } }

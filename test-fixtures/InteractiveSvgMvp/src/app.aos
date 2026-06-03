@@ -69,7 +69,7 @@ Program {
       Block {
         Return {
           Call(target=halfFloor) {
-            Add { Var(name=windowWidth) Call(target=mul) { Lit(value=-1) Call(target=buttonW) { Lit(value=0) } Lit(value=0) } }
+            Add { Var(name=windowWidth) Call(target=mul) { Lit(value=-1) Call(target=buttonW) { Lit(value=0) }} }
             Lit(value=0)
           }
         }
@@ -486,7 +486,7 @@ Program {
           }
         }
         Let(name=clampedCaret) { Call(target=caretClamp) { Var(name=caret) Call(target=textLen) { Var(name=name) } } }
-        Let(name=caretOffset) { Call(target=mul) { Lit(value=12) Var(name=clampedCaret) Lit(value=0) } }
+        Let(name=caretOffset) { Call(target=mul) { Lit(value=12) Var(name=clampedCaret)} }
 
         Call(target=sys.ui.beginFrame) { Var(name=handle) }
         Call(target=drawPanel) { Var(name=handle) Var(name=windowWidth) Var(name=windowHeight) }
@@ -997,7 +997,7 @@ Program {
   Let(name=start) {
     Fn(params=args) {
       Block {
-        Let(name=mode) { Call(target=appModeFromArgs) { Var(name=args) } }
+        Let(name=mode) { Call(target=guiModeFromArgs) { Var(name=args) } }
         If {
           Eq { Var(name=mode) Lit(value="snapshot") }
           Block {

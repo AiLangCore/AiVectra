@@ -1,0 +1,121 @@
+Program {
+  Export(name=attrString)
+  Export(name=attrInt)
+  Export(name=frameEvent)
+  Export(name=eventTypeOf)
+  Export(name=eventKeyOf)
+  Export(name=eventTextOf)
+  Export(name=eventXOf)
+  Export(name=eventYOf)
+  Export(name=eventIsNone)
+  Export(name=eventIsClosed)
+
+  Let(name=attrString) {
+    Fn(params=node,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) AttrCount { Var(name=node) } }
+          Block { Return { Lit(value="") } }
+          Block {
+            If {
+              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
+              Block { Return { AttrValueString { Var(name=node) Var(name=index) } } }
+              Block {
+                Return {
+                  Call(target=attrString) {
+                    Var(name=node)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=attrInt) {
+    Fn(params=node,key,index) {
+      Block {
+        If {
+          Eq { Var(name=index) AttrCount { Var(name=node) } }
+          Block { Return { Lit(value=-1) } }
+          Block {
+            If {
+              Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
+              Block { Return { AttrValueInt { Var(name=node) Var(name=index) } } }
+              Block {
+                Return {
+                  Call(target=attrInt) {
+                    Var(name=node)
+                    Var(name=key)
+                    Add { Var(name=index) Lit(value=1) }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=frameEvent) {
+    Fn(params=windowHandle) {
+      Block {
+        Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
+        Return { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
+      }
+    }
+  }
+
+  Let(name=eventTypeOf) {
+    Fn(params=eventNode) {
+      Block {
+        If {
+          Eq { AttrCount { Var(name=eventNode) } Lit(value=0) }
+          Block { Return { Lit(value="none") } }
+          Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="type") Lit(value=0) } } }
+        }
+      }
+    }
+  }
+
+  Let(name=eventKeyOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="key") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventTextOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="text") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventXOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="x") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventYOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="y") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventIsNone) {
+    Fn(params=eventNode) {
+      Block { Return { Eq { Call(target=eventTypeOf) { Var(name=eventNode) } Lit(value="none") } } }
+    }
+  }
+
+  Let(name=eventIsClosed) {
+    Fn(params=eventNode) {
+      Block { Return { Eq { Call(target=eventTypeOf) { Var(name=eventNode) } Lit(value="closed") } } }
+    }
+  }
+}
