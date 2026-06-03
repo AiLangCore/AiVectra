@@ -1,4 +1,5 @@
 Program {
+  Import(sdk="ailang" path="std/core.aos")
   Import(package="std-app" path="src/app/app.aos")
   Import(package="std-app" path="src/app/global.aos")
 
