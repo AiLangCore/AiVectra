@@ -27,6 +27,7 @@ TMP_DIR="$ROOT_DIR/.tmp/package-surface"
 REGISTRY_DIR="$TMP_DIR/registry"
 APP_DIR="$TMP_DIR/app"
 COMMIT="$(git -C "$ROOT_DIR" rev-parse HEAD)"
+STD_APP_COMMIT="$(git -C "$ROOT_DIR/../ailang-core-packages" rev-parse HEAD)"
 
 rm -rf "$TMP_DIR"
 mkdir -p "$REGISTRY_DIR/packages"
@@ -45,10 +46,25 @@ ref = "HEAD"
 commit = "$COMMIT"
 EOF
 
+cat > "$REGISTRY_DIR/packages/std-app.toml" <<EOF
+schema = "ailang.package.v1"
+name = "std-app"
+repo = "$ROOT_DIR/../ailang-core-packages"
+packageRoot = "packages/std-app"
+license = "MIT"
+types = ["library"]
+defaultVersion = "0.0.1-alpha.2"
+
+[versions."0.0.1-alpha.2"]
+ref = "HEAD"
+commit = "$STD_APP_COMMIT"
+EOF
+
 "$AILANG_BIN" init "$APP_DIR" >/dev/null
 AILANG_PACKAGE_REGISTRY="$REGISTRY_DIR" "$AILANG_BIN" package add aivectra "$APP_DIR" >/dev/null
 
 "$AILANG_BIN" package list "$APP_DIR" | grep -q 'aivectra 0.0.1-test'
+"$AILANG_BIN" package list "$APP_DIR" | grep -q 'std-app 0.0.1-alpha.2'
 "$AILANG_BIN" template list projects "$APP_DIR" | grep -q 'aivectra/hello-name'
 "$AILANG_BIN" template list files "$APP_DIR" | grep -q 'aivectra/view-basic'
 

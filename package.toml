@@ -3,6 +3,18 @@ name = "aivectra"
 version = "0.0.1-beta.2"
 types = ["library", "tool", "template"]
 
+[dependencies]
+std-app = "0.0.1-alpha.2"
+
+[libraries.app]
+namespace = "aivectra.app"
+entry = "src/AiVectra/src/app.aos"
+exports = [
+  "aivectraApp",
+  "aivectraAppSpec",
+  "aivectraAppRender",
+]
+
 [libraries.ui]
 namespace = "aivectra.ui"
 entry = "src/AiVectra/src/lib.aos"

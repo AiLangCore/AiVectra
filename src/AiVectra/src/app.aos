@@ -1,0 +1,58 @@
+Program {
+  Import(package="std-app" path="src/app/app.aos")
+  Import(package="std-app" path="src/app/global.aos")
+
+  Export(name=aivectraApp)
+  Export(name=aivectraAppSpec)
+  Export(name=aivectraAppRender)
+
+  Let(name=aivectraApp) {
+    Fn(params=name,initName,updateName,renderName) {
+      Block {
+        Let(name=spec) {
+          Call(target=globalApp) {
+            Var(name=name)
+            Call(target=profileGui) { Lit(value=0) }
+            Var(name=initName)
+            Var(name=updateName)
+          }
+        }
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraApp") }
+            Field(key="app") { Var(name=spec) }
+            Field(key="render") { Var(name=renderName) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppSpec) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetNodeOr) {
+            Var(name=app)
+            Lit(value="app")
+            Map { }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppRender) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetStringOr) {
+            Var(name=app)
+            Lit(value="render")
+            Lit(value="")
+          }
+        }
+      }
+    }
+  }
+}
