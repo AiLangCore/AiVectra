@@ -204,13 +204,13 @@ Program {
         Let(name=updateName) { Call(target=aivectraAppUpdate) { Var(name=app) } }
         Let(name=renderName) { Call(target=aivectraAppRender) { Var(name=app) } }
         Let(name=initialState) {
-          CallDynamic {
+          CallDynamic(candidates="init") {
             Var(name=initName)
             Var(name=args)
           }
         }
         Let(name=firstStep) {
-          CallDynamic {
+          CallDynamic(candidates="update") {
             Var(name=updateName)
             Var(name=initialState)
             Call(target=aivectraStartEvent) { Var(name=args) }
@@ -232,7 +232,7 @@ Program {
         Let(name=currentState) { Call(target=aivectraRunState) { Var(name=run) } }
         Loop {
           Block {
-            CallDynamic {
+            CallDynamic(candidates="render") {
               Var(name=renderName)
               Var(name=handle)
               Var(name=currentState)
@@ -249,7 +249,7 @@ Program {
               Block { Lit(value=0) }
             }
             Let(name=step) {
-              CallDynamic {
+              CallDynamic(candidates="update") {
                 Var(name=updateName)
                 Var(name=currentState)
                 Call(target=uiEvent) { Var(name=evt) }
