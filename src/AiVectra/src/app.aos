@@ -61,10 +61,8 @@ Program {
     Fn(params=app) {
       Block {
         Return {
-          Call(target=mapGetStringOr) {
+          Call(target=globalAppName) {
             Call(target=aivectraAppSpec) { Var(name=app) }
-            Lit(value="name")
-            Lit(value="")
           }
         }
       }
@@ -75,10 +73,8 @@ Program {
     Fn(params=app) {
       Block {
         Return {
-          Call(target=mapGetStringOr) {
+          Call(target=globalAppInit) {
             Call(target=aivectraAppSpec) { Var(name=app) }
-            Lit(value="init")
-            Lit(value="")
           }
         }
       }
@@ -89,10 +85,8 @@ Program {
     Fn(params=app) {
       Block {
         Return {
-          Call(target=mapGetStringOr) {
+          Call(target=globalAppUpdate) {
             Call(target=aivectraAppSpec) { Var(name=app) }
-            Lit(value="update")
-            Lit(value="")
           }
         }
       }
