@@ -219,7 +219,15 @@ Program {
         }
         If {
           Call(target=aivectraRunShouldSnapshot) { Var(name=run) }
-          Block { Return { Lit(value=0) } }
+          Block {
+            Let(name=handle) { Call(target=aivectraRunWindow) { Var(name=run) } }
+            CallDynamic(candidates="render") {
+              Var(name=renderName)
+              Var(name=handle)
+              Call(target=aivectraRunState) { Var(name=run) }
+            }
+            Return { Lit(value=0) }
+          }
           Block { Lit(value=0) }
         }
         Let(name=handle) { Call(target=aivectraRunWindow) { Var(name=run) } }
