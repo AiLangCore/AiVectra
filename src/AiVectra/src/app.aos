@@ -232,16 +232,6 @@ Program {
               Var(name=currentState)
             }
             Let(name=evt) { Call(target=frameEvent) { Var(name=handle) } }
-            If {
-              Call(target=eventIsNone) { Var(name=evt) }
-              Block { Continue { } }
-              Block { Lit(value=0) }
-            }
-            If {
-              Call(target=eventIsClosed) { Var(name=evt) }
-              Block { Break { } }
-              Block { Lit(value=0) }
-            }
             Let(name=step) {
               CallDynamic(candidates="update") {
                 Var(name=updateName)
@@ -250,6 +240,11 @@ Program {
               }
             }
             Let(name=currentState) { Call(target=nextState) { Var(name=step) } }
+            If {
+              Call(target=eventIsClosed) { Var(name=evt) }
+              Block { Break { } }
+              Block { Lit(value=0) }
+            }
             Continue { }
           }
         }
