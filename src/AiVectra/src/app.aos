@@ -19,6 +19,7 @@ Program {
   Export(name=aivectraRunState)
   Export(name=aivectraRunShouldSnapshot)
   Export(name=aivectraRunWindow)
+  Export(name=aivectraFrameAppEvent)
   Export(name=aivectraRun)
 
   Let(name=aivectraApp) {
@@ -191,6 +192,18 @@ Program {
     }
   }
 
+  Let(name=aivectraFrameAppEvent) {
+    Fn(params=eventNode) {
+      Block {
+        If {
+          Call(target=eventIsNone) { Var(name=eventNode) }
+          Block { Return { Call(target=noneEvent) { Lit(value=0) } } }
+          Block { Return { Call(target=uiEvent) { Var(name=eventNode) } } }
+        }
+      }
+    }
+  }
+
   Let(name=aivectraRun) {
     Fn(params=app,args) {
       Block {
@@ -244,7 +257,7 @@ Program {
               CallDynamic(candidates="update") {
                 Var(name=updateName)
                 Var(name=currentState)
-                Call(target=uiEvent) { Var(name=evt) }
+                Call(target=aivectraFrameAppEvent) { Var(name=evt) }
               }
             }
             Let(name=currentState) { Call(target=nextState) { Var(name=step) } }

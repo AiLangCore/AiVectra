@@ -4,7 +4,7 @@ version = "0.0.1-beta.2"
 types = ["library", "tool", "template"]
 
 [dependencies]
-std-app = "0.0.1-alpha.2"
+std-app = "0.0.1-alpha.3"
 
 [libraries.app]
 namespace = "aivectra.app"
@@ -22,6 +22,7 @@ exports = [
   "aivectraRunState",
   "aivectraRunShouldSnapshot",
   "aivectraRunWindow",
+  "aivectraFrameAppEvent",
   "aivectraRun",
 ]
 
