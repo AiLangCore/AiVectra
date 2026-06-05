@@ -7,7 +7,7 @@ types = ["library", "tool", "template"]
 std-app = "0.0.1-alpha.3"
 
 [libraries.app]
-namespace = "std.app.ui"
+namespace = "aivectra.app"
 entry = "src/AiVectra/src/app.aos"
 exports = [
   "aivectraApp",
