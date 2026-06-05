@@ -53,9 +53,9 @@ repo = "$ROOT_DIR/../ailang-core-packages"
 packageRoot = "packages/std-app"
 license = "MIT"
 types = ["library"]
-defaultVersion = "0.0.1-alpha.2"
+defaultVersion = "0.0.1-alpha.3"
 
-[versions."0.0.1-alpha.2"]
+[versions."0.0.1-alpha.3"]
 ref = "HEAD"
 commit = "$STD_APP_COMMIT"
 EOF
@@ -64,7 +64,7 @@ EOF
 AILANG_PACKAGE_REGISTRY="$REGISTRY_DIR" "$AILANG_BIN" package add aivectra "$APP_DIR" >/dev/null
 
 "$AILANG_BIN" package list "$APP_DIR" | grep -q 'aivectra 0.0.1-test'
-"$AILANG_BIN" package list "$APP_DIR" | grep -q 'std-app 0.0.1-alpha.2'
+"$AILANG_BIN" package list "$APP_DIR" | grep -q 'std-app 0.0.1-alpha.3'
 "$AILANG_BIN" template list projects "$APP_DIR" | grep -q 'aivectra/hello-name'
 "$AILANG_BIN" template list files "$APP_DIR" | grep -q 'aivectra/view-basic'
 
