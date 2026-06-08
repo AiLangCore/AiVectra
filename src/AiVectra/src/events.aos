@@ -1,4 +1,6 @@
 Program {
+  Import(path="text_input.aos")
+
   Export(name=attrString)
   Export(name=attrInt)
   Export(name=frameEvent)
@@ -7,6 +9,9 @@ Program {
   Export(name=eventTextOf)
   Export(name=eventXOf)
   Export(name=eventYOf)
+  Export(name=eventIsKeyboardLike)
+  Export(name=eventInputText)
+  Export(name=eventControlKey)
   Export(name=eventIsNone)
   Export(name=eventIsClosed)
 
@@ -104,6 +109,87 @@ Program {
   Let(name=eventYOf) {
     Fn(params=eventNode) {
       Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="y") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventIsKeyboardLike) {
+    Fn(params=eventNode) {
+      Block {
+        Let(name=eventType) { Call(target=eventTypeOf) { Var(name=eventNode) } }
+        If {
+          Eq { Var(name=eventType) Lit(value="key") }
+          Block { Return { Lit(value=true) } }
+          Block {
+            If {
+              Eq { Var(name=eventType) Lit(value="text") }
+              Block { Return { Lit(value=true) } }
+              Block {
+                If {
+                  Eq { Var(name=eventType) Lit(value="textinput") }
+                  Block { Return { Lit(value=true) } }
+                  Block {
+                    If {
+                      Eq { Var(name=eventType) Lit(value="input") }
+                      Block { Return { Lit(value=true) } }
+                      Block {
+                        If {
+                          Eq { Var(name=eventType) Lit(value="char") }
+                          Block { Return { Lit(value=true) } }
+                          Block {
+                            If {
+                              Eq { Var(name=eventType) Lit(value="keydown") }
+                              Block { Return { Lit(value=true) } }
+                              Block {
+                                If {
+                                  Eq { Var(name=eventType) Lit(value="key_down") }
+                                  Block { Return { Lit(value=true) } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=eventType) Lit(value="keypress") }
+                                      Block { Return { Lit(value=true) } }
+                                      Block { Return { Lit(value=false) } }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=eventInputText) {
+    Fn(params=eventNode) {
+      Block {
+        Let(name=textValue) { Call(target=eventTextOf) { Var(name=eventNode) } }
+        If {
+          Eq { Var(name=textValue) Lit(value="") }
+          Block { Return { Call(target=keyToText) { Call(target=eventKeyOf) { Var(name=eventNode) } } } }
+          Block { Return { Var(name=textValue) } }
+        }
+      }
+    }
+  }
+
+  Let(name=eventControlKey) {
+    Fn(params=eventNode) {
+      Block {
+        Let(name=keyName) { Call(target=controlKeyName) { Call(target=eventKeyOf) { Var(name=eventNode) } } }
+        If {
+          Eq { Var(name=keyName) Lit(value="") }
+          Block { Return { Call(target=controlKeyName) { Call(target=eventTextOf) { Var(name=eventNode) } } } }
+          Block { Return { Var(name=keyName) } }
+        }
+      }
     }
   }
 
