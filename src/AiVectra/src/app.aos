@@ -19,6 +19,7 @@ Program {
   Export(name=aivectraRunState)
   Export(name=aivectraRunShouldSnapshot)
   Export(name=aivectraRunWindow)
+  Export(name=aivectraResizeEvent)
   Export(name=aivectraFrameAppEvent)
   Export(name=aivectraRun)
 
@@ -192,13 +193,41 @@ Program {
     }
   }
 
+  Let(name=aivectraResizeEvent) {
+    Fn(params=width,height) {
+      Block {
+        Return {
+          Map {
+            Field(key="type") { Lit(value="resize") }
+            Field(key="width") { Var(name=width) }
+            Field(key="height") { Var(name=height) }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=aivectraFrameAppEvent) {
-    Fn(params=eventNode) {
+    Fn(params=eventNode,width,height) {
       Block {
         If {
           Call(target=eventIsNone) { Var(name=eventNode) }
           Block { Return { Call(target=noneEvent) { Lit(value=0) } } }
-          Block { Return { Call(target=uiEvent) { Var(name=eventNode) } } }
+          Block {
+            Return {
+              Call(target=uiEvent) {
+                Map {
+                  Field(key="type") { Call(target=eventTypeOf) { Var(name=eventNode) } }
+                  Field(key="x") { Call(target=eventXOf) { Var(name=eventNode) } }
+                  Field(key="y") { Call(target=eventYOf) { Var(name=eventNode) } }
+                  Field(key="key") { Call(target=eventKeyOf) { Var(name=eventNode) } }
+                  Field(key="text") { Call(target=eventTextOf) { Var(name=eventNode) } }
+                  Field(key="width") { Var(name=width) }
+                  Field(key="height") { Var(name=height) }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -247,6 +276,17 @@ Program {
         Let(name=currentState) { Call(target=aivectraRunState) { Var(name=run) } }
         Loop {
           Block {
+            Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
+            Let(name=frameWidth) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
+            Let(name=frameHeight) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
+            Let(name=resizeStep) {
+              CallDynamic(candidates="update") {
+                Var(name=updateName)
+                Var(name=currentState)
+                Call(target=uiEvent) { Call(target=aivectraResizeEvent) { Var(name=frameWidth) Var(name=frameHeight) } }
+              }
+            }
+            Let(name=currentState) { Call(target=nextState) { Var(name=resizeStep) } }
             CallDynamic(candidates="render") {
               Var(name=renderName)
               Var(name=handle)
@@ -257,7 +297,7 @@ Program {
               CallDynamic(candidates="update") {
                 Var(name=updateName)
                 Var(name=currentState)
-                Call(target=aivectraFrameAppEvent) { Var(name=evt) }
+                Call(target=aivectraFrameAppEvent) { Var(name=evt) Var(name=frameWidth) Var(name=frameHeight) }
               }
             }
             Let(name=currentState) { Call(target=nextState) { Var(name=step) } }

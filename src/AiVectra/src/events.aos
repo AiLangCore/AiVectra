@@ -1,4 +1,5 @@
 Program {
+  Import(sdk="ailang" path="std/core.aos")
   Import(path="text_input.aos")
 
   Export(name=attrString)
@@ -9,6 +10,8 @@ Program {
   Export(name=eventTextOf)
   Export(name=eventXOf)
   Export(name=eventYOf)
+  Export(name=eventWidthOf)
+  Export(name=eventHeightOf)
   Export(name=eventIsKeyboardLike)
   Export(name=eventInputText)
   Export(name=eventControlKey)
@@ -20,7 +23,13 @@ Program {
       Block {
         If {
           Eq { Var(name=index) AttrCount { Var(name=node) } }
-          Block { Return { Lit(value="") } }
+          Block {
+            If {
+              Eq { AttrCount { Var(name=node) } Lit(value=0) }
+              Block { Return { Call(target=mapGetStringOr) { Var(name=node) Var(name=key) Lit(value="") } } }
+              Block { Return { Lit(value="") } }
+            }
+          }
           Block {
             If {
               Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
@@ -46,7 +55,13 @@ Program {
       Block {
         If {
           Eq { Var(name=index) AttrCount { Var(name=node) } }
-          Block { Return { Lit(value=-1) } }
+          Block {
+            If {
+              Eq { AttrCount { Var(name=node) } Lit(value=0) }
+              Block { Return { Call(target=mapGetIntOr) { Var(name=node) Var(name=key) Lit(value=-1) } } }
+              Block { Return { Lit(value=-1) } }
+            }
+          }
           Block {
             If {
               Eq { AttrKey { Var(name=node) Var(name=index) } Var(name=key) }
@@ -80,7 +95,7 @@ Program {
     Fn(params=eventNode) {
       Block {
         If {
-          Eq { AttrCount { Var(name=eventNode) } Lit(value=0) }
+          Eq { Add { AttrCount { Var(name=eventNode) } ChildCount { Var(name=eventNode) } } Lit(value=0) }
           Block { Return { Lit(value="none") } }
           Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="type") Lit(value=0) } } }
         }
@@ -109,6 +124,18 @@ Program {
   Let(name=eventYOf) {
     Fn(params=eventNode) {
       Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="y") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventWidthOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="width") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventHeightOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="height") Lit(value=0) } } }
     }
   }
 
