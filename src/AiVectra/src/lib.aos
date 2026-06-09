@@ -8,6 +8,7 @@ Program {
   Import(path="layout.aos")
   Import(path="app_mode.aos")
   Import(path="primitives.aos")
+  Import(path="gestures.aos")
 
   Let(name=version) {
     Fn(params=_) {
@@ -279,6 +280,9 @@ Program {
   Export(name=eventYOf)
   Export(name=eventIsNone)
   Export(name=eventIsClosed)
+  Export(name=gestureIsDragLike)
+  Export(name=gestureIsSwipeLike)
+  Export(name=gestureSwipeAxis)
   Export(name=debugSizeLine)
   Export(name=debugEventLine)
   Export(name=controlKeyName)
