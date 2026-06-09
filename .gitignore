@@ -6,6 +6,7 @@ build
 .artifacts/
 artifacts/
 *.local.*
+config.local.toml
 
 .tmp-*
 .tmp_*
