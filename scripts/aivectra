@@ -339,21 +339,43 @@ build_macos_icns_from_svg() {
   local iconset="$tmp/icon.iconset"
   mkdir -p "$iconset"
 
+  if command -v magick >/dev/null 2>&1 && command -v tiff2icns >/dev/null 2>&1; then
+    local size
+    for size in 16 32 48 128 256 512 1024; do
+      magick "$svg" -background none -resize "${size}x${size}" -depth 8 "$tmp/icon-${size}.tiff" >/dev/null 2>&1 || true
+    done
+    if [[ -f "$tmp/icon-16.tiff" && -f "$tmp/icon-32.tiff" && -f "$tmp/icon-48.tiff" &&
+          -f "$tmp/icon-128.tiff" && -f "$tmp/icon-256.tiff" && -f "$tmp/icon-512.tiff" &&
+          -f "$tmp/icon-1024.tiff" ]]; then
+      magick \
+        "$tmp/icon-16.tiff" "$tmp/icon-32.tiff" "$tmp/icon-48.tiff" \
+        "$tmp/icon-128.tiff" "$tmp/icon-256.tiff" "$tmp/icon-512.tiff" \
+        "$tmp/icon-1024.tiff" "$tmp/AppIcon.tiff" >/dev/null 2>&1 || true
+      if [[ -f "$tmp/AppIcon.tiff" ]]; then
+        tiff2icns "$tmp/AppIcon.tiff" "$out_icns" >/dev/null 2>&1 || true
+      fi
+      if [[ -s "$out_icns" ]]; then
+        rm -rf "$tmp"
+        return 0
+      fi
+    fi
+  fi
+
   if ! command -v iconutil >/dev/null 2>&1; then
     rm -rf "$tmp"
     return 1
   fi
 
-  if command -v qlmanage >/dev/null 2>&1; then
+  if command -v magick >/dev/null 2>&1; then
+    magick "$svg" -background none -resize 1024x1024 "$base_png" >/dev/null 2>&1 || true
+  fi
+  if [[ ! -f "$base_png" ]] && command -v qlmanage >/dev/null 2>&1; then
     qlmanage -t -s 1024 -o "$tmp" "$svg" >/dev/null 2>&1 || true
     local ql_png
     ql_png="$(find "$tmp" -maxdepth 1 -type f -name "*.png" | head -n1 || true)"
     if [[ -n "$ql_png" && -f "$ql_png" ]]; then
       cp "$ql_png" "$base_png"
     fi
-  fi
-  if [[ ! -f "$base_png" ]] && command -v magick >/dev/null 2>&1; then
-    magick "$svg" -background none -resize 1024x1024 "$base_png" >/dev/null 2>&1 || true
   fi
   if [[ ! -f "$base_png" ]]; then
     rm -rf "$tmp"
@@ -411,6 +433,14 @@ build_macos_icns_from_svg() {
   return 0
 }
 
+resolve_macos_bundle_ailang_executable() {
+  if [[ "$AILANG_BIN" == "${HOME}/.ailang/bin/ailang" && -x "${HOME}/.ailang/current/bin/ailang" ]]; then
+    printf "%s" "${HOME}/.ailang/current/bin/ailang"
+    return 0
+  fi
+  printf "%s" "$AILANG_BIN"
+}
+
 ensure_macos_run_bundle() {
   local project_dir="$1"
   local app_name="$2"
@@ -425,6 +455,8 @@ ensure_macos_run_bundle() {
   local plist="$contents/Info.plist"
   local bundle_exec="ailang"
   local embedded_ailang="$macos/$bundle_exec"
+  local source_ailang
+  source_ailang="$(resolve_macos_bundle_ailang_executable)"
   local icon_svg="$project_dir/Assets/icons/app.svg"
   local icon_icns_src="$project_dir/Assets/icons/app.icns"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
@@ -442,7 +474,7 @@ ensure_macos_run_bundle() {
 
   rm -rf "$bundle_root"
   mkdir -p "$macos" "$resources"
-  cp "$AILANG_BIN" "$embedded_ailang"
+  cp "$source_ailang" "$embedded_ailang"
   chmod +x "$embedded_ailang"
 
   if [[ -f "$icon_icns_src" ]]; then
@@ -458,6 +490,10 @@ ensure_macos_run_bundle() {
     has_icon="true"
   fi
   write_macos_info_plist "$plist" "$app_name" "$bundle_id" "$display_name" "$version" "$has_icon" "$bundle_exec"
+  if command -v codesign >/dev/null 2>&1; then
+    codesign --force --deep --sign - "$bundle_root" >/dev/null 2>&1 || true
+  fi
+  touch "$bundle_root"
 
   printf "%s" "$bundle_root"
 }

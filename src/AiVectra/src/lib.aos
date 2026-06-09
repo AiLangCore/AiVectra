@@ -258,6 +258,7 @@ Program {
   Export(name=caretClamp)
   Export(name=caretLeft)
   Export(name=caretRight)
+  Export(name=textPrefix)
   Export(name=caretPixelOffset)
   Export(name=keyToText)
   Export(name=intLt)
