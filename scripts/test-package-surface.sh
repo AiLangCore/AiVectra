@@ -60,11 +60,26 @@ ref = "HEAD"
 commit = "$STD_APP_COMMIT"
 EOF
 
+cat > "$REGISTRY_DIR/packages/std-ui-input.toml" <<EOF
+schema = "ailang.package.v1"
+name = "std-ui-input"
+repo = "$ROOT_DIR/../ailang-core-packages"
+packageRoot = "packages/std-ui-input"
+license = "MIT"
+types = ["library"]
+defaultVersion = "0.0.1-alpha.7"
+
+[versions."0.0.1-alpha.7"]
+ref = "HEAD"
+commit = "$STD_APP_COMMIT"
+EOF
+
 "$AILANG_BIN" init "$APP_DIR" >/dev/null
 AILANG_PACKAGE_REGISTRY="$REGISTRY_DIR" "$AILANG_BIN" package add aivectra "$APP_DIR" >/dev/null
 
 "$AILANG_BIN" package list "$APP_DIR" | grep -q 'aivectra 0.0.1-test'
 "$AILANG_BIN" package list "$APP_DIR" | grep -q 'std-app 0.0.1-alpha.3'
+"$AILANG_BIN" package list "$APP_DIR" | grep -q 'std-ui-input 0.0.1-alpha.7'
 "$AILANG_BIN" template list projects "$APP_DIR" | grep -q 'aivectra/hello-name'
 "$AILANG_BIN" template list files "$APP_DIR" | grep -q 'aivectra/view-basic'
 

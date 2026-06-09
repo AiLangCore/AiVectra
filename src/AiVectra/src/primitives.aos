@@ -1,4 +1,6 @@
 Program {
+  Import(path="math.aos")
+
   Export(name=rect)
   Export(name=circle)
   Export(name=text)

@@ -13,6 +13,18 @@ if [[ -z "${AILANG_BIN:-}" ]]; then
   fi
 fi
 
+if [[ -z "${AILANG_PACKAGE_REGISTRY:-}" && -d "$ROOT_DIR/../ailang-packages/packages" ]]; then
+  export AILANG_PACKAGE_REGISTRY="$ROOT_DIR/../ailang-packages"
+fi
+
+echo "[test-all] fixture package restore"
+while IFS= read -r project_file; do
+  fixture_dir="$(dirname "$project_file")"
+  if grep -Eq 'Include#|Include\(' "$project_file"; then
+    (cd "$fixture_dir" && "$AILANG_BIN" package restore >/dev/null)
+  fi
+done < <(find "$ROOT_DIR/test-fixtures" -name project.aiproj -type f | sort)
+
 echo "[test-all] cli contract"
 "$ROOT_DIR/scripts/test-cli-contract.sh"
 

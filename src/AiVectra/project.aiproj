@@ -4,5 +4,7 @@ Program {
     entryFile="src/lib.aos"
     entryExport="library"
     version="0.0.1"
-  )
+  ) {
+    Include(name="std-ui-input")
+  }
 }

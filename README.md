@@ -254,7 +254,9 @@ Canonical AiVectra app structure:
 Use `ailang` from your installed AiLang toolchain (`PATH`).
 If you have a temporary local binary in this repo, replace `ailang` with `./.tools/ailang`.
 
-Run the local fixture app from repo root:
+Run the local fixture app from repo root. These fixtures declare
+`runTool="aivectra"`, so `ailang run` restores package dependencies when needed
+and delegates to the installed/project-local AiVectra tool:
 
 `ailang run ./test-fixtures/HelloWorld/`
 
@@ -263,11 +265,14 @@ Run the named greeting fixture:
 `ailang run ./test-fixtures/HelloName/`
 
 `HelloName` uses GUI text entry from key events and a clickable `Submit` button to switch to the greeting view.
-On macOS, `./scripts/aivectra run` uses direct `ailang` execution by default during development. Set `AIVECTRA_USE_MACOS_BUNDLE=1` to exercise the generated `.app` bundle path.
+On macOS, the AiVectra tool automatically uses a generated `.app` bundle when the project has standard app metadata or icons. Set `AIVECTRA_USE_MACOS_BUNDLE=0` to force direct `ailang` execution during debugging. Set `AIVECTRA_PREPARE_MACOS_BUNDLE_ONLY=1` to generate and inspect the local `.app` bundle without launching it.
 
 Wrapper/CLI:
 
-- `./scripts/aivectra` is a thin wrapper over `ailang` (no project-specific default).
+- `ailang aivectra ...` is the canonical package-tool command once the
+  `aivectra` package is restored.
+- `./scripts/aivectra` is the repo-local development shim for testing this
+  checkout before it is installed as a package tool.
 - Override runtime location with env or flag:
   - `AILANG_BIN=/path/to/ailang ./scripts/aivectra`
   - `./scripts/aivectra --ailang /path/to/ailang`

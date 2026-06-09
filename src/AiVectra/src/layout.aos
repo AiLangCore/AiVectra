@@ -1,4 +1,6 @@
 Program {
+  Import(path="math.aos")
+
   Export(name=uiWidth)
   Export(name=uiHeight)
   Export(name=buttonX)

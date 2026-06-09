@@ -3,6 +3,7 @@ Program#p1 {
     name="{{projectName}}"
     entryFile="src/app.aos"
     entryExport="start"
+    runTool="aivectra"
   ) {
     Include#dep_aivectra(name="aivectra")
   }

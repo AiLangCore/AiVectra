@@ -74,6 +74,18 @@ resolve_app_path() {
   fi
   n="$(normalize_path_arg "$p")"
   if [[ -d "$n" ]]; then
+    if [[ -f "$n/project.aiproj" && "$runtime_supports_source" == "true" ]]; then
+      if [[ "$prefer_prebuilt" == "1" && -f "$n/app.aibc1" ]]; then
+        printf "%s" "$n/app.aibc1"
+        return 0
+      fi
+      if [[ "$prefer_prebuilt" == "1" && -f "$n/src/app.aibc1" ]]; then
+        printf "%s" "$n/src/app.aibc1"
+        return 0
+      fi
+      printf "%s" "$n"
+      return 0
+    fi
     if [[ "$runtime_supports_source" == "true" ]]; then
       if [[ -f "$n/src/app.aos" ]]; then
         printf "%s" "$n/src/app.aos"
@@ -177,7 +189,7 @@ project_dir_from_target() {
 project_name_from_dir() {
   local d="$1"
   local n
-  n="$(rg -n '^name\\s*=\\s*"' "$d/project.aiproj" 2>/dev/null | head -n1 | sed -E 's/^[^"]*"//; s/".*$//')"
+  n="$(rg -n 'name\s*=\s*"' "$d/project.aiproj" 2>/dev/null | head -n1 | sed -E 's/^[^"]*"//; s/".*$//')"
   if [[ -n "$n" ]]; then
     printf "%s" "$n"
   else
@@ -381,8 +393,14 @@ build_macos_icns_from_svg() {
   fi
 
   if ! iconutil -c icns "$iconset" -o "$out_icns" >/dev/null 2>&1; then
-    rm -rf "$tmp"
-    return 1
+    rm -f "$out_icns"
+    if command -v tiff2icns >/dev/null 2>&1 && command -v magick >/dev/null 2>&1; then
+      local base_tiff="$tmp/base.tiff"
+      magick "$svg" -background none -resize 1024x1024 "$base_tiff" >/dev/null 2>&1 || true
+      if [[ -f "$base_tiff" ]]; then
+        tiff2icns "$base_tiff" "$out_icns" >/dev/null 2>&1 || true
+      fi
+    fi
   fi
   if [[ ! -s "$out_icns" ]]; then
     rm -rf "$tmp"
@@ -411,6 +429,16 @@ ensure_macos_run_bundle() {
   local icon_icns_src="$project_dir/Assets/icons/app.icns"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
   local icon_icns="$resources/AppIcon.icns"
+  local info_toml
+  info_toml="$(resolve_target_toml_path "$project_dir" "Targets/Apple/Mac/Info.plist.toml")"
+  local bundle_id="org.aivectra.$(printf "%s" "$app_name" | tr '[:upper:]' '[:lower:]')"
+  local display_name="$app_name"
+  local version="0.0.1"
+  if [[ -n "$info_toml" ]]; then
+    bundle_id="$(toml_get_string "$info_toml" "bundle_id" "$bundle_id")"
+    display_name="$(toml_get_string "$info_toml" "display_name" "$display_name")"
+    version="$(toml_get_string "$info_toml" "version" "$version")"
+  fi
 
   rm -rf "$bundle_root"
   mkdir -p "$macos" "$resources"
@@ -420,34 +448,16 @@ ensure_macos_run_bundle() {
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
   elif [[ -f "$icon_svg" ]]; then
-    build_macos_icns_from_svg "$icon_svg" "$icon_icns" || true
+    build_macos_icns_from_svg "$icon_svg" "$icon_icns" || echo "aivectra warn: unable to package macOS app icon from $icon_svg" >&2
   elif [[ -f "$icon_default" ]]; then
     build_macos_icns_from_svg "$icon_default" "$icon_icns" || true
   fi
 
-  cat > "$plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleName</key><string>$app_name</string>
-  <key>CFBundleDisplayName</key><string>$app_name</string>
-  <key>CFBundleIdentifier</key><string>com.aivectra.$app_name</string>
-  <key>CFBundleVersion</key><string>1</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleExecutable</key><string>$bundle_exec</string>
-  <key>NSHighResolutionCapable</key><true/>
-EOF
+  local has_icon="false"
   if [[ -f "$icon_icns" ]]; then
-    cat >> "$plist" <<EOF
-  <key>CFBundleIconFile</key><string>AppIcon</string>
-EOF
+    has_icon="true"
   fi
-  cat >> "$plist" <<EOF
-</dict>
-</plist>
-EOF
+  write_macos_info_plist "$plist" "$app_name" "$bundle_id" "$display_name" "$version" "$has_icon" "$bundle_exec"
 
   printf "%s" "$bundle_root"
 }
@@ -579,18 +589,32 @@ run_via_macos_bundle_if_possible() {
   local target_abs
   target_abs="$(abs_path "$target")"
   if [[ "$(uname -s)" != "Darwin" ]]; then
-    "$AILANG_BIN" run "$target_abs" "$@"
-    return $?
-  fi
-  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-0}" != "1" ]]; then
-    "$AILANG_BIN" run "$target_abs" "$@"
+    AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
     return $?
   fi
   local project_dir
   project_dir="$(project_dir_from_target "$target_abs")"
   if [[ -z "$project_dir" || ! -f "$project_dir/project.aiproj" ]]; then
-    "$AILANG_BIN" run "$target_abs" "$@"
+    AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
     return $?
+  fi
+  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-auto}" == "0" ]]; then
+    AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
+    return $?
+  fi
+  if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-auto}" != "1" ]]; then
+    if [[ ! -f "$project_dir/Assets/icons/app.svg" &&
+          ! -f "$project_dir/Assets/icons/app.icns" &&
+          ! -f "$project_dir/Targets/Apple/Mac/Info.plist.toml" ]]; then
+      AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
+      return $?
+    fi
+    case "${1:-}" in
+      snapshot|replay)
+        AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
+        return $?
+        ;;
+    esac
   fi
   local app_name
   app_name="$(project_name_from_dir "$project_dir")"
@@ -598,12 +622,20 @@ run_via_macos_bundle_if_possible() {
   host_target="$(resolve_host_target)"
   local bundle_app
   bundle_app="$(ensure_macos_run_bundle "$project_dir" "$app_name" "$host_target")"
+  if [[ "${AIVECTRA_PREPARE_MACOS_BUNDLE_ONLY:-0}" == "1" ]]; then
+    printf "%s\n" "$bundle_app"
+    return 0
+  fi
   if command -v open >/dev/null 2>&1; then
     if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >/dev/null 2>&1); then
       return 0
     fi
+    if [[ "${AIVECTRA_MACOS_BUNDLE_DIRECT_FALLBACK:-0}" != "1" ]]; then
+      echo "aivectra error: macOS app bundle launch failed for $bundle_app" >&2
+      return 1
+    fi
   fi
-  (cd "$project_dir" && "$bundle_app/Contents/MacOS/ailang" run "$target_abs" "$@")
+  (cd "$project_dir" && AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$bundle_app/Contents/MacOS/ailang" run "$target_abs" "$@")
 }
 
 ensure_dir() {
@@ -761,6 +793,7 @@ write_macos_info_plist() {
   local display_name="$4"
   local version="$5"
   local has_icon="$6"
+  local bundle_exec="${7:-}"
   cat > "$out_plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -774,6 +807,11 @@ write_macos_info_plist() {
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>NSHighResolutionCapable</key><true/>
 EOF
+  if [[ -n "$bundle_exec" ]]; then
+    cat >> "$out_plist" <<EOF
+  <key>CFBundleExecutable</key><string>$bundle_exec</string>
+EOF
+  fi
   if [[ "$has_icon" == "true" ]]; then
     cat >> "$out_plist" <<'EOF'
   <key>CFBundleIconFile</key><string>AppIcon</string>
@@ -905,12 +943,12 @@ ensure_macos_publish_bundle() {
 set -euo pipefail
 PROJECT_DIR="$project_dir"
 if [[ -x "${AILANG_BIN:-}" ]]; then
-  exec "${AILANG_BIN}" run "\$PROJECT_DIR" "\$@"
+  exec env AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "${AILANG_BIN}" run "\$PROJECT_DIR" "\$@"
 fi
 if [[ -x "./.tools/ailang" ]]; then
-  exec "./.tools/ailang" run "\$PROJECT_DIR" "\$@"
+  exec env AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "./.tools/ailang" run "\$PROJECT_DIR" "\$@"
 fi
-exec ailang run "\$PROJECT_DIR" "\$@"
+exec env AILANG_DISABLE_RUN_TOOL_DISPATCH=1 ailang run "\$PROJECT_DIR" "\$@"
 EOF
   chmod +x "$runner"
   return 0
