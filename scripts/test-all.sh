@@ -46,6 +46,9 @@ echo "[test-all] debug ci parity"
 echo "[test-all] package surface"
 "$ROOT_DIR/scripts/test-package-surface.sh"
 
+echo "[test-all] macOS run bundle"
+"$ROOT_DIR/scripts/test-macos-run-bundle.sh"
+
 if [[ "${AIVECTRA_ARCHITECTURE_TEST:-0}" == "1" ]]; then
   echo "[test-all] architecture lint"
   "$ROOT_DIR/scripts/test-no-direct-syscalls-in-samples.sh"

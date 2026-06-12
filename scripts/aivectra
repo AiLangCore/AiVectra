@@ -453,8 +453,13 @@ ensure_macos_run_bundle() {
   local macos="$contents/MacOS"
   local resources="$contents/Resources"
   local plist="$contents/Info.plist"
-  local bundle_exec="ailang"
-  local embedded_ailang="$macos/$bundle_exec"
+  local bundle_exec
+  bundle_exec="$(printf "%s" "$app_name" | tr -cd '[:alnum:]_-')"
+  if [[ -z "$bundle_exec" ]]; then
+    bundle_exec="AiVectraApp"
+  fi
+  local bundle_launcher="$macos/$bundle_exec"
+  local embedded_ailang="$macos/ailang-runtime"
   local source_ailang
   source_ailang="$(resolve_macos_bundle_ailang_executable)"
   local icon_svg="$project_dir/Assets/icons/app.svg"
@@ -476,6 +481,16 @@ ensure_macos_run_bundle() {
   mkdir -p "$macos" "$resources"
   cp "$source_ailang" "$embedded_ailang"
   chmod +x "$embedded_ailang"
+  cat > "$bundle_launcher" <<'EOF'
+#!/bin/sh
+set -eu
+launcher_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+case "${1:-}" in
+  -psn_*) shift ;;
+esac
+exec "$launcher_dir/ailang-runtime" "$@"
+EOF
+  chmod +x "$bundle_launcher"
 
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
