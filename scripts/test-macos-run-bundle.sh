@@ -34,6 +34,8 @@ test -x "$launcher"
 test -x "$runtime"
 test -s "$bundle/Contents/Resources/AppIcon.icns"
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")" == "HelloWorld" ]]
+file "$launcher" | grep -q 'Mach-O universal binary'
+lipo "$launcher" -verify_arch arm64 x86_64
 "$launcher" --version >/dev/null
 "$launcher" -psn_0_12345 --version >/dev/null
 codesign --verify --deep --strict "$bundle"

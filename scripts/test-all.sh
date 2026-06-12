@@ -3,6 +3,15 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 export AIVECTRA_USE_MACOS_BUNDLE="${AIVECTRA_USE_MACOS_BUNDLE:-0}"
+
+cleanup_fixture_packages() {
+  find "$ROOT_DIR/test-fixtures" -type d -name .ailang -prune -exec rm -rf {} +
+  find "$ROOT_DIR/test-fixtures" -type f -name ailang.lock.toml -delete
+}
+
+trap cleanup_fixture_packages EXIT
+cleanup_fixture_packages
+
 if [[ -z "${AILANG_BIN:-}" ]]; then
   if [[ -x "$ROOT_DIR/../AiLang/tools/ailang" ]]; then
     export AILANG_BIN="$ROOT_DIR/../AiLang/tools/ailang"

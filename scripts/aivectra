@@ -460,6 +460,7 @@ ensure_macos_run_bundle() {
   fi
   local bundle_launcher="$macos/$bundle_exec"
   local embedded_ailang="$macos/ailang-runtime"
+  local launcher_source="$ROOT_DIR/Assets/launchers/apple-macos/aivectra-launcher"
   local source_ailang
   source_ailang="$(resolve_macos_bundle_ailang_executable)"
   local icon_svg="$project_dir/Assets/icons/app.svg"
@@ -479,18 +480,14 @@ ensure_macos_run_bundle() {
 
   rm -rf "$bundle_root"
   mkdir -p "$macos" "$resources"
+  if [[ ! -x "$launcher_source" ]]; then
+    echo "aivectra error: missing native macOS launcher: $launcher_source" >&2
+    return 1
+  fi
+  cp "$launcher_source" "$bundle_launcher"
+  chmod +x "$bundle_launcher"
   cp "$source_ailang" "$embedded_ailang"
   chmod +x "$embedded_ailang"
-  cat > "$bundle_launcher" <<'EOF'
-#!/bin/sh
-set -eu
-launcher_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-case "${1:-}" in
-  -psn_*) shift ;;
-esac
-exec "$launcher_dir/ailang-runtime" "$@"
-EOF
-  chmod +x "$bundle_launcher"
 
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
@@ -678,15 +675,37 @@ run_via_macos_bundle_if_possible() {
     return 0
   fi
   if command -v open >/dev/null 2>&1; then
-    if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >/dev/null 2>&1); then
-      return 0
+    local launch_log="$ROOT_DIR/.tmp/macos-launch-$app_name.log"
+    local launch_started
+    local launch_finished
+    mkdir -p "$(dirname "$launch_log")"
+    : > "$launch_log"
+    launch_started="$(date +%s)"
+    if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >"$launch_log" 2>&1); then
+      launch_finished="$(date +%s)"
+      if [[ $((launch_finished - launch_started)) -ge 2 ]]; then
+        return 0
+      fi
+      echo "aivectra error: macOS application exited during startup: $bundle_app" >&2
+      if [[ -s "$launch_log" ]]; then
+        cat "$launch_log" >&2
+      fi
+      echo "aivectra hint: inspect ~/Library/Logs/DiagnosticReports for $app_name crash reports" >&2
+      return 1
+    fi
+    if [[ -s "$launch_log" ]]; then
+      cat "$launch_log" >&2
     fi
     if [[ "${AIVECTRA_MACOS_BUNDLE_DIRECT_FALLBACK:-0}" != "1" ]]; then
       echo "aivectra error: macOS app bundle launch failed for $bundle_app" >&2
       return 1
     fi
   fi
-  (cd "$project_dir" && AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$bundle_app/Contents/MacOS/ailang" run "$target_abs" "$@")
+  if [[ "${AIVECTRA_MACOS_BUNDLE_DIRECT_FALLBACK:-0}" != "1" ]]; then
+    echo "aivectra error: macOS LaunchServices command 'open' is unavailable" >&2
+    return 1
+  fi
+  (cd "$project_dir" && AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$bundle_app/Contents/MacOS/ailang-runtime" run "$target_abs" "$@")
 }
 
 ensure_dir() {
