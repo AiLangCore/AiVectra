@@ -35,13 +35,19 @@ int main(int argc, char** argv)
         return 126;
     }
     runtime_argv[0] = runtime_path;
+    output_index = 1;
     input_index = 1;
-    if (input_index < argc && strncmp(argv[input_index], "-psn_", 5U) == 0) {
+    while (input_index < argc) {
+        if (strncmp(argv[input_index], "-psn_", 5U) != 0) {
+            runtime_argv[output_index++] = argv[input_index];
+        }
         input_index += 1;
     }
-    output_index = 1;
-    while (input_index < argc) {
-        runtime_argv[output_index++] = argv[input_index++];
+
+    if (setenv("AILANG_DISABLE_RUN_TOOL_DISPATCH", "1", 1) != 0) {
+        fprintf(stderr, "aivectra launcher: unable to configure runtime dispatch: %s\n", strerror(errno));
+        free(runtime_argv);
+        return 126;
     }
 
     execv(runtime_path, runtime_argv);

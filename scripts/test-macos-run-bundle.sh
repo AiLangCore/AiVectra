@@ -38,6 +38,18 @@ file "$launcher" | grep -q 'Mach-O universal binary'
 lipo "$launcher" -verify_arch arm64 x86_64
 "$launcher" --version >/dev/null
 "$launcher" -psn_0_12345 --version >/dev/null
+
+mv "$runtime" "$runtime.real"
+cat > "$runtime" <<'EOF'
+#!/bin/sh
+printf 'dispatch=%s\n' "${AILANG_DISABLE_RUN_TOOL_DISPATCH:-}"
+printf 'args=%s\n' "$*"
+EOF
+chmod +x "$runtime"
+launcher_output="$("$launcher" run app.aibc1 -psn_0_12345 -- live)"
+grep -q '^dispatch=1$' <<<"$launcher_output"
+grep -q '^args=run app.aibc1 -- live$' <<<"$launcher_output"
+mv "$runtime.real" "$runtime"
 codesign --verify --deep --strict "$bundle"
 
 echo "macOS run bundle: PASS"
