@@ -445,6 +445,7 @@ ensure_macos_run_bundle() {
   local project_dir="$1"
   local app_name="$2"
   local target="$3"
+  local program_path="$4"
   if [[ -z "$target" ]]; then
     target="apple-macos"
   fi
@@ -458,9 +459,8 @@ ensure_macos_run_bundle() {
   if [[ -z "$bundle_exec" ]]; then
     bundle_exec="AiVectraApp"
   fi
-  local bundle_launcher="$macos/$bundle_exec"
-  local embedded_ailang="$macos/ailang-runtime"
-  local launcher_source="$ROOT_DIR/Assets/launchers/apple-macos/aivectra-launcher"
+  local bundle_runtime="$macos/$bundle_exec"
+  local bundle_program="$macos/app.aibc1"
   local source_ailang
   source_ailang="$(resolve_macos_bundle_ailang_executable)"
   local icon_svg="$project_dir/Assets/icons/app.svg"
@@ -480,14 +480,29 @@ ensure_macos_run_bundle() {
 
   rm -rf "$bundle_root"
   mkdir -p "$macos" "$resources"
-  if [[ ! -x "$launcher_source" ]]; then
-    echo "aivectra error: missing native macOS launcher: $launcher_source" >&2
+  cp "$source_ailang" "$bundle_runtime"
+  chmod +x "$bundle_runtime"
+
+  local source_program=""
+  if [[ -f "$program_path" && "$program_path" == *.aibc1 ]]; then
+    source_program="$program_path"
+  elif [[ -f "$project_dir/app.aibc1" ]]; then
+    source_program="$project_dir/app.aibc1"
+  elif [[ -f "$project_dir/src/app.aibc1" ]]; then
+    source_program="$project_dir/src/app.aibc1"
+  else
+    AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" build "$project_dir" >/dev/null
+    if [[ -f "$project_dir/app.aibc1" ]]; then
+      source_program="$project_dir/app.aibc1"
+    elif [[ -f "$project_dir/src/app.aibc1" ]]; then
+      source_program="$project_dir/src/app.aibc1"
+    fi
+  fi
+  if [[ -z "$source_program" ]]; then
+    echo "aivectra error: build did not emit app.aibc1 for $project_dir" >&2
     return 1
   fi
-  cp "$launcher_source" "$bundle_launcher"
-  chmod +x "$bundle_launcher"
-  cp "$source_ailang" "$embedded_ailang"
-  chmod +x "$embedded_ailang"
+  cp "$source_program" "$bundle_program"
 
   if [[ -f "$icon_icns_src" ]]; then
     cp "$icon_icns_src" "$icon_icns"
@@ -669,7 +684,7 @@ run_via_macos_bundle_if_possible() {
   local host_target
   host_target="$(resolve_host_target)"
   local bundle_app
-  bundle_app="$(ensure_macos_run_bundle "$project_dir" "$app_name" "$host_target")"
+  bundle_app="$(ensure_macos_run_bundle "$project_dir" "$app_name" "$host_target" "$target_abs")"
   if [[ "${AIVECTRA_PREPARE_MACOS_BUNDLE_ONLY:-0}" == "1" ]]; then
     printf "%s\n" "$bundle_app"
     return 0
@@ -681,7 +696,11 @@ run_via_macos_bundle_if_possible() {
     mkdir -p "$(dirname "$launch_log")"
     : > "$launch_log"
     launch_started="$(date +%s)"
-    if (cd "$project_dir" && open -W -n "$bundle_app" --args run "$target_abs" "$@" >"$launch_log" 2>&1); then
+    local launch_command=(open -W -n "$bundle_app")
+    if [[ $# -gt 0 ]]; then
+      launch_command+=(--args "$@")
+    fi
+    if (cd "$project_dir" && "${launch_command[@]}" >"$launch_log" 2>&1); then
       launch_finished="$(date +%s)"
       if [[ $((launch_finished - launch_started)) -ge 2 ]]; then
         return 0
@@ -705,7 +724,9 @@ run_via_macos_bundle_if_possible() {
     echo "aivectra error: macOS LaunchServices command 'open' is unavailable" >&2
     return 1
   fi
-  (cd "$project_dir" && AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$bundle_app/Contents/MacOS/ailang-runtime" run "$target_abs" "$@")
+  local bundle_exec
+  bundle_exec="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$bundle_app/Contents/Info.plist")"
+  (cd "$project_dir" && "$bundle_app/Contents/MacOS/$bundle_exec" "$@")
 }
 
 ensure_dir() {

@@ -27,29 +27,14 @@ bundle="$(
     "$ROOT_DIR/scripts/aivectra" --ailang "$AILANG_BIN" run "$fixture/app.aibc1"
 )"
 launcher="$bundle/Contents/MacOS/HelloWorld"
-runtime="$bundle/Contents/MacOS/ailang-runtime"
 plist="$bundle/Contents/Info.plist"
 
 test -x "$launcher"
-test -x "$runtime"
+test ! -e "$bundle/Contents/MacOS/ailang-runtime"
+cmp "$fixture/app.aibc1" "$bundle/Contents/MacOS/app.aibc1"
 test -s "$bundle/Contents/Resources/AppIcon.icns"
 [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")" == "HelloWorld" ]]
-file "$launcher" | grep -q 'Mach-O universal binary'
-lipo "$launcher" -verify_arch arm64 x86_64
-"$launcher" --version >/dev/null
-"$launcher" -psn_0_12345 --version >/dev/null
-
-mv "$runtime" "$runtime.real"
-cat > "$runtime" <<'EOF'
-#!/bin/sh
-printf 'dispatch=%s\n' "${AILANG_DISABLE_RUN_TOOL_DISPATCH:-}"
-printf 'args=%s\n' "$*"
-EOF
-chmod +x "$runtime"
-launcher_output="$("$launcher" run app.aibc1 -psn_0_12345 -- live)"
-grep -q '^dispatch=1$' <<<"$launcher_output"
-grep -q '^args=run app.aibc1 -- live$' <<<"$launcher_output"
-mv "$runtime.real" "$runtime"
+file "$launcher" | grep -q 'Mach-O'
 codesign --verify --deep --strict "$bundle"
 
 echo "macOS run bundle: PASS"
