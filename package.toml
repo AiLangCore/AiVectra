@@ -17,6 +17,10 @@ exports = [
   "aivectraAppInit",
   "aivectraAppUpdate",
   "aivectraAppRender",
+  "aivectraAppWindowWidth",
+  "aivectraAppWindowHeight",
+  "aivectraAppMenuBar",
+  "aivectraAppWithMenuBar",
   "aivectraStartEvent",
   "aivectraRunContext",
   "aivectraRunMode",
@@ -26,6 +30,15 @@ exports = [
   "aivectraResizeEvent",
   "aivectraFrameAppEvent",
   "aivectraRun",
+  "aivectraMenuItem",
+  "aivectraMenuSeparator",
+  "aivectraMenuBarItem",
+  "aivectraMenuBar",
+  "aivectraDefaultApplicationMenu",
+  "aivectraDefaultMenuBar",
+  "aivectraMenuBarItemTitle",
+  "aivectraMenuItemCommand",
+  "aivectraMenuItemRole",
 ]
 
 [libraries.ui]

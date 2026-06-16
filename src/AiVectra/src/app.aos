@@ -6,6 +6,7 @@ Program {
   Import(package="std-app" path="src/app/next.aos")
   Import(path="app_mode.aos")
   Import(path="events.aos")
+  Import(path="menu.aos")
 
   Export(name=aivectraApp)
   Export(name=aivectraAppName)
@@ -13,6 +14,10 @@ Program {
   Export(name=aivectraAppInit)
   Export(name=aivectraAppUpdate)
   Export(name=aivectraAppRender)
+  Export(name=aivectraAppWindowWidth)
+  Export(name=aivectraAppWindowHeight)
+  Export(name=aivectraAppMenuBar)
+  Export(name=aivectraAppWithMenuBar)
   Export(name=aivectraStartEvent)
   Export(name=aivectraRunContext)
   Export(name=aivectraRunMode)
@@ -22,6 +27,15 @@ Program {
   Export(name=aivectraResizeEvent)
   Export(name=aivectraFrameAppEvent)
   Export(name=aivectraRun)
+  Export(name=aivectraMenuItem)
+  Export(name=aivectraMenuSeparator)
+  Export(name=aivectraMenuBarItem)
+  Export(name=aivectraMenuBar)
+  Export(name=aivectraDefaultApplicationMenu)
+  Export(name=aivectraDefaultMenuBar)
+  Export(name=aivectraMenuBarItemTitle)
+  Export(name=aivectraMenuItemCommand)
+  Export(name=aivectraMenuItemRole)
 
   Let(name=aivectraApp) {
     Fn(params=name,initName,updateName,renderName) {
@@ -39,6 +53,9 @@ Program {
             Field(key="kind") { Lit(value="AiVectraApp") }
             Field(key="app") { Var(name=spec) }
             Field(key="render") { Var(name=renderName) }
+            Field(key="windowWidth") { Lit(value=960) }
+            Field(key="windowHeight") { Lit(value=640) }
+            Field(key="menuBar") { Call(target=aivectraDefaultMenuBar) { Var(name=name) } }
           }
         }
       }
@@ -105,6 +122,44 @@ Program {
             Lit(value="")
           }
         }
+      }
+    }
+  }
+
+  Let(name=aivectraAppWindowWidth) {
+    Fn(params=app) {
+      Block {
+        Return { Call(target=mapGetIntOr) { Var(name=app) Lit(value="windowWidth") Lit(value=960) } }
+      }
+    }
+  }
+
+  Let(name=aivectraAppWindowHeight) {
+    Fn(params=app) {
+      Block {
+        Return { Call(target=mapGetIntOr) { Var(name=app) Lit(value="windowHeight") Lit(value=640) } }
+      }
+    }
+  }
+
+  Let(name=aivectraAppMenuBar) {
+    Fn(params=app) {
+      Block {
+        Return {
+          Call(target=mapGetNodeOr) {
+            Var(name=app)
+            Lit(value="menuBar")
+            Call(target=aivectraDefaultMenuBar) { Call(target=aivectraAppName) { Var(name=app) } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraAppWithMenuBar) {
+    Fn(params=app,menuBar) {
+      Block {
+        Return { Call(target=mapSet) { Var(name=app) Lit(value="menuBar") Var(name=menuBar) } }
       }
     }
   }
@@ -185,8 +240,8 @@ Program {
                 Map { }
               }
             }
-            Lit(value=640)
-            Lit(value=360)
+            Call(target=aivectraAppWindowWidth) { Call(target=mapGetNodeOr) { Var(name=ctx) Lit(value="app") Map { } } }
+            Call(target=aivectraAppWindowHeight) { Call(target=mapGetNodeOr) { Var(name=ctx) Lit(value="app") Map { } } }
           }
         }
       }

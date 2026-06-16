@@ -55,6 +55,38 @@ Runtime passes canonical UI events only:
 - `modifiers`
 - `repeat`
 
+Application menu selections are UI events with:
+
+- `type = command`
+- `key = <command key>`
+
+For example, standard desktop Settings maps to `command/settings`. The app owns
+the resulting state transition and any settings view. The host owns only native
+presentation and event translation.
+
+## Menu Contract
+
+AiVectra apps declare menus as generic descriptors:
+
+- `AiVectraMenuBar`
+- `AiVectraMenuBarItem`
+- `AiVectraMenuItem`
+- `AiVectraMenuSeparator`
+
+Apps attach a menu bar to the app descriptor with `aivectraAppWithMenuBar`.
+`aivectraApp` provides a default application menu with About and Settings.
+
+Each item may define:
+
+- `title`
+- `command`
+- `shortcut`
+- `role`
+
+Roles identify platform-standard behavior such as `about` or `settings`.
+Target adapters map descriptors to native menu systems where available and must
+fall back to deterministic command events when a native menu is unavailable.
+
 ## Determinism Rules
 
 - All state mutation occurs on the single semantic thread.

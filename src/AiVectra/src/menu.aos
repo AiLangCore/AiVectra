@@ -1,0 +1,147 @@
+Program {
+  Import(sdk="ailang" path="std/core.aos")
+
+  Export(name=aivectraMenuItem)
+  Export(name=aivectraMenuSeparator)
+  Export(name=aivectraMenuBarItem)
+  Export(name=aivectraMenuBar)
+  Export(name=aivectraDefaultApplicationMenu)
+  Export(name=aivectraDefaultMenuBar)
+  Export(name=aivectraMenuBarItemTitle)
+  Export(name=aivectraMenuItemCommand)
+  Export(name=aivectraMenuItemRole)
+
+  Let(name=aivectraMenuItem) {
+    Fn(params=title,command,shortcut,role) {
+      Block {
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraMenuItem") }
+            Field(key="title") { Var(name=title) }
+            Field(key="command") { Var(name=command) }
+            Field(key="shortcut") { Var(name=shortcut) }
+            Field(key="role") { Var(name=role) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuSeparator) {
+    Fn(params=ignored) {
+      Block {
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraMenuSeparator") }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuBarItem) {
+    Fn(params=title,count,item0,item1,item2,item3,item4) {
+      Block {
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraMenuBarItem") }
+            Field(key="title") { Var(name=title) }
+            Field(key="count") { Var(name=count) }
+            Field(key="0") { Var(name=item0) }
+            Field(key="1") { Var(name=item1) }
+            Field(key="2") { Var(name=item2) }
+            Field(key="3") { Var(name=item3) }
+            Field(key="4") { Var(name=item4) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuBar) {
+    Fn(params=count,item0,item1,item2,item3,item4) {
+      Block {
+        Return {
+          Map {
+            Field(key="kind") { Lit(value="AiVectraMenuBar") }
+            Field(key="count") { Var(name=count) }
+            Field(key="0") { Var(name=item0) }
+            Field(key="1") { Var(name=item1) }
+            Field(key="2") { Var(name=item2) }
+            Field(key="3") { Var(name=item3) }
+            Field(key="4") { Var(name=item4) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraDefaultApplicationMenu) {
+    Fn(params=appName) {
+      Block {
+        Return {
+          Call(target=aivectraMenuBarItem) {
+            Var(name=appName)
+            Lit(value=3)
+            Call(target=aivectraMenuItem) {
+              Lit(value="About")
+              Lit(value="about")
+              Lit(value="")
+              Lit(value="about")
+            }
+            Call(target=aivectraMenuSeparator) { Lit(value=0) }
+            Call(target=aivectraMenuItem) {
+              Lit(value="Settings")
+              Lit(value="settings")
+              Lit(value="cmd+,")
+              Lit(value="settings")
+            }
+            Map { }
+            Map { }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraDefaultMenuBar) {
+    Fn(params=appName) {
+      Block {
+        Return {
+          Call(target=aivectraMenuBar) {
+            Lit(value=1)
+            Call(target=aivectraDefaultApplicationMenu) { Var(name=appName) }
+            Map { }
+            Map { }
+            Map { }
+            Map { }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuBarItemTitle) {
+    Fn(params=item) {
+      Block {
+        Return { Call(target=mapGetStringOr) { Var(name=item) Lit(value="title") Lit(value="") } }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuItemCommand) {
+    Fn(params=item) {
+      Block {
+        Return { Call(target=mapGetStringOr) { Var(name=item) Lit(value="command") Lit(value="") } }
+      }
+    }
+  }
+
+  Let(name=aivectraMenuItemRole) {
+    Fn(params=item) {
+      Block {
+        Return { Call(target=mapGetStringOr) { Var(name=item) Lit(value="role") Lit(value="") } }
+      }
+    }
+  }
+}

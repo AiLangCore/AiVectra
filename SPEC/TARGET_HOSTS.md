@@ -24,6 +24,39 @@ usable by desktop, mobile, browser, and future target adapters. Adapters may
 translate native lifecycle and input events into AiVectra events, but observable
 state changes remain governed by deterministic queue dispatch.
 
+## Application Menus
+
+Desktop targets must expose the AiVectra application menu model through the
+target-native equivalent:
+
+- macOS: application menu and menu bar.
+- Windows: window menu/menu bar and standard accelerators.
+- Linux: desktop-environment menu where available, otherwise standard
+  accelerators with deterministic command events.
+- Browser/WASM: browser-safe in-app command surface when native menus are not
+  available.
+
+Menu semantics are declared by AiVectra apps as generic menu descriptors similar
+to a `MenuBarItem` model:
+
+- menu bar item title
+- child item title
+- command key
+- shortcut
+- platform role such as `about`, `settings`, or ordinary command
+
+Target adapters must not invent app-specific settings behavior. Selecting a
+menu item with a command key produces a canonical AiVectra UI event:
+
+```text
+type = command
+key = <command key>
+```
+
+The host may satisfy platform-owned roles such as `about` with a native dialog.
+Application-owned roles such as `settings` must flow through deterministic
+`command/settings` dispatch so app preferences stay in AiLang state.
+
 Initial adapter mapping:
 
 - macOS: `.app` bundle, native Mach-O launcher, LaunchServices, AppKit host.
