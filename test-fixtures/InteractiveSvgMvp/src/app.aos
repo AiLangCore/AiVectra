@@ -520,7 +520,8 @@ Program {
 
         Call(target=sys.ui.drawPath) {
           Var(name=handle)
-          Lit(value="520,84;560,124;520,164;480,124;520,84")
+          Lit(value="M520 84 L560 124 L520 164 L480 124 Z")
+          Lit(value="none")
           Lit(value="#93c5fd")
           Lit(value=2)
         }

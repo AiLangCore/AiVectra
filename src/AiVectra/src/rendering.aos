@@ -7,6 +7,7 @@ Program {
   Export(name=drawRectTransform)
   Export(name=drawEllipseTransform)
   Export(name=drawPathTransform)
+  Export(name=drawPolygonPath)
   Export(name=drawTextTransform)
   Export(name=interactiveFillForState)
   Export(name=interactiveVectorState)
@@ -289,15 +290,32 @@ Program {
   }
 
   Let(name=drawPathTransform) {
-    Fn(params=handle,pathData,color,strokeWidth) {
+    Fn(params=handle,pathData,fillColor,strokeColor,strokeWidth) {
       Block {
         Call(target=sys.ui.drawPath) {
           Var(name=handle)
           Var(name=pathData)
-          Var(name=color)
+          Var(name=fillColor)
+          Var(name=strokeColor)
           Var(name=strokeWidth)
         }
         Return { Lit(value=0) }
+      }
+    }
+  }
+
+  Let(name=drawPolygonPath) {
+    Fn(params=handle,pathData,fillColor,strokeColor,strokeWidth) {
+      Block {
+        Return {
+          Call(target=drawPathTransform) {
+            Var(name=handle)
+            StrConcat { Var(name=pathData) Lit(value=" Z") }
+            Var(name=fillColor)
+            Var(name=strokeColor)
+            Var(name=strokeWidth)
+          }
+        }
       }
     }
   }
@@ -381,6 +399,7 @@ Program {
                   Var(name=handle)
                   Var(name=pathData)
                   Var(name=fillColor)
+                  Lit(value="none")
                   Lit(value=0)
                 }
               }

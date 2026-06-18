@@ -8,6 +8,7 @@ Program {
   Export(name=eventTypeOf)
   Export(name=eventKeyOf)
   Export(name=eventTextOf)
+  Export(name=eventTargetIdOf)
   Export(name=eventXOf)
   Export(name=eventYOf)
   Export(name=eventWidthOf)
@@ -112,6 +113,12 @@ Program {
   Let(name=eventTextOf) {
     Fn(params=eventNode) {
       Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="text") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventTargetIdOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrString) { Var(name=eventNode) Lit(value="targetId") Lit(value=0) } } }
     }
   }
 

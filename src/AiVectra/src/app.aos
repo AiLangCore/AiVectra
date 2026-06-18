@@ -18,6 +18,10 @@ Program {
   Export(name=aivectraAppWindowHeight)
   Export(name=aivectraAppMenuBar)
   Export(name=aivectraAppWithMenuBar)
+  Export(name=aivectraAppSettingsRender)
+  Export(name=aivectraAppSettingsWindowWidth)
+  Export(name=aivectraAppSettingsWindowHeight)
+  Export(name=aivectraAppWithSettingsWindow)
   Export(name=aivectraStartEvent)
   Export(name=aivectraRunContext)
   Export(name=aivectraRunMode)
@@ -26,6 +30,7 @@ Program {
   Export(name=aivectraRunWindow)
   Export(name=aivectraResizeEvent)
   Export(name=aivectraFrameAppEvent)
+  Export(name=aivectraFrameAppEventForWindow)
   Export(name=aivectraRun)
   Export(name=aivectraMenuItem)
   Export(name=aivectraMenuSeparator)
@@ -56,6 +61,9 @@ Program {
             Field(key="windowWidth") { Lit(value=960) }
             Field(key="windowHeight") { Lit(value=640) }
             Field(key="menuBar") { Call(target=aivectraDefaultMenuBar) { Var(name=name) } }
+            Field(key="settingsRender") { Lit(value="") }
+            Field(key="settingsWindowWidth") { Lit(value=420) }
+            Field(key="settingsWindowHeight") { Lit(value=300) }
           }
         }
       }
@@ -164,6 +172,52 @@ Program {
     }
   }
 
+  Let(name=aivectraAppSettingsRender) {
+    Fn(params=app) {
+      Block {
+        Return { Call(target=mapGetStringOr) { Var(name=app) Lit(value="settingsRender") Lit(value="") } }
+      }
+    }
+  }
+
+  Let(name=aivectraAppSettingsWindowWidth) {
+    Fn(params=app) {
+      Block {
+        Return { Call(target=mapGetIntOr) { Var(name=app) Lit(value="settingsWindowWidth") Lit(value=420) } }
+      }
+    }
+  }
+
+  Let(name=aivectraAppSettingsWindowHeight) {
+    Fn(params=app) {
+      Block {
+        Return { Call(target=mapGetIntOr) { Var(name=app) Lit(value="settingsWindowHeight") Lit(value=300) } }
+      }
+    }
+  }
+
+  Let(name=aivectraAppWithSettingsWindow) {
+    Fn(params=app,settingsRenderName,width,height) {
+      Block {
+        Return {
+          Call(target=mapSet) {
+            Call(target=mapSet) {
+              Call(target=mapSet) {
+                Var(name=app)
+                Lit(value="settingsRender")
+                Var(name=settingsRenderName)
+              }
+              Lit(value="settingsWindowWidth")
+              Var(name=width)
+            }
+            Lit(value="settingsWindowHeight")
+            Var(name=height)
+          }
+        }
+      }
+    }
+  }
+
   Let(name=aivectraStartEvent) {
     Fn(params=args) {
       Block {
@@ -256,6 +310,7 @@ Program {
             Field(key="type") { Lit(value="resize") }
             Field(key="width") { Var(name=width) }
             Field(key="height") { Var(name=height) }
+            Field(key="platform") { Call(target=sys.runtime.platform) { } }
           }
         }
       }
@@ -264,6 +319,12 @@ Program {
 
   Let(name=aivectraFrameAppEvent) {
     Fn(params=eventNode,width,height) {
+      Block { Return { Call(target=aivectraFrameAppEventForWindow) { Var(name=eventNode) Var(name=width) Var(name=height) Lit(value="") } } }
+    }
+  }
+
+  Let(name=aivectraFrameAppEventForWindow) {
+    Fn(params=eventNode,width,height,windowName) {
       Block {
         If {
           Call(target=eventIsNone) { Var(name=eventNode) }
@@ -277,9 +338,39 @@ Program {
                   Field(key="y") { Call(target=eventYOf) { Var(name=eventNode) } }
                   Field(key="key") { Call(target=eventKeyOf) { Var(name=eventNode) } }
                   Field(key="text") { Call(target=eventTextOf) { Var(name=eventNode) } }
+                  Field(key="target") { Call(target=eventTargetIdOf) { Var(name=eventNode) } }
+                  Field(key="window") { Var(name=windowName) }
+                  Field(key="platform") { Call(target=sys.runtime.platform) { } }
                   Field(key="width") { Var(name=width) }
                   Field(key="height") { Var(name=height) }
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aivectraNextHasCommandType) {
+    Fn(params=nextValue,commandTypeName) {
+      Block {
+        Let(name=commands) { Call(target=nextCommands) { Var(name=nextValue) } }
+        If {
+          Eq { Call(target=commandListCount) { Var(name=commands) } Lit(value=0) }
+          Block { Return { Lit(value=false) } }
+          Block {
+            Let(name=command) {
+              Call(target=commandAtOr) {
+                Var(name=commands)
+                Lit(value=0)
+                Map { }
+              }
+            }
+            Return {
+              Eq {
+                Call(target=mapGetStringOr) { Var(name=command) Lit(value="type") Lit(value="") }
+                Var(name=commandTypeName)
               }
             }
           }
@@ -294,6 +385,7 @@ Program {
         Let(name=initName) { Call(target=aivectraAppInit) { Var(name=app) } }
         Let(name=updateName) { Call(target=aivectraAppUpdate) { Var(name=app) } }
         Let(name=renderName) { Call(target=aivectraAppRender) { Var(name=app) } }
+        Let(name=settingsRenderName) { Call(target=aivectraAppSettingsRender) { Var(name=app) } }
         Let(name=initialState) {
           CallDynamic(candidates="init") {
             Var(name=initName)
@@ -329,6 +421,7 @@ Program {
         }
         Let(name=handle) { Call(target=aivectraRunWindow) { Var(name=run) } }
         Let(name=currentState) { Call(target=aivectraRunState) { Var(name=run) } }
+        Let(name=settingsHandle) { Lit(value=0) }
         Loop {
           Block {
             Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
@@ -348,14 +441,102 @@ Program {
               Var(name=currentState)
             }
             Let(name=evt) { Call(target=frameEvent) { Var(name=handle) } }
+            If {
+              Eq { Call(target=eventTypeOf) { Var(name=evt) } Lit(value="command") }
+              Block {
+                If {
+                  Eq { Call(target=eventKeyOf) { Var(name=evt) } Lit(value="settings") }
+                  Block {
+                    If {
+                      Eq { Var(name=settingsHandle) Lit(value=0) }
+                      Block {
+                        If {
+                          Eq { Var(name=settingsRenderName) Lit(value="") }
+                          Block { Lit(value=0) }
+                          Block {
+                            Let(name=settingsHandle) {
+                              Call(target=sys.ui.createWindow) {
+                                StrConcat {
+                                  Call(target=aivectraAppName) { Var(name=app) }
+                                  Lit(value=" Settings")
+                                }
+                                Call(target=aivectraAppSettingsWindowWidth) { Var(name=app) }
+                                Call(target=aivectraAppSettingsWindowHeight) { Var(name=app) }
+                              }
+                            }
+                            Lit(value=0)
+                          }
+                        }
+                      }
+                      Block { Lit(value=0) }
+                    }
+                  }
+                  Block { Lit(value=0) }
+                }
+              }
+              Block { Lit(value=0) }
+            }
             Let(name=step) {
               CallDynamic(candidates="update") {
                 Var(name=updateName)
                 Var(name=currentState)
-                Call(target=aivectraFrameAppEvent) { Var(name=evt) Var(name=frameWidth) Var(name=frameHeight) }
+                Call(target=aivectraFrameAppEventForWindow) { Var(name=evt) Var(name=frameWidth) Var(name=frameHeight) Lit(value="main") }
+              }
+            }
+            If {
+              Eq { Var(name=settingsHandle) Lit(value=0) }
+              Block { Lit(value=0) }
+              Block {
+                If {
+                  Call(target=aivectraNextHasCommandType) { Var(name=step) Lit(value="CloseSettings") }
+                  Block {
+                    Call(target=sys.ui.closeWindow) { Var(name=settingsHandle) }
+                    Let(name=settingsHandle) { Lit(value=0) }
+                    Lit(value=0)
+                  }
+                  Block { Lit(value=0) }
+                }
               }
             }
             Let(name=currentState) { Call(target=nextState) { Var(name=step) } }
+            If {
+              Eq { Var(name=settingsHandle) Lit(value=0) }
+              Block { Lit(value=0) }
+              Block {
+                CallDynamic(candidates="settingsRender") {
+                  Var(name=settingsRenderName)
+                  Var(name=settingsHandle)
+                  Var(name=currentState)
+                }
+                Let(name=settingsSizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=settingsHandle) } }
+                Let(name=settingsFrameWidth) { Call(target=attrInt) { Var(name=settingsSizeNode) Lit(value="width") Lit(value=0) } }
+                Let(name=settingsFrameHeight) { Call(target=attrInt) { Var(name=settingsSizeNode) Lit(value="height") Lit(value=0) } }
+                Let(name=settingsEvt) { Call(target=frameEvent) { Var(name=settingsHandle) } }
+                Let(name=settingsStep) {
+                  CallDynamic(candidates="update") {
+                    Var(name=updateName)
+                    Var(name=currentState)
+                    Call(target=aivectraFrameAppEventForWindow) { Var(name=settingsEvt) Var(name=settingsFrameWidth) Var(name=settingsFrameHeight) Lit(value="settings") }
+                  }
+                }
+                If {
+                  Call(target=aivectraNextHasCommandType) { Var(name=settingsStep) Lit(value="CloseSettings") }
+                  Block {
+                    Call(target=sys.ui.closeWindow) { Var(name=settingsHandle) }
+                    Let(name=settingsHandle) { Lit(value=0) }
+                    Lit(value=0)
+                  }
+                  Block { Lit(value=0) }
+                }
+                Let(name=currentState) { Call(target=nextState) { Var(name=settingsStep) } }
+                If {
+                  Call(target=eventIsClosed) { Var(name=settingsEvt) }
+                  Block { Let(name=settingsHandle) { Lit(value=0) } }
+                  Block { Lit(value=0) }
+                }
+                Lit(value=0)
+              }
+            }
             If {
               Call(target=eventIsClosed) { Var(name=evt) }
               Block { Break { } }

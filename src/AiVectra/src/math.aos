@@ -2,19 +2,35 @@ Program {
   Import(sdk="ailang" path="std/math.aos")
 
   Export(name=intLt)
+  Export(name=intGt)
   Export(name=intGte)
   Export(name=intLte)
   Export(name=resolveSize)
   Export(name=stabilizeSize)
   Export(name=halfFloor)
+  Export(name=divFloor)
   Export(name=subAbs)
   Export(name=mul)
   Export(name=sub)
+  Export(name=gt)
+  Export(name=eq)
+  Export(name=neq)
+  Export(name=min)
+  Export(name=max)
+  Export(name=clamp)
 
   Let(name=intLt) {
     Fn(params=a,b) {
       Block {
         Return { Call(target=lt) { Var(name=a) Var(name=b) } }
+      }
+    }
+  }
+
+  Let(name=intGt) {
+    Fn(params=a,b) {
+      Block {
+        Return { Call(target=gt) { Var(name=a) Var(name=b) } }
       }
     }
   }

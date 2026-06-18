@@ -2,7 +2,6 @@ Program {
   Import(sdk="ailang" path="std/str.aos")
 
   Export(name=textLen)
-  Export(name=divFloor)
   Export(name=fitTextTail)
   Export(name=visibleTextTail)
   Export(name=textInsertAt)
@@ -29,26 +28,6 @@ Program {
               Add {
                 Lit(value=1)
                 Call(target=textLen) { Call(target=remove) { Var(name=textValue) Lit(value=0) Lit(value=1) } }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  Let(name=divFloor) {
-    Fn(params=value,step,acc) {
-      Block {
-        If {
-          Call(target=intLt) { Var(name=value) Var(name=step) }
-          Block { Return { Var(name=acc) } }
-          Block {
-            Return {
-              Call(target=divFloor) {
-                Call(target=sub) { Var(name=value) Var(name=step) }
-                Var(name=step)
-                Add { Var(name=acc) Lit(value=1) }
               }
             }
           }
