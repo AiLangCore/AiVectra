@@ -281,6 +281,8 @@ Program {
   Export(name=eventTextOf)
   Export(name=eventXOf)
   Export(name=eventYOf)
+  Export(name=eventDeltaXOf)
+  Export(name=eventDeltaYOf)
   Export(name=eventIsNone)
   Export(name=eventIsClosed)
   Export(name=gestureIsDragLike)

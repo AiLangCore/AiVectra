@@ -336,6 +336,8 @@ Program {
                   Field(key="type") { Call(target=eventTypeOf) { Var(name=eventNode) } }
                   Field(key="x") { Call(target=eventXOf) { Var(name=eventNode) } }
                   Field(key="y") { Call(target=eventYOf) { Var(name=eventNode) } }
+                  Field(key="dx") { Call(target=eventDeltaXOf) { Var(name=eventNode) } }
+                  Field(key="dy") { Call(target=eventDeltaYOf) { Var(name=eventNode) } }
                   Field(key="key") { Call(target=eventKeyOf) { Var(name=eventNode) } }
                   Field(key="text") { Call(target=eventTextOf) { Var(name=eventNode) } }
                   Field(key="target") { Call(target=eventTargetIdOf) { Var(name=eventNode) } }

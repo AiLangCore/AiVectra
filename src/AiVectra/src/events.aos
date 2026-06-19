@@ -11,6 +11,8 @@ Program {
   Export(name=eventTargetIdOf)
   Export(name=eventXOf)
   Export(name=eventYOf)
+  Export(name=eventDeltaXOf)
+  Export(name=eventDeltaYOf)
   Export(name=eventWidthOf)
   Export(name=eventHeightOf)
   Export(name=eventIsKeyboardLike)
@@ -131,6 +133,18 @@ Program {
   Let(name=eventYOf) {
     Fn(params=eventNode) {
       Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="y") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventDeltaXOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="dx") Lit(value=0) } } }
+    }
+  }
+
+  Let(name=eventDeltaYOf) {
+    Fn(params=eventNode) {
+      Block { Return { Call(target=attrInt) { Var(name=eventNode) Lit(value="dy") Lit(value=0) } } }
     }
   }
 
