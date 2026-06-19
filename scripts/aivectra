@@ -433,15 +433,37 @@ build_macos_icns_from_svg() {
   return 0
 }
 
+resolve_declared_ailang_toolchain() {
+  if [[ -n "${AILANG_TOOLCHAIN:-}" ]]; then
+    printf "%s" "$AILANG_TOOLCHAIN"
+    return 0
+  fi
+  if [[ -f "$ROOT_DIR/ailang-toolchain.toml" ]]; then
+    awk '
+      /^[[:space:]]*\[toolchain\][[:space:]]*$/ { in_toolchain = 1; next }
+      /^[[:space:]]*\[/ { in_toolchain = 0 }
+      in_toolchain && /^[[:space:]]*version[[:space:]]*=/ {
+        value = $0
+        sub(/^[^=]*=[[:space:]]*/, "", value)
+        gsub(/^[[:space:]]*"|"[[:space:]]*$/, "", value)
+        print value
+        exit
+      }
+    ' "$ROOT_DIR/ailang-toolchain.toml"
+  fi
+}
+
 resolve_macos_bundle_ailang_executable() {
   if [[ "$AILANG_BIN" == "${HOME}/.ailang/bin/ailang" && -x "${HOME}/.ailang/current/bin/ailang" ]]; then
-    if [[ -n "${AILANG_TOOLCHAIN:-}" ]]; then
-      if [[ "$AILANG_TOOLCHAIN" == "local" && -x "${HOME}/.ailang/local/bin/ailang" ]]; then
+    local selected_toolchain
+    selected_toolchain="$(resolve_declared_ailang_toolchain)"
+    if [[ -n "$selected_toolchain" ]]; then
+      if [[ "$selected_toolchain" == "local" && -x "${HOME}/.ailang/local/bin/ailang" ]]; then
         printf "%s" "${HOME}/.ailang/local/bin/ailang"
         return 0
       fi
-      if [[ -x "${HOME}/.ailang/toolchains/${AILANG_TOOLCHAIN}/bin/ailang" ]]; then
-        printf "%s" "${HOME}/.ailang/toolchains/${AILANG_TOOLCHAIN}/bin/ailang"
+      if [[ -x "${HOME}/.ailang/toolchains/${selected_toolchain}/bin/ailang" ]]; then
+        printf "%s" "${HOME}/.ailang/toolchains/${selected_toolchain}/bin/ailang"
         return 0
       fi
     fi
