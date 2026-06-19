@@ -1,0 +1,347 @@
+Program {
+  Import(sdk="ailang" path="std/core.aos")
+  Import(path="math.aos")
+
+  Export(name=aisvgSvg)
+  Export(name=aisvgGroup)
+  Export(name=aisvgRect)
+  Export(name=aisvgCircle)
+  Export(name=aisvgEllipse)
+  Export(name=aisvgLine)
+  Export(name=aisvgPath)
+  Export(name=aisvgPolygon)
+  Export(name=aisvgText)
+  Export(name=aisvgImage)
+  Export(name=aisvgLinearGradient)
+  Export(name=aisvgRadialGradient)
+  Export(name=aisvgAnimate)
+  Export(name=aisvgAnimateTransform)
+  Export(name=aisvgSet)
+  Export(name=aisvgKind)
+  Export(name=aisvgId)
+  Export(name=aisvgX)
+  Export(name=aisvgY)
+  Export(name=aisvgWidth)
+  Export(name=aisvgHeight)
+  Export(name=aisvgFill)
+  Export(name=aisvgStroke)
+  Export(name=aisvgStrokeWidth)
+  Export(name=aisvgValue)
+  Export(name=aisvgPathData)
+  Export(name=aisvgFontSize)
+  Export(name=aisvgRender)
+
+  Let(name=aisvgNode) {
+    Fn(params=kind,id,x,y,width,height,fill,stroke,strokeWidth,value,pathData,fontSize,props) {
+      Block {
+        Return {
+          Map {
+            Field(key="type") { Lit(value="aivectra.aisvg.node") }
+            Field(key="kind") { Var(name=kind) }
+            Field(key="id") { Var(name=id) }
+            Field(key="x") { Var(name=x) }
+            Field(key="y") { Var(name=y) }
+            Field(key="width") { Var(name=width) }
+            Field(key="height") { Var(name=height) }
+            Field(key="fill") { Var(name=fill) }
+            Field(key="stroke") { Var(name=stroke) }
+            Field(key="strokeWidth") { Var(name=strokeWidth) }
+            Field(key="value") { Var(name=value) }
+            Field(key="pathData") { Var(name=pathData) }
+            Field(key="fontSize") { Var(name=fontSize) }
+            Field(key="props") { Var(name=props) }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgSvg) {
+    Fn(params=id,width,height,fill) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Svg") Var(name=id) Lit(value=0) Lit(value=0) Var(name=width) Var(name=height) Var(name=fill) Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgGroup) {
+    Fn(params=id,x,y,width,height) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Group") Var(name=id) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgRect) {
+    Fn(params=id,x,y,width,height,fill,stroke,strokeWidth) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Rect") Var(name=id) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Lit(value="") Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgCircle) {
+    Fn(params=id,cx,cy,radius,fill,stroke,strokeWidth) {
+      Block {
+        Let(name=size) { Add { Var(name=radius) Var(name=radius) } }
+        Return { Call(target=aisvgNode) { Lit(value="Circle") Var(name=id) Add { Var(name=cx) Call(target=mul) { Var(name=radius) Lit(value=-1) } } Add { Var(name=cy) Call(target=mul) { Var(name=radius) Lit(value=-1) } } Var(name=size) Var(name=size) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Lit(value="") Lit(value=0) Map { } } }
+      }
+    }
+  }
+
+  Let(name=aisvgEllipse) {
+    Fn(params=id,x,y,width,height,fill,stroke,strokeWidth) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Ellipse") Var(name=id) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Lit(value="") Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgLine) {
+    Fn(params=id,x1,y1,x2,y2,stroke,strokeWidth) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="Line") Var(name=id) Var(name=x1) Var(name=y1) Lit(value=0) Lit(value=0) Lit(value="none") Var(name=stroke) Var(name=strokeWidth) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="x2") { Var(name=x2) }
+              Field(key="y2") { Var(name=y2) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgPath) {
+    Fn(params=id,pathData,fill,stroke,strokeWidth) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Path") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Var(name=pathData) Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgPolygon) {
+    Fn(params=id,pathData,fill,stroke,strokeWidth) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Polygon") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Var(name=pathData) Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgText) {
+    Fn(params=id,x,y,value,fill,fontSize) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="Text") Var(name=id) Var(name=x) Var(name=y) Lit(value=0) Lit(value=0) Var(name=fill) Lit(value="none") Lit(value=0) Var(name=value) Lit(value="") Var(name=fontSize) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgImage) {
+    Fn(params=id,x,y,width,height,source) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="Image") Var(name=id) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map { Field(key="source") { Var(name=source) } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgLinearGradient) {
+    Fn(params=id,startColor,midColor,endColor) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="LinearGradient") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="startColor") { Var(name=startColor) }
+              Field(key="midColor") { Var(name=midColor) }
+              Field(key="endColor") { Var(name=endColor) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgRadialGradient) {
+    Fn(params=id,innerColor,outerColor) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="RadialGradient") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="innerColor") { Var(name=innerColor) }
+              Field(key="outerColor") { Var(name=outerColor) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgAnimate) {
+    Fn(params=id,target,fromValue,toValue,duration) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="Animate") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="target") { Var(name=target) }
+              Field(key="from") { Var(name=fromValue) }
+              Field(key="to") { Var(name=toValue) }
+              Field(key="duration") { Var(name=duration) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgAnimateTransform) {
+    Fn(params=id,target,transformType,fromValue,toValue,duration) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="AnimateTransform") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="target") { Var(name=target) }
+              Field(key="transformType") { Var(name=transformType) }
+              Field(key="from") { Var(name=fromValue) }
+              Field(key="to") { Var(name=toValue) }
+              Field(key="duration") { Var(name=duration) }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgSet) {
+    Fn(params=id,target,value) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="Set") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Var(name=value) Lit(value="") Lit(value=0)
+            Map { Field(key="target") { Var(name=target) } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgKind) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="kind") Lit(value="") } } } } }
+  Let(name=aisvgId) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="id") Lit(value="") } } } } }
+  Let(name=aisvgX) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="x") Lit(value=0) } } } } }
+  Let(name=aisvgY) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="y") Lit(value=0) } } } } }
+  Let(name=aisvgWidth) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="width") Lit(value=0) } } } } }
+  Let(name=aisvgHeight) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="height") Lit(value=0) } } } } }
+  Let(name=aisvgFill) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="fill") Lit(value="none") } } } } }
+  Let(name=aisvgStroke) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="stroke") Lit(value="none") } } } } }
+  Let(name=aisvgStrokeWidth) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="strokeWidth") Lit(value=0) } } } } }
+  Let(name=aisvgValue) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="value") Lit(value="") } } } } }
+  Let(name=aisvgPathData) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="pathData") Lit(value="") } } } } }
+  Let(name=aisvgFontSize) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="fontSize") Lit(value=16) } } } } }
+
+  Let(name=aisvgRenderStrokeRect) {
+    Fn(params=handle,x,y,width,height,stroke,strokeWidth) {
+      Block {
+        If {
+          Eq { Var(name=stroke) Lit(value="none") }
+          Block { Return { Lit(value=0) } }
+          Block {
+            If {
+              Eq { Var(name=strokeWidth) Lit(value=0) }
+              Block { Return { Lit(value=0) } }
+              Block {
+                Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=strokeWidth) Var(name=stroke) }
+                Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=x) Add { Var(name=y) Add { Var(name=height) Call(target=mul) { Var(name=strokeWidth) Lit(value=-1) } } } Var(name=width) Var(name=strokeWidth) Var(name=stroke) }
+                Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=x) Var(name=y) Var(name=strokeWidth) Var(name=height) Var(name=stroke) }
+                Call(target=sys.ui.drawRect) { Var(name=handle) Add { Var(name=x) Add { Var(name=width) Call(target=mul) { Var(name=strokeWidth) Lit(value=-1) } } } Var(name=y) Var(name=strokeWidth) Var(name=height) Var(name=stroke) }
+                Return { Lit(value=0) }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgRender) {
+    Fn(params=handle,node) {
+      Block {
+        Let(name=kind) { Call(target=aisvgKind) { Var(name=node) } }
+        Let(name=x) { Call(target=aisvgX) { Var(name=node) } }
+        Let(name=y) { Call(target=aisvgY) { Var(name=node) } }
+        Let(name=width) { Call(target=aisvgWidth) { Var(name=node) } }
+        Let(name=height) { Call(target=aisvgHeight) { Var(name=node) } }
+        Let(name=fill) { Call(target=aisvgFill) { Var(name=node) } }
+        Let(name=stroke) { Call(target=aisvgStroke) { Var(name=node) } }
+        Let(name=strokeWidth) { Call(target=aisvgStrokeWidth) { Var(name=node) } }
+        If {
+          Eq { Var(name=kind) Lit(value="Rect") }
+          Block {
+            If { Eq { Var(name=fill) Lit(value="none") } Block { Lit(value=0) } Block { Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) } } }
+            Return { Call(target=aisvgRenderStrokeRect) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=stroke) Var(name=strokeWidth) } }
+          }
+          Block {
+            If {
+              Eq { Var(name=kind) Lit(value="Svg") }
+              Block {
+                If {
+                  Eq { Var(name=fill) Lit(value="none") }
+                  Block { Return { Lit(value=0) } }
+                  Block { Return { Call(target=sys.ui.drawRect) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) } } }
+                }
+              }
+              Block {
+                If {
+                  Eq { Var(name=kind) Lit(value="Ellipse") }
+                  Block {
+                    If { Eq { Var(name=fill) Lit(value="none") } Block { Lit(value=0) } Block { Call(target=sys.ui.drawEllipse) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) } } }
+                    Return { Lit(value=0) }
+                  }
+                  Block {
+                    If {
+                      Eq { Var(name=kind) Lit(value="Circle") }
+                      Block {
+                        If { Eq { Var(name=fill) Lit(value="none") } Block { Lit(value=0) } Block { Call(target=sys.ui.drawEllipse) { Var(name=handle) Var(name=x) Var(name=y) Var(name=width) Var(name=height) Var(name=fill) } } }
+                        Return { Lit(value=0) }
+                      }
+                      Block {
+                        If {
+                          Eq { Var(name=kind) Lit(value="Line") }
+                          Block {
+                            Return {
+                              Call(target=sys.ui.drawLine) {
+                                Var(name=handle)
+                                Var(name=x)
+                                Var(name=y)
+                                Call(target=mapGetIntOr) { Call(target=mapGetNodeOr) { Var(name=node) Lit(value="props") Map { } } Lit(value="x2") Lit(value=0) }
+                                Call(target=mapGetIntOr) { Call(target=mapGetNodeOr) { Var(name=node) Lit(value="props") Map { } } Lit(value="y2") Lit(value=0) }
+                                Var(name=stroke)
+                                Var(name=strokeWidth)
+                              }
+                            }
+                          }
+                          Block {
+                            If {
+                              Eq { Var(name=kind) Lit(value="Path") }
+                              Block { Return { Call(target=sys.ui.drawPath) { Var(name=handle) Call(target=aisvgPathData) { Var(name=node) } Var(name=fill) Var(name=stroke) Var(name=strokeWidth) } } }
+                              Block {
+                                If {
+                                  Eq { Var(name=kind) Lit(value="Polygon") }
+                                  Block { Return { Call(target=sys.ui.drawPath) { Var(name=handle) StrConcat { Call(target=aisvgPathData) { Var(name=node) } Lit(value=" Z") } Var(name=fill) Var(name=stroke) Var(name=strokeWidth) } } }
+                                  Block {
+                                    If {
+                                      Eq { Var(name=kind) Lit(value="Text") }
+                                      Block { Return { Call(target=sys.ui.drawText) { Var(name=handle) Var(name=x) Var(name=y) Call(target=aisvgValue) { Var(name=node) } Var(name=fill) Call(target=aisvgFontSize) { Var(name=node) } } } }
+                                      Block { Return { Lit(value=0) } }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

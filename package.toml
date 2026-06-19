@@ -1,6 +1,6 @@
 schema = "ailang.package-source.v1"
 name = "aivectra"
-version = "0.0.1-beta.11"
+version = "0.0.1-beta.12"
 types = ["library", "tool", "template"]
 
 [dependencies]
@@ -50,6 +50,40 @@ exports = [
 namespace = "aivectra.ui"
 entry = "src/AiVectra/src/lib.aos"
 exports = []
+
+[libraries.aisvg]
+namespace = "aivectra.aisvg"
+entry = "src/AiVectra/src/aisvg.aos"
+exports = [
+  "aisvgSvg",
+  "aisvgGroup",
+  "aisvgRect",
+  "aisvgCircle",
+  "aisvgEllipse",
+  "aisvgLine",
+  "aisvgPath",
+  "aisvgPolygon",
+  "aisvgText",
+  "aisvgImage",
+  "aisvgLinearGradient",
+  "aisvgRadialGradient",
+  "aisvgAnimate",
+  "aisvgAnimateTransform",
+  "aisvgSet",
+  "aisvgKind",
+  "aisvgId",
+  "aisvgX",
+  "aisvgY",
+  "aisvgWidth",
+  "aisvgHeight",
+  "aisvgFill",
+  "aisvgStroke",
+  "aisvgStrokeWidth",
+  "aisvgValue",
+  "aisvgPathData",
+  "aisvgFontSize",
+  "aisvgRender",
+]
 
 [libraries.cli]
 namespace = "aivectra.cli"
