@@ -46,3 +46,7 @@ prove those two views describe the same image.
 - UI samples should remain real UI samples. If a sample supports `snapshot`,
   `scene`, or `replay`, those modes must emit meaningful visual contract data.
 - Runtime errors in visual contract tests are failures, not skips.
+- Scroll viewport content must not be visible outside its viewport bounds.
+  AiVectra owns the viewport bounds, scroll offset, and event semantics. Hosts
+  may accelerate clipping mechanically, but hosts must not own scroll state,
+  layout decisions, or event meaning.
