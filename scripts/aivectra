@@ -435,6 +435,16 @@ build_macos_icns_from_svg() {
 
 resolve_macos_bundle_ailang_executable() {
   if [[ "$AILANG_BIN" == "${HOME}/.ailang/bin/ailang" && -x "${HOME}/.ailang/current/bin/ailang" ]]; then
+    if [[ -n "${AILANG_TOOLCHAIN:-}" ]]; then
+      if [[ "$AILANG_TOOLCHAIN" == "local" && -x "${HOME}/.ailang/local/bin/ailang" ]]; then
+        printf "%s" "${HOME}/.ailang/local/bin/ailang"
+        return 0
+      fi
+      if [[ -x "${HOME}/.ailang/toolchains/${AILANG_TOOLCHAIN}/bin/ailang" ]]; then
+        printf "%s" "${HOME}/.ailang/toolchains/${AILANG_TOOLCHAIN}/bin/ailang"
+        return 0
+      fi
+    fi
     printf "%s" "${HOME}/.ailang/current/bin/ailang"
     return 0
   fi
