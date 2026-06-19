@@ -454,21 +454,24 @@ resolve_declared_ailang_toolchain() {
 }
 
 resolve_macos_bundle_ailang_executable() {
-  if [[ "$AILANG_BIN" == "${HOME}/.ailang/bin/ailang" && -x "${HOME}/.ailang/current/bin/ailang" ]]; then
+  local install_root="${AILANG_INSTALL_ROOT:-${HOME}/.ailang}"
+  if [[ "$AILANG_BIN" == "${install_root}/bin/ailang" ]]; then
     local selected_toolchain
     selected_toolchain="$(resolve_declared_ailang_toolchain)"
     if [[ -n "$selected_toolchain" ]]; then
-      if [[ "$selected_toolchain" == "local" && -x "${HOME}/.ailang/local/bin/ailang" ]]; then
-        printf "%s" "${HOME}/.ailang/local/bin/ailang"
+      if [[ "$selected_toolchain" == "local" && -x "${install_root}/local/bin/ailang" ]]; then
+        printf "%s" "${install_root}/local/bin/ailang"
         return 0
       fi
-      if [[ -x "${HOME}/.ailang/toolchains/${selected_toolchain}/bin/ailang" ]]; then
-        printf "%s" "${HOME}/.ailang/toolchains/${selected_toolchain}/bin/ailang"
+      if [[ -x "${install_root}/toolchains/${selected_toolchain}/bin/ailang" ]]; then
+        printf "%s" "${install_root}/toolchains/${selected_toolchain}/bin/ailang"
         return 0
       fi
     fi
-    printf "%s" "${HOME}/.ailang/current/bin/ailang"
-    return 0
+    if [[ -x "${install_root}/current/bin/ailang" ]]; then
+      printf "%s" "${install_root}/current/bin/ailang"
+      return 0
+    fi
   fi
   printf "%s" "$AILANG_BIN"
 }
