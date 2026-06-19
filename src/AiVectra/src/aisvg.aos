@@ -1,5 +1,6 @@
 Program {
   Import(sdk="ailang" path="std/core.aos")
+  Import(sdk="ailang" path="std/number.aos")
   Import(path="math.aos")
 
   Export(name=aisvgSvg)
@@ -12,6 +13,7 @@ Program {
   Export(name=aisvgPolygon)
   Export(name=aisvgText)
   Export(name=aisvgImage)
+  Export(name=aisvgUse)
   Export(name=aisvgLinearGradient)
   Export(name=aisvgRadialGradient)
   Export(name=aisvgAnimate)
@@ -29,6 +31,16 @@ Program {
   Export(name=aisvgValue)
   Export(name=aisvgPathData)
   Export(name=aisvgFontSize)
+  Export(name=aisvgProps)
+  Export(name=aisvgPropString)
+  Export(name=aisvgPropInt)
+  Export(name=aisvgTarget)
+  Export(name=aisvgFrom)
+  Export(name=aisvgTo)
+  Export(name=aisvgDuration)
+  Export(name=aisvgAnimateLinearValue)
+  Export(name=aisvgAnimateLoopValue)
+  Export(name=aisvgAnimateAlternateValue)
   Export(name=aisvgRender)
 
   Let(name=aisvgNode) {
@@ -136,6 +148,22 @@ Program {
     }
   }
 
+  Let(name=aisvgUse) {
+    Fn(params=id,component,props) {
+      Block {
+        Return {
+          Call(target=aisvgNode) {
+            Lit(value="Use") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Lit(value="") Lit(value=0)
+            Map {
+              Field(key="component") { Var(name=component) }
+              Field(key="props") { Var(name=props) }
+            }
+          }
+        }
+      }
+    }
+  }
+
   Let(name=aisvgLinearGradient) {
     Fn(params=id,startColor,midColor,endColor) {
       Block {
@@ -231,6 +259,83 @@ Program {
   Let(name=aisvgValue) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="value") Lit(value="") } } } } }
   Let(name=aisvgPathData) { Fn(params=node) { Block { Return { Call(target=mapGetStringOr) { Var(name=node) Lit(value="pathData") Lit(value="") } } } } }
   Let(name=aisvgFontSize) { Fn(params=node) { Block { Return { Call(target=mapGetIntOr) { Var(name=node) Lit(value="fontSize") Lit(value=16) } } } } }
+  Let(name=aisvgProps) { Fn(params=node) { Block { Return { Call(target=mapGetNodeOr) { Var(name=node) Lit(value="props") Map { } } } } } }
+  Let(name=aisvgPropString) { Fn(params=node,key,defaultValue) { Block { Return { Call(target=mapGetStringOr) { Call(target=aisvgProps) { Var(name=node) } Var(name=key) Var(name=defaultValue) } } } } }
+  Let(name=aisvgPropInt) { Fn(params=node,key,defaultValue) { Block { Return { Call(target=mapGetIntOr) { Call(target=aisvgProps) { Var(name=node) } Var(name=key) Var(name=defaultValue) } } } } }
+  Let(name=aisvgTarget) { Fn(params=node) { Block { Return { Call(target=aisvgPropString) { Var(name=node) Lit(value="target") Lit(value="") } } } } }
+  Let(name=aisvgFrom) { Fn(params=node) { Block { Return { Call(target=aisvgPropInt) { Var(name=node) Lit(value="from") Lit(value=0) } } } } }
+  Let(name=aisvgTo) { Fn(params=node) { Block { Return { Call(target=aisvgPropInt) { Var(name=node) Lit(value="to") Lit(value=0) } } } } }
+  Let(name=aisvgDuration) { Fn(params=node) { Block { Return { Call(target=aisvgPropInt) { Var(name=node) Lit(value="duration") Lit(value=1) } } } } }
+
+  Let(name=aisvgAnimateLinearValue) {
+    Fn(params=animation,tick) {
+      Block {
+        Let(name=duration) { Call(target=aisvgDuration) { Var(name=animation) } }
+        Let(name=fromValue) { Call(target=aisvgFrom) { Var(name=animation) } }
+        Let(name=toValue) { Call(target=aisvgTo) { Var(name=animation) } }
+        Let(name=delta) { Call(target=sub) { Var(name=toValue) Var(name=fromValue) } }
+        If {
+          Call(target=lte) { Var(name=duration) Lit(value=0) }
+          Block { Return { Var(name=toValue) } }
+          Block {
+            Let(name=phase) {
+              If {
+                Call(target=lt) { Var(name=tick) Lit(value=0) }
+                Block { Lit(value=0) }
+                Block {
+                  If {
+                    Call(target=gt) { Var(name=tick) Var(name=duration) }
+                    Block { Var(name=duration) }
+                    Block { Var(name=tick) }
+                  }
+                }
+              }
+            }
+            Return { Add { Var(name=fromValue) Call(target=div) { Call(target=mul) { Var(name=delta) Var(name=phase) } Var(name=duration) } } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgAnimateLoopValue) {
+    Fn(params=animation,tick) {
+      Block {
+        Let(name=duration) { Call(target=aisvgDuration) { Var(name=animation) } }
+        If {
+          Call(target=lte) { Var(name=duration) Lit(value=0) }
+          Block { Return { Call(target=aisvgTo) { Var(name=animation) } } }
+          Block {
+            Return { Call(target=aisvgAnimateLinearValue) { Var(name=animation) Call(target=mod) { Var(name=tick) Var(name=duration) } } }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgAnimateAlternateValue) {
+    Fn(params=animation,tick) {
+      Block {
+        Let(name=duration) { Call(target=aisvgDuration) { Var(name=animation) } }
+        If {
+          Call(target=lte) { Var(name=duration) Lit(value=0) }
+          Block { Return { Call(target=aisvgTo) { Var(name=animation) } } }
+          Block {
+            Let(name=period) { Call(target=mul) { Var(name=duration) Lit(value=2) } }
+            Let(name=phase) { Call(target=mod) { Var(name=tick) Var(name=period) } }
+            Let(name=effectiveTick) {
+              If {
+                Call(target=gt) { Var(name=phase) Var(name=duration) }
+                Block { Call(target=sub) { Var(name=period) Var(name=phase) } }
+                Block { Var(name=phase) }
+              }
+            }
+            Return { Call(target=aisvgAnimateLinearValue) { Var(name=animation) Var(name=effectiveTick) } }
+          }
+        }
+      }
+    }
+  }
 
   Let(name=aisvgRenderStrokeRect) {
     Fn(params=handle,x,y,width,height,stroke,strokeWidth) {
