@@ -20,26 +20,26 @@ MyApp/
   src/
     app.aos
 
-  Assets/
-    bundle/
-    icons/
-    splash/
-    fonts/
-    images/
-    locale/
+    Assets/
+      bundle/
+      icons/
+      splash/
+      fonts/
+      images/
+      locale/
 
-  Targets/
-    Apple/
-      Mac/
-    Microsoft/
-      Windows/
-    Linux/
-    Web/
-      www/
-      WasmSpa/
+    Targets/
+      Apple/
+        Mac/
+      Microsoft/
+        Windows/
+      Linux/
+      Web/
         www/
-      WasmFullStack/
-        www/
+        WasmSpa/
+          www/
+        WasmFullStack/
+          www/
 
   .toolchain/   (generated, gitignored)
 ```
@@ -48,11 +48,11 @@ MyApp/
 - Use `src` for app source root.
 - Use lowercase names for concrete asset buckets: `bundle`, `icons`, `splash`, `fonts`, `images`, `locale`.
 - Use lowercase `www` for web roots.
-- `Assets/bundle` contains generic files copied directly into target bundles.
+- `src/Assets/bundle` contains generic files copied directly into target bundles.
 - Derived assets are generated into build staging/`dist`, not committed under source assets.
 
 ## Target Metadata
-- Platform metadata sources are TOML templates under `Targets/**`.
+- Platform metadata sources are TOML templates under `src/Targets/**`.
 - Build generates concrete platform files (plist/manifest/desktop entry/etc.) into build output.
 
 ## Template Rule

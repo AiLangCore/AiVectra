@@ -12,4 +12,4 @@ Displays `Hello, World!` using AiVectra public API and standardized runtime flow
 
 ## Notes
 - Sample code does not call `sys.*` directly.
-- Platform metadata sources are TOML under `Targets/`.
+- Platform metadata sources are TOML under `src/Targets/`.

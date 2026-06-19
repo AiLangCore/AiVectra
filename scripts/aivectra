@@ -272,21 +272,22 @@ scaffold_target_files() {
   local app_name="$2"
   local app_slug="$3"
   local target="$4"
+  local target_root="$app_dir/src/Targets"
   case "$target" in
     apple-macos)
-      mkdir -p "$app_dir/Targets/Apple/Mac"
-      cat > "$app_dir/Targets/Apple/Mac/Info.plist.toml" <<EOF
+      mkdir -p "$target_root/Apple/Mac"
+      cat > "$target_root/Apple/Mac/Info.plist.toml" <<EOF
 bundle_id = "org.aivectra.$app_slug"
 display_name = "$app_name"
 version = "0.0.1"
 EOF
-      cat > "$app_dir/Targets/Apple/Mac/Entitlements.plist.toml" <<'EOF'
+      cat > "$target_root/Apple/Mac/Entitlements.plist.toml" <<'EOF'
 app_sandbox = false
 EOF
       ;;
     windows)
-      mkdir -p "$app_dir/Targets/Microsoft/Windows"
-      cat > "$app_dir/Targets/Microsoft/Windows/app.manifest.toml" <<EOF
+      mkdir -p "$target_root/Microsoft/Windows"
+      cat > "$target_root/Microsoft/Windows/app.manifest.toml" <<EOF
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
   <assemblyIdentity version="1.0.0.0" processorArchitecture="*" name="$app_name" type="win32"/>
@@ -294,8 +295,8 @@ EOF
 EOF
       ;;
     linux)
-      mkdir -p "$app_dir/Targets/Linux"
-      cat > "$app_dir/Targets/Linux/app.desktop.toml" <<EOF
+      mkdir -p "$target_root/Linux"
+      cat > "$target_root/Linux/app.desktop.toml" <<EOF
 [Desktop Entry]
 Type=Application
 Name=$app_name
@@ -305,14 +306,14 @@ Categories=Utility;
 EOF
       ;;
     wasm-spa)
-      mkdir -p "$app_dir/Targets/Web/WasmSpa/www"
-      cat > "$app_dir/Targets/Web/WasmSpa/www/README.md" <<'EOF'
+      mkdir -p "$target_root/Web/WasmSpa/www"
+      cat > "$target_root/Web/WasmSpa/www/README.md" <<'EOF'
 WASM SPA web root assets.
 EOF
       ;;
     wasm-fullstack)
-      mkdir -p "$app_dir/Targets/Web/WasmFullStack/www"
-      cat > "$app_dir/Targets/Web/WasmFullStack/www/README.md" <<'EOF'
+      mkdir -p "$target_root/Web/WasmFullStack/www"
+      cat > "$target_root/Web/WasmFullStack/www/README.md" <<'EOF'
 WASM FullStack web root assets.
 EOF
       ;;
@@ -321,12 +322,13 @@ EOF
 
 detect_project_target_flags() {
   local app_dir="$1"
+  local target_root="$app_dir/src/Targets"
   set_empty_target_flags
-  [[ -f "$app_dir/Targets/Apple/Mac/Info.plist.toml" ]] && T_APPLE_MAC="true"
-  [[ -f "$app_dir/Targets/Microsoft/Windows/app.manifest.toml" ]] && T_WINDOWS="true"
-  [[ -f "$app_dir/Targets/Linux/app.desktop.toml" ]] && T_LINUX="true"
-  [[ -d "$app_dir/Targets/Web/WasmSpa" ]] && T_WASM_SPA="true"
-  [[ -d "$app_dir/Targets/Web/WasmFullStack" ]] && T_WASM_FULLSTACK="true"
+  [[ -f "$target_root/Apple/Mac/Info.plist.toml" ]] && T_APPLE_MAC="true"
+  [[ -f "$target_root/Microsoft/Windows/app.manifest.toml" ]] && T_WINDOWS="true"
+  [[ -f "$target_root/Linux/app.desktop.toml" ]] && T_LINUX="true"
+  [[ -d "$target_root/Web/WasmSpa" ]] && T_WASM_SPA="true"
+  [[ -d "$target_root/Web/WasmFullStack" ]] && T_WASM_FULLSTACK="true"
   return 0
 }
 
@@ -498,8 +500,10 @@ ensure_macos_run_bundle() {
   local bundle_program="$macos/app.aibc1"
   local source_ailang
   source_ailang="$(resolve_macos_bundle_ailang_executable)"
-  local icon_svg="$project_dir/Assets/icons/app.svg"
-  local icon_icns_src="$project_dir/Assets/icons/app.icns"
+  local icon_svg
+  icon_svg="$(project_asset_path "$project_dir" "icons/app.svg")"
+  local icon_icns_src
+  icon_icns_src="$(project_asset_path "$project_dir" "icons/app.icns")"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
   local icon_icns="$resources/AppIcon.icns"
   local info_toml
@@ -616,8 +620,10 @@ preflight_publish_tools() {
     return 1
   fi
 
-  local icon_icns_src="$project_dir/Assets/icons/app.icns"
-  local icon_svg="$project_dir/Assets/icons/app.svg"
+  local icon_icns_src
+  icon_icns_src="$(project_asset_path "$project_dir" "icons/app.icns")"
+  local icon_svg
+  icon_svg="$(project_asset_path "$project_dir" "icons/app.svg")"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
   if [[ ! -f "$icon_icns_src" && ( -f "$icon_svg" || -f "$icon_default" ) ]]; then
     if ! command -v iconutil >/dev/null 2>&1; then
@@ -654,8 +660,10 @@ inject_icon_into_publish_bundle() {
   if [[ -z "$project_dir" ]]; then
     return 0
   fi
-  local icon_svg="$project_dir/Assets/icons/app.svg"
-  local icon_icns_src="$project_dir/Assets/icons/app.icns"
+  local icon_svg
+  icon_svg="$(project_asset_path "$project_dir" "icons/app.svg")"
+  local icon_icns_src
+  icon_icns_src="$(project_asset_path "$project_dir" "icons/app.icns")"
   local icon_default="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"
   local source_svg=""
   if [[ -f "$icon_icns_src" ]]; then
@@ -701,9 +709,9 @@ run_via_macos_bundle_if_possible() {
     return $?
   fi
   if [[ "${AIVECTRA_USE_MACOS_BUNDLE:-auto}" != "1" ]]; then
-    if [[ ! -f "$project_dir/Assets/icons/app.svg" &&
-          ! -f "$project_dir/Assets/icons/app.icns" &&
-          ! -f "$project_dir/Targets/Apple/Mac/Info.plist.toml" ]]; then
+    if [[ ! -f "$(project_asset_path "$project_dir" "icons/app.svg")" &&
+          ! -f "$(project_asset_path "$project_dir" "icons/app.icns")" &&
+          ! -f "$project_dir/src/Targets/Apple/Mac/Info.plist.toml" ]]; then
       AILANG_DISABLE_RUN_TOOL_DISPATCH=1 "$AILANG_BIN" run "$target_abs" "$@"
       return $?
     fi
@@ -905,11 +913,17 @@ toml_get_bool() {
 resolve_target_toml_path() {
   local project_dir="$1"
   local required_path="$2"
-  if [[ -f "$project_dir/$required_path" ]]; then
-    printf "%s" "$project_dir/$required_path"
+  if [[ -f "$project_dir/src/$required_path" ]]; then
+    printf "%s" "$project_dir/src/$required_path"
     return 0
   fi
   printf ""
+}
+
+project_asset_path() {
+  local project_dir="$1"
+  local relative_path="$2"
+  printf "%s" "$project_dir/src/Assets/$relative_path"
 }
 
 write_macos_info_plist() {
@@ -984,11 +998,11 @@ apply_macos_publish_metadata() {
   ent_toml="$(resolve_target_toml_path "$project_dir" "Targets/Apple/Mac/Entitlements.plist.toml")"
 
   if [[ -z "$info_toml" ]]; then
-    echo "publish error: missing required file Targets/Apple/Mac/Info.plist.toml" >&2
+    echo "publish error: missing required file src/Targets/Apple/Mac/Info.plist.toml" >&2
     return 1
   fi
   if [[ -z "$ent_toml" ]]; then
-    echo "publish error: missing required file Targets/Apple/Mac/Entitlements.plist.toml" >&2
+    echo "publish error: missing required file src/Targets/Apple/Mac/Entitlements.plist.toml" >&2
     return 1
   fi
 
@@ -1369,11 +1383,11 @@ if [[ "${1:-}" == "init" ]]; then
   fi
 
   mkdir -p "$APP_DIR/src"
-  mkdir -p "$APP_DIR/Assets/icons"
-  mkdir -p "$APP_DIR/Assets/images"
-  mkdir -p "$APP_DIR/Assets/fonts"
-  mkdir -p "$APP_DIR/Assets/styles"
-  mkdir -p "$APP_DIR/Assets/locale"
+  mkdir -p "$APP_DIR/src/Assets/icons"
+  mkdir -p "$APP_DIR/src/Assets/images"
+  mkdir -p "$APP_DIR/src/Assets/fonts"
+  mkdir -p "$APP_DIR/src/Assets/styles"
+  mkdir -p "$APP_DIR/src/Assets/locale"
   mkdir -p "$APP_DIR/examples/debug/scenarios"
   mkdir -p "$APP_DIR/examples/debug/events"
 
@@ -1649,9 +1663,9 @@ EOF
   perl -0pi -e 's|\QLit(value="Worker Demo")\E|Lit(value="'"$APP_TITLE"'")|g' "$APP_DIR/src/app.aos"
 
   if [[ -f "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" ]]; then
-    cp "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" "$APP_DIR/Assets/icons/app.svg"
+    cp "$ROOT_DIR/Assets/icons/ailang_default_appicon.svg" "$APP_DIR/src/Assets/icons/app.svg"
   else
-    cat > "$APP_DIR/Assets/icons/app.svg" <<'EOF'
+    cat > "$APP_DIR/src/Assets/icons/app.svg" <<'EOF'
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -1665,7 +1679,7 @@ EOF
 EOF
   fi
 
-  cat > "$APP_DIR/Assets/locale/en.toml" <<'EOF'
+  cat > "$APP_DIR/src/Assets/locale/en.toml" <<'EOF'
 title = "My AiVectra App"
 start_task = "Start Task"
 EOF
@@ -1709,7 +1723,7 @@ if [[ "${1:-}" == "icon" ]]; then
   PROJECT="$(abs_path "$(normalize_path_arg "$1")")"
   shift || true
   LABEL="${1:-}"
-  ICON_DIR="$PROJECT/Assets/icons"
+  ICON_DIR="$PROJECT/src/Assets/icons"
   ICON_OUT="$ICON_DIR/app.svg"
   MANIFEST_OUT="$ICON_DIR/manifest.txt"
   DEFAULT_ICON="$ROOT_DIR/Assets/icons/ailang_default_appicon.svg"

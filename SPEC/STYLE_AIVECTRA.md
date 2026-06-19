@@ -83,7 +83,7 @@
 
 ## Packaging And Layout
 - Prefer one canonical app layout.
-- Prefer one canonical icon source: `Assets/icons/app.svg`.
+- Prefer one canonical icon source: `src/Assets/icons/app.svg`.
 - Prefer generated target artifacts over committed platform-specific output files where possible.
 - `project.aiproj` should be the source of truth for identity and packaging metadata.
 

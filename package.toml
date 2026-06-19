@@ -1,6 +1,6 @@
 schema = "ailang.package-source.v1"
 name = "aivectra"
-version = "0.0.1-beta.12"
+version = "0.0.1-beta.13"
 types = ["library", "tool", "template"]
 
 [dependencies]
