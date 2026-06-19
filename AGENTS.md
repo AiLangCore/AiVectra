@@ -78,6 +78,10 @@ If a feature could logically exist without UI, it belongs in AiLang or AiVM.
 Module discipline:
 • Agents must prefer creating focused semantic `.aos` modules over expanding
   large facade, host, runtime, CLI, or sample files.
+• Anything that is part of an application belongs under that app's `src`
+  directory, including `src/Views`, `src/Assets`, `src/Targets`, code-behind
+  files, app-local modules, and app-owned templates. Root-level repository
+  assets are reserved for AiVectra SDK/tooling inputs, not app source.
 • `src/AiVectra/src/lib.aos` is a public facade, not the implementation home
   for every SDK feature.
 • Organize SDK implementation by responsibility: event/frame lifecycle,
