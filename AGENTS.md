@@ -250,6 +250,12 @@ Samples should demonstrate:
 • Gradients
 • State-driven rendering
 
+Rendering work must preserve AiVectra's retained-scene direction. Prefer scene
+diffing, dirty-region invalidation, and target-mechanical partial presentation
+over full-surface redraw loops. Full redraw is acceptable only for first paint,
+resize, explicit full invalidation, renderer recovery, or a target with no
+partial update mechanism.
+
 Samples must NOT:
 
 • Introduce control abstractions
