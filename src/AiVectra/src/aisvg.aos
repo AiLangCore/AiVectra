@@ -11,6 +11,10 @@ Program {
   Export(name=aisvgLine)
   Export(name=aisvgPath)
   Export(name=aisvgPolygon)
+  Export(name=aisvgClipPath)
+  Export(name=aisvgRectPathData)
+  Export(name=aisvgPushClipPath)
+  Export(name=aisvgPopClipPath)
   Export(name=aisvgText)
   Export(name=aisvgImage)
   Export(name=aisvgUse)
@@ -126,6 +130,81 @@ Program {
   Let(name=aisvgPolygon) {
     Fn(params=id,pathData,fill,stroke,strokeWidth) {
       Block { Return { Call(target=aisvgNode) { Lit(value="Polygon") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Var(name=fill) Var(name=stroke) Var(name=strokeWidth) Lit(value="") Var(name=pathData) Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgClipPath) {
+    Fn(params=id,pathData) {
+      Block { Return { Call(target=aisvgNode) { Lit(value="ClipPath") Var(name=id) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value=0) Lit(value="none") Lit(value="none") Lit(value=0) Lit(value="") Var(name=pathData) Lit(value=0) Map { } } } }
+    }
+  }
+
+  Let(name=aisvgRectPathData) {
+    Fn(params=x,y,width,height) {
+      Block {
+        Let(name=x2) { Add { Var(name=x) Var(name=width) } }
+        Let(name=y2) { Add { Var(name=y) Var(name=height) } }
+        Return {
+          StrConcat {
+            Lit(value="M")
+            StrConcat {
+              ToString { Var(name=x) }
+              StrConcat {
+                Lit(value=" ")
+                StrConcat {
+                  ToString { Var(name=y) }
+                  StrConcat {
+                    Lit(value=" L")
+                    StrConcat {
+                      ToString { Var(name=x2) }
+                      StrConcat {
+                        Lit(value=" ")
+                        StrConcat {
+                          ToString { Var(name=y) }
+                          StrConcat {
+                            Lit(value=" L")
+                            StrConcat {
+                              ToString { Var(name=x2) }
+                              StrConcat {
+                                Lit(value=" ")
+                                StrConcat {
+                                  ToString { Var(name=y2) }
+                                  StrConcat {
+                                    Lit(value=" L")
+                                    StrConcat {
+                                      ToString { Var(name=x) }
+                                      StrConcat {
+                                        Lit(value=" ")
+                                        StrConcat { ToString { Var(name=y2) } Lit(value=" Z") }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  Let(name=aisvgPushClipPath) {
+    Fn(params=handle,clipPath) {
+      Block { Return { Call(target=sys.ui.pushClipPath) { Var(name=handle) Call(target=aisvgPathData) { Var(name=clipPath) } } } }
+    }
+  }
+
+  Let(name=aisvgPopClipPath) {
+    Fn(params=handle) {
+      Block { Return { Call(target=sys.ui.popClipPath) { Var(name=handle) } } }
     }
   }
 

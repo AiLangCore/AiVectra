@@ -19,7 +19,10 @@
 ## Capitalization Rules
 - Capitalization must carry structural meaning.
 - Use `PascalCase` for top-level structural directories and major platform grouping directories: `Src`, `Assets`, `Targets`, `Apple`, `Microsoft`, `Linux`, `Web`.
-- Use lowercase for concrete asset buckets and web roots: `bundle`, `icons`, `splash`, `images`, `fonts`, `locale`, `www`.
+- Use lowercase for concrete asset buckets and web roots: `bundle`, `icons`, `images`, `fonts`, `locale`, `www`.
+- Use `src/Assets/Splash/background.svg` and
+  `src/Assets/Splash/foreground.svg` for app splash artwork shared across
+  targets.
 - Use `PascalCase` for product and library names: `AiVectra`, `AiLang`, `AiVM`.
 - Use `camelCase` for runtime hooks, helper names, node ids when encoded as symbols, and app-level state fields.
 - Do not use capitalization decoratively.
@@ -84,6 +87,9 @@
 ## Packaging And Layout
 - Prefer one canonical app layout.
 - Prefer one canonical icon source: `src/Assets/icons/app.svg`.
+- Prefer one canonical splash source pair:
+  `src/Assets/Splash/background.svg` and
+  `src/Assets/Splash/foreground.svg`.
 - Prefer generated target artifacts over committed platform-specific output files where possible.
 - `project.aiproj` should be the source of truth for identity and packaging metadata.
 

@@ -142,6 +142,7 @@ Image
 
 Defs
 Use
+ClipPath
 
 LinearGradient
 RadialGradient
@@ -157,11 +158,36 @@ Future elements:
 Symbol
 Pattern
 Mask
-ClipPath
 Filter
 Blur
 DropShadow
 ```
+
+---
+
+# Clipping
+
+AiSVG supports deterministic path-based clipping through `ClipPath`.
+
+`ClipPath` defines a reusable clipping path. Rendering code may apply a clip
+path to subsequent draw operations through a scoped push/pop operation. The
+active clip stack affects visual output only:
+
+- clipping does not change layout
+- clipping does not remove scene elements
+- clipping does not change hit-test semantics unless a higher-level component
+  explicitly defines clipped hit testing
+- renderers may accelerate clipping mechanically, but AiVectra owns the clip
+  path and stack semantics
+
+Rectangular viewport clipping should be represented as a closed path:
+
+```text
+M x y L x2 y L x2 y2 L x y2 Z
+```
+
+Non-closed paths are valid. Renderers fill the path according to the renderer's
+normal path fill behavior before applying it as a clip region.
 
 ---
 

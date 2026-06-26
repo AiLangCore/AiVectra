@@ -24,6 +24,8 @@ MyApp/
       bundle/
       icons/
       splash/
+        background.svg
+        foreground.svg
       fonts/
       images/
       locale/
@@ -46,7 +48,12 @@ MyApp/
 
 ## Naming Rules
 - Use `src` for app source root.
-- Use lowercase names for concrete asset buckets: `bundle`, `icons`, `splash`, `fonts`, `images`, `locale`.
+- Use lowercase names for concrete asset buckets: `bundle`, `icons`, `fonts`, `images`, `locale`.
+- Use `src/Assets/Splash/background.svg` and
+  `src/Assets/Splash/foreground.svg` as the canonical cross-target app splash
+  assets. Target packages may transform these assets for their platform
+  boot/loading surfaces, including AiOS boot splash, mobile launch screens, and
+  web loading shells.
 - Use lowercase `www` for web roots.
 - `src/Assets/bundle` contains generic files copied directly into target bundles.
 - Derived assets are generated into build staging/`dist`, not committed under source assets.
