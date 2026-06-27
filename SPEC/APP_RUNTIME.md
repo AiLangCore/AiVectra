@@ -64,6 +64,19 @@ For example, standard desktop Settings maps to `command/settings`. The app owns
 the resulting state transition and any settings view. The host owns only native
 presentation and event translation.
 
+## Frame Scheduling
+
+The GUI adapter performs one initial resize transition and first paint after
+window creation. After first paint, each loop iteration waits for/polls the next
+host event, applies the deterministic state transition, then renders only when
+the resulting semantic state changes.
+
+Idle `None` events may still be delivered so applications can poll deterministic
+async work through `std-app`, but unchanged transitions must not force a full
+redraw. Mechanical host overlays such as the native pointer may update without a
+semantic redraw. This keeps input latency bounded by event polling and state
+transition work instead of by unconditional frame rendering.
+
 ## Menu Contract
 
 AiVectra apps declare menus as generic descriptors:

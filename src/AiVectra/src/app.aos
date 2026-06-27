@@ -424,24 +424,27 @@ Program {
         Let(name=handle) { Call(target=aivectraRunWindow) { Var(name=run) } }
         Let(name=currentState) { Call(target=aivectraRunState) { Var(name=run) } }
         Let(name=settingsHandle) { Lit(value=0) }
+        Let(name=initialSizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
+        Let(name=initialFrameWidth) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="width") Lit(value=0) } }
+        Let(name=initialFrameHeight) { Call(target=attrInt) { Var(name=initialSizeNode) Lit(value="height") Lit(value=0) } }
+        Let(name=initialResizeStep) {
+          CallDynamic(candidates="update") {
+            Var(name=updateName)
+            Var(name=currentState)
+            Call(target=uiEvent) { Call(target=aivectraResizeEvent) { Var(name=initialFrameWidth) Var(name=initialFrameHeight) } }
+          }
+        }
+        Let(name=currentState) { Call(target=nextState) { Var(name=initialResizeStep) } }
+        CallDynamic(candidates="render") {
+          Var(name=renderName)
+          Var(name=handle)
+          Var(name=currentState)
+        }
         Loop {
           Block {
             Let(name=sizeNode) { Call(target=sys.ui.getWindowSize) { Var(name=handle) } }
             Let(name=frameWidth) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="width") Lit(value=0) } }
             Let(name=frameHeight) { Call(target=attrInt) { Var(name=sizeNode) Lit(value="height") Lit(value=0) } }
-            Let(name=resizeStep) {
-              CallDynamic(candidates="update") {
-                Var(name=updateName)
-                Var(name=currentState)
-                Call(target=uiEvent) { Call(target=aivectraResizeEvent) { Var(name=frameWidth) Var(name=frameHeight) } }
-              }
-            }
-            Let(name=currentState) { Call(target=nextState) { Var(name=resizeStep) } }
-            CallDynamic(candidates="render") {
-              Var(name=renderName)
-              Var(name=handle)
-              Var(name=currentState)
-            }
             Let(name=evt) { Call(target=frameEvent) { Var(name=handle) } }
             If {
               Eq { Call(target=eventTypeOf) { Var(name=evt) } Lit(value="command") }
@@ -500,7 +503,20 @@ Program {
                 }
               }
             }
-            Let(name=currentState) { Call(target=nextState) { Var(name=step) } }
+            Let(name=nextMainState) { Call(target=nextState) { Var(name=step) } }
+            If {
+              Eq { Var(name=nextMainState) Var(name=currentState) }
+              Block { Lit(value=0) }
+              Block {
+                CallDynamic(candidates="render") {
+                  Var(name=renderName)
+                  Var(name=handle)
+                  Var(name=nextMainState)
+                }
+                Lit(value=0)
+              }
+            }
+            Let(name=currentState) { Var(name=nextMainState) }
             If {
               Eq { Var(name=settingsHandle) Lit(value=0) }
               Block { Lit(value=0) }
