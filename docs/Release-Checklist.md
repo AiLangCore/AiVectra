@@ -27,10 +27,14 @@ When a compatible AiLang toolchain is available, run the broader suite:
 Set `AIVECTRA_SCREENSHOT_TEST=1` only when the local host has the required GUI permissions.
 Set `AIVECTRA_SCREENSHOT_TOOL=/path/to/take_screenshot.py` when the screenshot
 helper is not installed under `$CODEX_HOME/skills/screenshot`.
-The current alpha still contains sample-level direct syscall usage; treat
-`test-all` failures from `test-no-direct-syscalls-in-samples.sh` as a known
-pre-1.0 hardening item until those samples are migrated behind the public
-AiVectra API.
+
+Release builds should not carry sample-level direct syscall usage. If
+`test-no-direct-syscalls-in-samples.sh` fails, either migrate the sample behind
+the public AiVectra API or explicitly defer the sample from the release.
+
+Before tagging a coordinated SDK release, confirm the official target packages
+used by AiVectra examples have been restored from `ailang-packages` and record
+the expected AiVM Host ABI in `ailang.lock.toml`.
 
 ## Release
 

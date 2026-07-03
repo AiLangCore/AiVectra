@@ -20,6 +20,9 @@ honest beta bar for outside developers, conference demos, and sponsor review.
 - [x] Public beta package exists.
 - [x] Library, tool, and template package content exists.
 - [x] Public sample apps moved to the sibling `ailang-examples` repository.
+- [x] WeatherApp exercises real package restore, storage, HTTP, AiSVG, desktop,
+  WASM, Linux target, and AiOS target paths as the current production-style
+  sample.
 - [x] Supported fixture app structure is validated by CI-facing tests.
 - [x] Supported deterministic fixture run modes pass locally.
 - [x] Vector-first direction is documented.
@@ -27,26 +30,33 @@ honest beta bar for outside developers, conference demos, and sponsor review.
 - [x] Platform renderer boundary is defined as mechanical.
 - [x] CLI/debug/test scripts exist.
 - [x] Input injection tooling exists.
+- [x] Cross-platform target ownership moved to target packages/repositories;
+  AiVectra remains UI semantics and target adapter surface, not target
+  packaging owner.
 
 ## Beta Gates
 
-- [ ] Define a platform support matrix for macOS, Linux, Windows, Web, iOS,
+- [x] Define a platform support matrix for macOS, Linux, Windows, Web, iOS,
   and Android.
-- [ ] Separate "supported now" platforms from planned/future platforms.
-- [ ] Freeze the MVP primitive set.
-- [ ] Freeze the MVP layout model.
-- [ ] Freeze the MVP event model.
+- [x] Separate "supported now" platforms from planned/future platforms.
+- [ ] Freeze the MVP primitive set in `SPEC/`.
+- [ ] Freeze the MVP layout model in `SPEC/`.
+- [ ] Freeze the MVP event model in `SPEC/`.
 - [ ] Define canonical visual/layout golden artifact format.
 - [ ] Add mandatory deterministic layout/visual artifact tests in CI.
 - [ ] Add event replay tests in CI.
 - [ ] Mark screenshot tests optional where OS permissions are required, while
   keeping deterministic artifact tests mandatory.
-- [x] Explicitly defer WeatherApp until HTTP/package/runtime boundaries are
-  stable enough for public demos.
+- [x] Promote WeatherApp from deferred sample to active production-style
+  integration sample.
 - [ ] Add one realistic CRUD/data-entry sample.
 - [ ] Add documentation for writing an AiVectra app from scratch.
 - [ ] Add documentation for debugging UI with captured artifacts.
 - [ ] Make host renderer non-semantic boundaries testable.
+- [ ] Complete AiOS DRM/KMS backend or explicitly mark framebuffer as the only
+  supported AiOS GUI backend for the next release.
+- [ ] Decide whether Linux X11 under QEMU is release-demo supported or
+  experimental for the next release.
 
 ## MVP Primitive Decision
 
@@ -54,21 +64,26 @@ Before AiVectra is promoted beyond early beta, decide and document whether the
 MVP supports each primitive:
 
 - [ ] Rect
-- [ ] Path
+- [x] Path
 - [ ] Circle
 - [ ] Text
 - [ ] Group
 - [ ] Image
+- [x] Polygon
+- [x] AiSVG `use`
+- [x] AiSVG `animate`
 
 ## MVP Event Decision
 
 Before AiVectra is promoted beyond early beta, decide and document whether the
 MVP supports each event type:
 
-- [ ] Click/tap
-- [ ] Key
-- [ ] Text input
+- [x] Click/tap
+- [x] Key
+- [x] Text input
 - [ ] Close/window lifecycle
+- [x] Pointer/mouse movement as standard input data
+- [ ] Scroll/drag semantics with performance and clipping guarantees
 
 ## Scope Discipline
 
