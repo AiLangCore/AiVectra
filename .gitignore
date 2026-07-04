@@ -1,4 +1,8 @@
 .DS_Store
+bin/
+obj/
+**/bin/
+**/obj/
 out
 build
 .tools
@@ -6,6 +10,7 @@ build
 .artifacts/
 artifacts/
 *.local.*
+*.lock.*
 config.local.toml
 
 .tmp-*
