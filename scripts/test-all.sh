@@ -26,6 +26,9 @@ if [[ -z "${AILANG_PACKAGE_REGISTRY:-}" && -d "$ROOT_DIR/../ailang-packages/pack
   export AILANG_PACKAGE_REGISTRY="$ROOT_DIR/../ailang-packages"
 fi
 
+echo "[test-all] documentation taxonomy"
+bash "$ROOT_DIR/scripts/check-doc-taxonomy.sh"
+
 echo "[test-all] fixture package restore"
 while IFS= read -r project_file; do
   fixture_dir="$(dirname "$project_file")"
