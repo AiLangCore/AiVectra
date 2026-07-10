@@ -2,6 +2,20 @@
 
 All notable changes to AiVectra are documented in this file.
 
+## [0.0.1-beta.3] - 2026-07-10
+
+### Changed
+
+- Stabilized the package-owned runtime path and incremental scene rendering
+  behavior used by the production-style WeatherApp sample.
+- Kept platform targets outside the UI SDK so their hosts, packaging, and CI
+  can evolve independently of AiVectra semantics.
+
+### Notes
+
+- This remains an early-beta UI SDK release. The documented MVP support matrix
+  is the authoritative statement of supported UI behavior.
+
 ## [0.0.1-beta.2] - 2026-05-27
 
 ### Changed
