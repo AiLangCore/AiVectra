@@ -32,7 +32,11 @@ jobs:
           cp -R ./src/AiVectra "${package_dir}/src/AiVectra"
           cp -R ./src/AiVectra.Cli "${package_dir}/src/AiVectra.Cli"
           cp -R ./SPEC/. "${package_dir}/SPEC/"
-          cp -R ./samples/. "${package_dir}/samples/"
+          if [ -d ./samples ]; then
+            cp -R ./samples/. "${package_dir}/samples/"
+          elif [ -d ./test-fixtures ]; then
+            cp -R ./test-fixtures/. "${package_dir}/samples/"
+          fi
           cp ./README.md ./LICENSE "${package_dir}/"
           tar -czf "aivectra-${version}.tar.gz" "${package_dir}"
           zip -qr "aivectra-${version}.zip" "${package_dir}"

@@ -15,7 +15,7 @@ For contributor setup and verification, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Current Status
 
-Current public beta: `v0.0.1-beta.3`.
+Current public beta: `v0.0.1-beta.4`.
 
 Install the public AiLangCore SDK, including `aivectra`:
 

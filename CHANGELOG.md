@@ -2,6 +2,18 @@
 
 All notable changes to AiVectra are documented in this file.
 
+## [0.0.1-beta.4] - 2026-07-10
+
+### Fixed
+
+- Updated release packaging for the current repository layout: fixture content
+  is staged when the historical `samples/` directory is absent.
+
+### Notes
+
+- This replaces the failed `v0.0.1-beta.3` packaging attempt without changing
+  AiVectra runtime semantics.
+
 ## [0.0.1-beta.3] - 2026-07-10
 
 ### Changed
