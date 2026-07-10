@@ -4,6 +4,18 @@ AiVectra owns the vector UI library, UI SDK, rendering contracts, input mapping,
 and UI samples for AiLang. AiLang owns language semantics. AiVM owns runtime
 execution, scheduling mechanics, and the syscall boundary.
 
+## Documentation Taxonomy
+
+- `SPEC/` contains normative AiVectra rendering, UI runtime, CLI, and app-layout contracts.
+- `Docs/` contains stable usage documentation for humans and developer agents.
+- `Design/` contains non-normative proposals, rationale, experiments, and decisions.
+- `Planning/` contains active tasks, milestones, readiness notes, and release gates.
+- `Archive/` contains historical or superseded documents.
+- `*.local.md` and `*.local.*` are local scratch and must not be committed.
+
+See `SPEC/README.md` for specification authority and `Docs/README.md` for the
+stable usage-documentation index.
+
 ## Branches
 
 AiVectra uses Git Flow. The default integration branch is `develop`.
@@ -63,3 +75,4 @@ AIVECTRA_SCREENSHOT_TOOL=/path/to/take_screenshot.py \
   `app.aibc1`, local SDK files, and local notes.
 - If layout or interaction behavior changes, update `SPEC/`, samples, and tests
   in the same change.
+- Do not place checklists or active feature plans in `Docs/` or `SPEC/`.
