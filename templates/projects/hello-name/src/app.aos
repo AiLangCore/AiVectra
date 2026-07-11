@@ -1,85 +1,85 @@
-Program#p1 {
-  Import#i0(package="aivectra" path="src/AiVectra/src/app.aos")
-  Import#i1(package="aivectra" path="src/AiVectra/src/lib.aos")
-  Import#i2(package="std-app" path="src/app/event.aos")
-  Import#i3(package="std-app" path="src/app/next.aos")
-  Export#e1(name=start)
+Program {
+  Import(package="aivectra" path="src/AiVectra/src/app.aos")
+  Import(package="aivectra" path="src/AiVectra/src/lib.aos")
+  Import(package="std-app" path="src/app/event.aos")
+  Import(package="std-app" path="src/app/next.aos")
+  Export(name=start)
 
-  Let#app1(name=app) {
-    Call#app2(target=aivectraApp) {
-      Lit#app3(value="{{projectName}}")
-      Lit#app4(value="init")
-      Lit#app5(value="update")
-      Lit#app6(value="render")
+  Let(name=app) {
+    Call(target=aivectraApp) {
+      Lit(value="{{projectName}}")
+      Lit(value="init")
+      Lit(value="update")
+      Lit(value="render")
     }
   }
 
-  Let#l1(name=start) {
-    Fn#f1(params=args) {
-      Block#b1 {
-        Return#r1 { Call#run1(target=aivectraRun) { Var#app_ref(name=app) Var#args(name=args) } }
+  Let(name=start) {
+    Fn(params=args) {
+      Block {
+        Return { Call(target=aivectraRun) { Var(name=app) Var(name=args) } }
       }
     }
   }
 
-  Let#init1(name=init) {
-    Fn#init2(params=args) {
-      Block#init3 {
-        Return#init4 {
-          Map#init5 {
-            Field#init6(key="message") { Lit#init7(value="Hello from {{projectName}}") }
-            Field#init8(key="settingsOpen") { Lit#init9(value=false) }
+  Let(name=init) {
+    Fn(params=args) {
+      Block {
+        Return {
+          Map {
+            Field(key="message") { Lit(value="Hello from {{projectName}}") }
+            Field(key="settingsOpen") { Lit(value=false) }
           }
         }
       }
     }
   }
 
-  Let#update1(name=update) {
-    Fn#update2(params=state,event) {
-      Block#update3 {
-        If#update4 {
-          Eq#update5 { Call#update6(target=eventType) { Var#update7(name=event) } Lit#update8(value="UiEvent") }
-          Block#update9 {
-            Let#update10(name=rawEvent) { Call#update11(target=mapGetNodeOr) { Var#update12(name=event) Lit#update13(value="event") Map#update14 { } } }
-            If#update15 {
-              Eq#update16 { Call#update17(target=eventTypeOf) { Var#update18(name=rawEvent) } Lit#update19(value="command") }
-              Block#update20 {
-                If#update21 {
-                  Eq#update22 { Call#update23(target=eventKeyOf) { Var#update24(name=rawEvent) } Lit#update25(value="settings") }
-                  Block#update26 { Return#update27 { Call#update28(target=next) { Call#update29(target=mapSet) { Var#update30(name=state) Lit#update31(value="settingsOpen") Lit#update32(value=true) } } } }
-                  Block#update33 { Lit#update34(value=0) }
+  Let(name=update) {
+    Fn(params=state,event) {
+      Block {
+        If {
+          Eq { Call(target=eventType) { Var(name=event) } Lit(value="UiEvent") }
+          Block {
+            Let(name=rawEvent) { Call(target=mapGetNodeOr) { Var(name=event) Lit(value="event") Map { } } }
+            If {
+              Eq { Call(target=eventTypeOf) { Var(name=rawEvent) } Lit(value="command") }
+              Block {
+                If {
+                  Eq { Call(target=eventKeyOf) { Var(name=rawEvent) } Lit(value="settings") }
+                  Block { Return { Call(target=next) { Call(target=mapSet) { Var(name=state) Lit(value="settingsOpen") Lit(value=true) } } } }
+                  Block { Lit(value=0) }
                 }
               }
-              Block#update35 { Lit#update36(value=0) }
+              Block { Lit(value=0) }
             }
           }
-          Block#update37 { Lit#update38(value=0) }
+          Block { Lit(value=0) }
         }
-        Return#update39 { Call#update40(target=next) { Var#update41(name=state) } }
+        Return { Call(target=next) { Var(name=state) } }
       }
     }
   }
 
-  Let#render1(name=render) {
-    Fn#render2(params=handle,state) {
-      Block#render3 {
-        Call#render4(target=sys.ui.beginFrame) { Var#render5(name=handle) }
-        Call#render6(target=rect) { Var#render7(name=handle) }
-        Call#render8(target=text) { Var#render9(name=handle) Call#render10(target=mapGetStringOr) { Var#render11(name=state) Lit#render12(value="message") Lit#render13(value="") } }
-        If#render14 {
-          Eq#render15 { Call#render16(target=mapGetBoolOr) { Var#render17(name=state) Lit#render18(value="settingsOpen") Lit#render19(value=false) } Lit#render20(value=true) }
-          Block#render21 {
-            Call#render22(target=sys.ui.drawRect) { Var#render23(name=handle) Lit#render24(value=180) Lit#render25(value=140) Lit#render26(value=320) Lit#render27(value=120) Lit#render28(value="#0f172a") }
-            Call#render29(target=sys.ui.drawText) { Var#render30(name=handle) Lit#render31(value=204) Lit#render32(value=164) Lit#render33(value="Settings") Lit#render34(value="#ffffff") Lit#render35(value=22) }
-            Call#render36(target=sys.ui.drawText) { Var#render37(name=handle) Lit#render38(value=204) Lit#render39(value=202) Lit#render40(value="Add app preferences here.") Lit#render41(value="#cbd5e1") Lit#render42(value=14) }
-            Lit#render43(value=0)
+  Let(name=render) {
+    Fn(params=handle,state) {
+      Block {
+        Call(target=sys.ui.beginFrame) { Var(name=handle) }
+        Call(target=rect) { Var(name=handle) }
+        Call(target=text) { Var(name=handle) Call(target=mapGetStringOr) { Var(name=state) Lit(value="message") Lit(value="") } }
+        If {
+          Eq { Call(target=mapGetBoolOr) { Var(name=state) Lit(value="settingsOpen") Lit(value=false) } Lit(value=true) }
+          Block {
+            Call(target=sys.ui.drawRect) { Var(name=handle) Lit(value=180) Lit(value=140) Lit(value=320) Lit(value=120) Lit(value="#0f172a") }
+            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=204) Lit(value=164) Lit(value="Settings") Lit(value="#ffffff") Lit(value=22) }
+            Call(target=sys.ui.drawText) { Var(name=handle) Lit(value=204) Lit(value=202) Lit(value="Add app preferences here.") Lit(value="#cbd5e1") Lit(value=14) }
+            Lit(value=0)
           }
-          Block#render44 { Lit#render45(value=0) }
+          Block { Lit(value=0) }
         }
-        Call#render46(target=sys.ui.endFrame) { Var#render47(name=handle) }
-        Call#render48(target=sys.ui.present) { Var#render49(name=handle) }
-        Return#render50 { Lit#render51(value=0) }
+        Call(target=sys.ui.endFrame) { Var(name=handle) }
+        Call(target=sys.ui.present) { Var(name=handle) }
+        Return { Lit(value=0) }
       }
     }
   }
