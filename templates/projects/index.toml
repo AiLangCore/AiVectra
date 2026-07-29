@@ -1,0 +1,4 @@
+[[template]]
+name = "hello-name"
+description = "Minimal AiVectra application that greets a supplied name."
+path = "templates/projects/hello-name"
