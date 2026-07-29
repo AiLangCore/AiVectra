@@ -1,0 +1,4 @@
+[[template]]
+name = "view-basic"
+description = "Reusable AiVectra view module."
+path = "templates/files/view-basic"
