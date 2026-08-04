@@ -39,57 +39,6 @@ Program {
     }
   }
 
-  Let(name=guiRun) {
-    Fn(params=windowHandle,model) {
-      Block {
-        Return { Call(target=guiLoop) { Var(name=windowHandle) Var(name=model) } }
-      }
-    }
-  }
-
-  Let(name=guiLoop) {
-    Fn(params=windowHandle,model) {
-      Block {
-        Let(name=currentModel) { Var(name=model) }
-        Loop {
-          Block {
-            Call(target=appRender) { Var(name=windowHandle) Var(name=currentModel) }
-            Call(target=sys.ui.waitFrame) { Var(name=windowHandle) }
-            Let(name=evt) { Call(target=sys.ui.pollEvent) { Var(name=windowHandle) } }
-            If {
-              Eq { AttrCount { Var(name=evt) } Lit(value=0) }
-              Block { Continue { } }
-              Block { Lit(value=0) }
-            }
-            Let(name=eventType) { Call(target=attrString) { Var(name=evt) Lit(value="type") Lit(value=0) } }
-            Let(name=eventKey) { Call(target=attrString) { Var(name=evt) Lit(value="key") Lit(value=0) } }
-            Let(name=eventText) { Call(target=attrString) { Var(name=evt) Lit(value="text") Lit(value=0) } }
-            Let(name=eventX) { Call(target=attrInt) { Var(name=evt) Lit(value="x") Lit(value=0) } }
-            Let(name=eventY) { Call(target=attrInt) { Var(name=evt) Lit(value="y") Lit(value=0) } }
-            If {
-              Eq { Var(name=eventType) Lit(value="closed") }
-              Block { Break { } }
-              Block { Lit(value=0) }
-            }
-            Let(name=nextModel) {
-              Call(target=appUpdate) {
-                Var(name=currentModel)
-                Var(name=eventType)
-                Var(name=eventKey)
-                Var(name=eventText)
-                Var(name=eventX)
-                Var(name=eventY)
-              }
-            }
-            Let(name=currentModel) { Var(name=nextModel) }
-            Continue { }
-          }
-        }
-        Return { Var(name=currentModel) }
-      }
-    }
-  }
-
   Let(name=helloWindow) {
     Fn(params=_) {
       Block {
@@ -302,7 +251,5 @@ Program {
   Export(name=debugModeLive)
   Export(name=guiModeFromArgs)
   Export(name=guiBuild)
-  Export(name=guiRun)
-  Export(name=guiLoop)
   Export(name=layoutSignature)
 }

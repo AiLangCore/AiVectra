@@ -161,6 +161,13 @@ Program {
   Let(name=debugEmitUi) {
     Fn(params=action,target,inputFocused,nameLen,submittedLen,inputRect,buttonRect) {
       Block {
+        Let(name=focusText) {
+          If {
+            Var(name=inputFocused)
+            Block { Lit(value="true") }
+            Block { Lit(value="false") }
+          }
+        }
         Call(target=sys.stdout.writeLine) {
           StrConcat {
             Lit(value="aivectra.ui = { action=\"")
@@ -173,7 +180,7 @@ Program {
                   StrConcat {
                     Lit(value="\", focus=")
                     StrConcat {
-                      If { Var(name=inputFocused) Block { Lit(value="true") } Block { Lit(value="false") } }
+                      Var(name=focusText)
                       StrConcat {
                         Lit(value=", name_len=")
                         StrConcat {

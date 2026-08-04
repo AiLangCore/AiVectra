@@ -995,7 +995,7 @@ Program {
               Eq { Var(name=netKind) Lit(value="") }
               Block { Lit(value=0) }
               Block {
-                Call(target=sys.net.asyncCancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
+                Call(target=sys.net.async.cancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
                 Return {
                   Call(target=loop) {
                     Var(name=handle) Var(name=query) Var(name=focused) Lit(value=false) Lit(value="")
@@ -1220,7 +1220,7 @@ Program {
               Eq { Var(name=netKind) Lit(value="") }
               Block { Lit(value=0) }
               Block {
-                Call(target=sys.net.asyncCancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
+                Call(target=sys.net.async.cancel) { Call(target=httpRequestOp) { Var(name=netStateNow) } }
                 Lit(value=0)
               }
             }
